@@ -1,0 +1,7 @@
+{
+  "name": "transferxpress",
+  "scripts": {
+    "build": "(cd server && npm install && npm run build)",
+    "test": "(cd server && npm test)"
+  }
+}

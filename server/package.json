@@ -1,0 +1,25 @@
+{
+  "name": "transferxpress-server",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "scripts": {
+    "clean": "rm -rf ../dist/server",
+    "build": "npm run clean && tsc",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Eunovo/transferxpress.git"
+  },
+  "author": "Eunovo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Eunovo/transferxpress/issues"
+  },
+  "homepage": "https://github.com/Eunovo/transferxpress#readme",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.2.0",
+    "typescript": "^5.5.4"
+  }
+}
