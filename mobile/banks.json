@@ -1,0 +1,1982 @@
+[
+        {
+            "bankName": "STERLING BANK",
+            "bankCode": "000001",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "KEYSTONE BANK",
+            "bankCode": "000002",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FCMB",
+            "bankCode": "000003",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "UNITED BANK FOR AFRICA",
+            "bankCode": "000004",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ACCESS BANK PLC (DIAMOND)",
+            "bankCode": "000005",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "JAIZ BANK",
+            "bankCode": "000006",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FIDELITY BANK",
+            "bankCode": "000007",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "POLARIS BANK",
+            "bankCode": "000008",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CITI BANK",
+            "bankCode": "000009",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ECOBANK BANK",
+            "bankCode": "000010",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "UNITY BANK",
+            "bankCode": "000011",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "STANBICIBTC BANK",
+            "bankCode": "000012",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GTBANK PLC",
+            "bankCode": "000013",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ACCESS BANK",
+            "bankCode": "000014",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ZENITH BANK PLC",
+            "bankCode": "000015",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FIRST BANK OF NIGERIA",
+            "bankCode": "000016",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "WEMA BANK",
+            "bankCode": "000017",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "UNION BANK",
+            "bankCode": "000018",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "HERITAGE",
+            "bankCode": "000020",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "STANDARDCHARTERED",
+            "bankCode": "000021",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "SUNTRUST BANK",
+            "bankCode": "000022",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PROVIDUS BANK ",
+            "bankCode": "000023",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "RAND MERCHANT BANK",
+            "bankCode": "000024",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "TITAN TRUST BANK",
+            "bankCode": "000025",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "TAJ BANK",
+            "bankCode": "000026",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GLOBUS BANK",
+            "bankCode": "000027",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Central Bank of Nigeria",
+            "bankCode": "000028",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Lotus Bank",
+            "bankCode": "000029",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Parallex Bank",
+            "bankCode": "000030",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CORONATION",
+            "bankCode": "060001",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FBNQUEST MERCHANT BANK",
+            "bankCode": "060002",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "NOVA MB",
+            "bankCode": "060003",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Greenwich Merchant Bank",
+            "bankCode": "060004",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "NPF MICROFINANCE BANK",
+            "bankCode": "070001",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "COVENANT MFB",
+            "bankCode": "070006",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "LIVINGTRUST MORTGAGE BANK PLC",
+            "bankCode": "070007",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PAGE FINANCIALS",
+            "bankCode": "070008",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GATEWAY MORTGAGE BANK",
+            "bankCode": "070009",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ABBEY MORTGAGE BANK",
+            "bankCode": "070010",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "REFUGE MORTGAGE BANK",
+            "bankCode": "070011",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "LBIC MORTGAGE BANK",
+            "bankCode": "070012",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PLATINUM MORTGAGE BANK",
+            "bankCode": "070013",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FIRST GENERATION MORTGAGE BANK",
+            "bankCode": "070014",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "BRENT MORTGAGE BANK",
+            "bankCode": "070015",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "INFINITY TRUST  MORTGAGE BANK",
+            "bankCode": "070016",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "HAGGAI MORTGAGE BANK",
+            "bankCode": "070017",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "MAYFRESH MORTGAGE BANK",
+            "bankCode": "070019",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "COOP Mortgage Bank",
+            "bankCode": "070021",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "STB Mortgage Bank",
+            "bankCode": "070022",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ASOSAVINGS",
+            "bankCode": "090001",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "JUBILEELIFE",
+            "bankCode": "090003",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PARRALEX",
+            "bankCode": "090004",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "TRUSTBOND",
+            "bankCode": "090005",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "SAFETRUST",
+            "bankCode": "090006",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "EKONDO MFB",
+            "bankCode": "090097",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FBN MORGAGES LIMITED",
+            "bankCode": "090107",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FINATRUST MICROFINANCE BANK",
+            "bankCode": "090111",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "SEED CAPITAL MICROFINANCE BANK",
+            "bankCode": "090112",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "MICROVIS MICROFINANCE BANK",
+            "bankCode": "090113",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "EMPIRETRUST MICROFINANCE BANK",
+            "bankCode": "090114",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "TCF",
+            "bankCode": "090115",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "AMML MFB",
+            "bankCode": "090116",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "BOCTRUST MICROFINANCE BANK",
+            "bankCode": "090117",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "IBILE MICROFINANCE BANK",
+            "bankCode": "090118",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "OHAFIA MFB",
+            "bankCode": "090119",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "WETLAND MFB",
+            "bankCode": "090120",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "HASAL MFB",
+            "bankCode": "090121",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GOWANS MFB",
+            "bankCode": "090122",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "TRUSTBANC J6 MICROFINANCE BANK LIMITED",
+            "bankCode": "090123",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "XSLNCE MICROFINANCE BANK",
+            "bankCode": "090124",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "REGENT MFB",
+            "bankCode": "090125",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FIDFUND MFB",
+            "bankCode": "090126",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "BC KASH MFB",
+            "bankCode": "090127",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "NDIORAH MFB",
+            "bankCode": "090128",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "MONEYTRUST MFB",
+            "bankCode": "090129",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CONSUMER  MFB",
+            "bankCode": "090130",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ALLWORKERS MFB",
+            "bankCode": "090131",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "RICHWAY MFB",
+            "bankCode": "090132",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "AL-BARKAH MFB",
+            "bankCode": "090133",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ACCION MFB",
+            "bankCode": "090134",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PERSONAL TRUST MICROFINANCE BANK",
+            "bankCode": "090135",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "MICROCRED MICROFINANCE BANK",
+            "bankCode": "090136",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PECAN TRUST MICROFINANCE BANK",
+            "bankCode": "090137",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ROYAL EXCHANGE MICROFINANCE BANK",
+            "bankCode": "090138",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "VISA MICROFINANCE BANK",
+            "bankCode": "090139",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "SAGAMU MICROFINANCE BANK",
+            "bankCode": "090140",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CHIKUM MICROFINANCE BANK",
+            "bankCode": "090141",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "YES MFB",
+            "bankCode": "090142",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "APEKS MICROFINANCE BANK",
+            "bankCode": "090143",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CIT MICROFINANCE BANK",
+            "bankCode": "090144",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FULL RANGE MFB",
+            "bankCode": "090145",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "TRIDENT MICROFINANCE BANK",
+            "bankCode": "090146",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "HACKMAN MICROFINANCE BANK",
+            "bankCode": "090147",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "BOWEN MFB",
+            "bankCode": "090148",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "IRL MICROFINANCE BANK",
+            "bankCode": "090149",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "VIRTUE MFB",
+            "bankCode": "090150",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "MUTUAL TRUST MICROFINANCE BANK",
+            "bankCode": "090151",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "NARGATA MFB",
+            "bankCode": "090152",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FFS MICROFINANCE BANK",
+            "bankCode": "090153",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CEMCS MFB",
+            "bankCode": "090154",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ADVANS LA FAYETTE MFB",
+            "bankCode": "090155",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "E-BARCS MFB",
+            "bankCode": "090156",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "INFINITY MFB",
+            "bankCode": "090157",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FUTO MFB",
+            "bankCode": "090158",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CREDIT AFRIQUE MFB",
+            "bankCode": "090159",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ADDOSSER MFBB",
+            "bankCode": "090160",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "OKPOGA MFB",
+            "bankCode": "090161",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "STANFORD MFB",
+            "bankCode": "090162",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FIRST MULTIPLE MFB",
+            "bankCode": "090163",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FIRST ROYAL MICROFINANCE BANK",
+            "bankCode": "090164",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PETRA MICROFINANCE BANK",
+            "bankCode": "090165",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ESO-E MICROFINANCE BANK",
+            "bankCode": "090166",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "DAYLIGHT MICROFINANCE BANK",
+            "bankCode": "090167",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GASHUA MICROFINANCE BANK",
+            "bankCode": "090168",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ALPHAKAPITAL MFB",
+            "bankCode": "090169",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "RAHAMA MFB",
+            "bankCode": "090170",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "MAINSTREET MFB",
+            "bankCode": "090171",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ASTRAPOLARIS MFB",
+            "bankCode": "090172",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "RELIANCE MFB",
+            "bankCode": "090173",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "MALACHY MFB",
+            "bankCode": "090174",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "BOSAK MFB",
+            "bankCode": "090176",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "LAPO MFB",
+            "bankCode": "090177",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GREENBANK MFB",
+            "bankCode": "090178",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FAST Microfinance Bank",
+            "bankCode": "090179",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "AMJU MFB",
+            "bankCode": "090180",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Balogun Fulani  Microfinance Bank",
+            "bankCode": "090181",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Standard MFB",
+            "bankCode": "090182",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Girei MFB",
+            "bankCode": "090186",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "BAINES CREDIT MFB",
+            "bankCode": "090188",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ESAN MFB",
+            "bankCode": "090189",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "MUTUAL BENEFITS MFB",
+            "bankCode": "090190",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "KCMB MFB",
+            "bankCode": "090191",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Midland MFB",
+            "bankCode": "090192",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "UNICAL MFB",
+            "bankCode": "090193",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "NIRSAL NATIONAL MICROFINANCE BANK",
+            "bankCode": "090194",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GROOMING MICROFINANCE BANK",
+            "bankCode": "090195",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PENNYWISE MICROFINANCE BANK",
+            "bankCode": "090196",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ABU MICROFINANCE BANK",
+            "bankCode": "090197",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "RENMONEY MICROFINANCE BANK",
+            "bankCode": "090198",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "NEWDAWN MICROFINANCE BANK",
+            "bankCode": "090205",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "UNN MFB",
+            "bankCode": "090251",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Yobe MFB",
+            "bankCode": "090252",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CoalCamp Microfinance Bank",
+            "bankCode": "090254",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "IMO MICROFINANCE BANK",
+            "bankCode": "090258",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ALEKUN MICROFINANCE BANK",
+            "bankCode": "090259",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ABOVE ONLY MICROFINANCE BANK",
+            "bankCode": "090260",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "QUICKFUND MICROFINANCE BANK",
+            "bankCode": "090261",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "STELLAS MICROFINANCE BANK",
+            "bankCode": "090262",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "NAVY MICROFINANCE BANK",
+            "bankCode": "090263",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "AUCHI MICROFINANCE BANK",
+            "bankCode": "090264",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "LOVONUS MICROFINANCE BANK",
+            "bankCode": "090265",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "UNIBEN MICROFINANCE BANK",
+            "bankCode": "090266",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "KUDA MICROFINANCE BANK",
+            "bankCode": "090267",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ADEYEMI COLLEGE STAFF MICROFINANCE BANK",
+            "bankCode": "090268",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GREENVILLE MICROFINANCE BANK",
+            "bankCode": "090269",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "AB MICROFINANCE BANK",
+            "bankCode": "090270",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "LAVENDER MICROFINANCE BANK",
+            "bankCode": "090271",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "OLABISI ONABANJO UNIVERSITY MICROFINANCE BANK",
+            "bankCode": "090272",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "EMERALDS MFB",
+            "bankCode": "090273",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PRESTIGE MICROFINANCE BANK",
+            "bankCode": "090274",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "MERIDIAN MFB",
+            "bankCode": "090275",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "TRUSTFUND MICROFINANCE BANK",
+            "bankCode": "090276",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ALHAYAT MFB",
+            "bankCode": "090277",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GLORY MFB ",
+            "bankCode": "090278",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "MEGAPRAISE MICROFINANCE BANK",
+            "bankCode": "090280",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FINEX MFB",
+            "bankCode": "090281",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ARISE MFB",
+            "bankCode": "090282",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "NNEW WOMEN MFB",
+            "bankCode": "090283",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FIRST OPTION MFB",
+            "bankCode": "090285",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "SafeHaven Microfinance Bank",
+            "bankCode": "090286",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Assets Matrix MFB",
+            "bankCode": "090287",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PILLAR MFB",
+            "bankCode": "090289",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FCT MFB",
+            "bankCode": "090290",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "HALA MFB",
+            "bankCode": "090291",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Afekhafe MFB",
+            "bankCode": "090292",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "BRETHREN MICROFINANCE BANK",
+            "bankCode": "090293",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "EAGLE FLIGHT MFB",
+            "bankCode": "090294",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "OMIYE MFB",
+            "bankCode": "090295",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "POLYUWANNA MFB",
+            "bankCode": "090296",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ALERT MFB",
+            "bankCode": "090297",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FEDERALPOLY NASARAWAMFB",
+            "bankCode": "090298",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "KONTAGORA MFB",
+            "bankCode": "090299",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Sunbeam Microfinance Bank",
+            "bankCode": "090302",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PURPLEMONEY MFB",
+            "bankCode": "090303",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "EVANGEL MFB",
+            "bankCode": "090304",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "SULSAP MFB",
+            "bankCode": "090305",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "BRIGHTWAY MFB",
+            "bankCode": "090308",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "EDFIN MFB",
+            "bankCode": "090310",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "U AND C MFB",
+            "bankCode": "090315",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "BAYERO MICROFINANCE BANK",
+            "bankCode": "090316",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PATRICK GOLD",
+            "bankCode": "090317",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FEDERAL UNIVERSITY DUTSE  MICROFINANCE BANK",
+            "bankCode": "090318",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Bonghe Microfinance Bank",
+            "bankCode": "090319",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "KADPOLY MICROFINANCE BANK",
+            "bankCode": "090320",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "MAYFAIR  MFB",
+            "bankCode": "090321",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "REPHIDIM MICROFINANCE BANK",
+            "bankCode": "090322",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "MAINLAND MICROFINANCE BANK",
+            "bankCode": "090323",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "IKENNE MFB",
+            "bankCode": "090324",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "SPARKLE MICROFINANCE BANK",
+            "bankCode": "090325",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "BALOGUN GAMBARI MFB",
+            "bankCode": "090326",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "TRUST MFB",
+            "bankCode": "090327",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "EYOWO MICROFINANCE BANK",
+            "bankCode": "090328",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "NEPTUNE MICROFINANCE BANK",
+            "bankCode": "090329",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FAME Microfinance Bank",
+            "bankCode": "090330",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "UNAAB MFB",
+            "bankCode": "090331",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "EVERGREEN MICROFINANCE BANK",
+            "bankCode": "090332",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "OCHE MFB",
+            "bankCode": "090333",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Grant Microfinance Bank",
+            "bankCode": "090335",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "BIPC MICROFINANCE BANK",
+            "bankCode": "090336",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "UniUyo Microfinance Bank",
+            "bankCode": "090338",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Stockcorp  Microfinance Bank",
+            "bankCode": "090340",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "unilorin Microfinance Bank",
+            "bankCode": "090341",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Illorin Microfinance Bank",
+            "bankCode": "090350",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CASHCONNECT   MICROFINANCE BANK",
+            "bankCode": "090360",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "MOLUSI MICROFINANCE BANK",
+            "bankCode": "090362",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Headway MFB",
+            "bankCode": "090363",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "NUTURE MFB",
+            "bankCode": "090364",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Corestep MICROFINANCE BANK",
+            "bankCode": "090365",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Firmus MICROFINANCE BANK",
+            "bankCode": "090366",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "SEEDVEST MICROFINANCE BANK",
+            "bankCode": "090369",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ILASAN MICROFINANCE BANK",
+            "bankCode": "090370",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "AGOSASA MICROFINANCE BANK",
+            "bankCode": "090371",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "LEGEND MICROFINANCE BANK",
+            "bankCode": "090372",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "TF MICROFINANCE BANK",
+            "bankCode": "090373",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "COASTLINE MICROFINANCE BANK",
+            "bankCode": "090374",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "APPLE  MICROFINANCE BANK",
+            "bankCode": "090376",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ISALEOYO MICROFINANCE BANK",
+            "bankCode": "090377",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "NEW GOLDEN PASTURES MICROFINANCE BANK",
+            "bankCode": "090378",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "KREDI MONEY MICROFINANCE BANK",
+            "bankCode": "090380",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "MANNY MICROFINANCE BANK",
+            "bankCode": "090383",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GTI  Microfinance Bank",
+            "bankCode": "090385",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Interland MFB",
+            "bankCode": "090386",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "EK-Reliable Microfinance Bank",
+            "bankCode": "090389",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Parkway MF Bank",
+            "bankCode": "090390",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Davodani  Microfinance Bank",
+            "bankCode": "090391",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Mozfin Microfinance Bank",
+            "bankCode": "090392",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Bridgeway Microfinance Bank",
+            "bankCode": "090393",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Amac Microfinance Bank",
+            "bankCode": "090394",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Borgu MFB",
+            "bankCode": "090395",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Oscotech MFB",
+            "bankCode": "090396",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Chanelle Bank",
+            "bankCode": "090397",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Federal Polytechnic Nekede Microfinance Bank",
+            "bankCode": "090398",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Nwannegadi MFB",
+            "bankCode": "090399",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Finca Microfinance Bank",
+            "bankCode": "090400",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Shepherd Trust Microfinance Bank",
+            "bankCode": "090401",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Peace Microfinance Bank",
+            "bankCode": "090402",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Olowolagba Microfinance Bank",
+            "bankCode": "090404",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Moniepoint MFB",
+            "bankCode": "090405",
+            "successRate": 0.875
+        },
+        {
+            "bankName": "Business Support Microfinance Bank",
+            "bankCode": "090406",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GMB Microfinance Bank",
+            "bankCode": "090408",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FCMB MFB",
+            "bankCode": "090409",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Maritime Microfinance Bank",
+            "bankCode": "090410",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GiGinya Microfinance Bank",
+            "bankCode": "090411",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Preeminent Microfinance Bank",
+            "bankCode": "090412",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Benysta Microfinance Bank",
+            "bankCode": "090413",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Crutech  Microfinance Bank",
+            "bankCode": "090414",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Calabar Microfinance Bank",
+            "bankCode": "090415",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Chibueze Microfinance Bank",
+            "bankCode": "090416",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Imowo Microfinance Bank",
+            "bankCode": "090417",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Highland Microfinance Bank",
+            "bankCode": "090418",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "WinView Bank",
+            "bankCode": "090419",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Letshego  Microfinance Bank",
+            "bankCode": "090420",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Izon Microfinance Bank",
+            "bankCode": "090421",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Landgold  Microfinance Bank",
+            "bankCode": "090422",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Mautech  Microfinance Bank",
+            "bankCode": "090423",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Abucoop  Microfinance Bank",
+            "bankCode": "090424",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Banex Microfinance Bank",
+            "bankCode": "090425",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Tangerine Money MFB",
+            "bankCode": "090426",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "EBSU MICROFINANCE Bank",
+            "bankCode": "090427",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Ishie  Microfinance Bank",
+            "bankCode": "090428",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CrossRiver  Microfinance Bank",
+            "bankCode": "090429",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Ilora Microfinance Bank",
+            "bankCode": "090430",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Bluewhales  Microfinance Bank",
+            "bankCode": "090431",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Memphis Microfinance Bank",
+            "bankCode": "090432",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "RIGO Microfinance Bank",
+            "bankCode": "090433",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Insight Microfinance Bank",
+            "bankCode": "090434",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Links  Microfinance Bank",
+            "bankCode": "090435",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Spectrum Microfinance Bank",
+            "bankCode": "090436",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Oakland Microfinance Bank",
+            "bankCode": "090437",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Futminna Microfinance Bank",
+            "bankCode": "090438",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "IBETO  Microfinance Bank",
+            "bankCode": "090439",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Cherish Microfinance Bank",
+            "bankCode": "090440",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Giwa Microfinance Bank",
+            "bankCode": "090441",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "RIMA Microfinance Bank",
+            "bankCode": "090443",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Capstone MF Bank",
+            "bankCode": "090445",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Support MF Bank",
+            "bankCode": "090446",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Moyofade MF Bank",
+            "bankCode": "090448",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "SLS  MF Bank",
+            "bankCode": "090449",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Kwasu MF Bank",
+            "bankCode": "090450",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ATBU  Microfinance Bank",
+            "bankCode": "090451",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Unilag  Microfinance Bank",
+            "bankCode": "090452",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Uzondu MF Bank",
+            "bankCode": "090453",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Borstal Microfinance Bank",
+            "bankCode": "090454",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Ospoly Microfinance Bank",
+            "bankCode": "090456",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Nice Microfinance Bank",
+            "bankCode": "090459",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ORITA-BASORUN Microfinance Bank",
+            "bankCode": "090460",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "UNIIBADAN Microfinance Bank",
+            "bankCode": "090461",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Monarch Microfinance Bank",
+            "bankCode": "090462",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Rehoboth Microfinance Bank",
+            "bankCode": "090463",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Unimaid Microfinance Bank",
+            "bankCode": "090464",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Maintrust MFB",
+            "bankCode": "090465",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "YCT Microfinance Bank",
+            "bankCode": "090466",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Good Neighbours Microfinance Bank",
+            "bankCode": "090467",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "OLOFIN OWENA Microfinance Bank",
+            "bankCode": "090468",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Dot MFB",
+            "bankCode": "090470",
+            "successRate": 0.99264705
+        },
+        {
+            "bankName": "OLUCHUKWU Microfinance Bank",
+            "bankCode": "090471",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CARETAKER Microfinance Bank",
+            "bankCode": "090472",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ASSETS Microfinance Bank",
+            "bankCode": "090473",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Verdant Microfinance Bank",
+            "bankCode": "090474",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Giant Stride MFB",
+            "bankCode": "090475",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Anchorage MFB",
+            "bankCode": "090476",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Safegate Microfinance Bank",
+            "bankCode": "090485",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FETS",
+            "bankCode": "100001",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PAGA",
+            "bankCode": "100002",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PARKWAY-READYCASH",
+            "bankCode": "100003",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PAYCOM (OPAY)",
+            "bankCode": "100004",
+            "successRate": 0.95652175
+        },
+        {
+            "bankName": "ETRANZACT",
+            "bankCode": "100006",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "STANBIC IBTC @EASE WALLET",
+            "bankCode": "100007",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ECOBANK XPRESS ACCOUNT",
+            "bankCode": "100008",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "TEASYMOBILE",
+            "bankCode": "100010",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ACCESSMONEY",
+            "bankCode": "100013",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FIRSTMONIE WALLET",
+            "bankCode": "100014",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "KEGOW",
+            "bankCode": "100015",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FORTISMOBILE",
+            "bankCode": "100016",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FIDELITY MOBILE",
+            "bankCode": "100019",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GOMONEY",
+            "bankCode": "100022",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "TAGPAY",
+            "bankCode": "100023",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "IMPERIAL HOMES MORTGAGE BANK",
+            "bankCode": "100024",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ZINTERNET - KONGAPAY",
+            "bankCode": "100025",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CARBON",
+            "bankCode": "100026",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "INTELLIFIN",
+            "bankCode": "100027",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "AG MORTGAGE BANK PLC",
+            "bankCode": "100028",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FCMB EASY ACCOUNT",
+            "bankCode": "100031",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CONTEC GLOBAL",
+            "bankCode": "100032",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PALMPAY",
+            "bankCode": "100033",
+            "successRate": 0.92
+        },
+        {
+            "bankName": "ZWallet",
+            "bankCode": "100034",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "M36",
+            "bankCode": "100035",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "BETA-ACCESS YELLO",
+            "bankCode": "100052",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Interswitch Financial Inclusion Services (IFIS)",
+            "bankCode": "110010",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "FSDH",
+            "bankCode": "400001",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GOOD NEWS MICROFINANCE BANK",
+            "bankCode": "090495",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "WAYA Microfinance Bank",
+            "bankCode": "090590",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "AKU Microfinance",
+            "bankCode": "090531",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GOMBE MICROFINANCE BANK LIMITED",
+            "bankCode": "090586",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "SUNTOP MICROFINANCE BANK",
+            "bankCode": "090644",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "XPRESS WALLET",
+            "bankCode": "100040",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ABSU MICROFINANCE BANK",
+            "bankCode": "090640",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "OKENGWE MICROFINANCE BANK",
+            "bankCode": "090646",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "UMUCHUKWU MICROFINANCE BANK",
+            "bankCode": "090652",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CANAAN MICROFINANCE BANK",
+            "bankCode": "090647",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "LEADCITY MICROFINANCE BANK",
+            "bankCode": "090650",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "NEXIM BANK",
+            "bankCode": "030001",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ODOAKPU MICROFINANCE BANK LIMITED",
+            "bankCode": "090654",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "BUNKURE  MICROFINANCE BANK",
+            "bankCode": "090655",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "HopePSB",
+            "bankCode": "120002",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ROYAL BLUE MICROFINANCE BANK",
+            "bankCode": "090622",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "PYRAMID MICROFINANCE BANK",
+            "bankCode": "090657",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "MICHAEL OKPARA UNIAGRIC MICROFINANCE BANK",
+            "bankCode": "090659",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CASHRITE MICROFINANCE BANK",
+            "bankCode": "090649",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "OPTIMUS BANK",
+            "bankCode": "000036",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "SOURCE MICROFINANCE BANK",
+            "bankCode": "090641",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "IKIRE MICROFINANCE BANK",
+            "bankCode": "090279",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "KC MICROFINANCE BANK",
+            "bankCode": "090549",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "KAYVEE MICROFINANCE BANK",
+            "bankCode": "090554",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "NSUK MICROFINANCE BANK LTD",
+            "bankCode": "090491",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GREENACRES MICROFINANCE BANK LTD",
+            "bankCode": "090599",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "BANKLY MICROFINANCE BANK",
+            "bankCode": "090529",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "DELTA TRUST MORTGAGE BANK",
+            "bankCode": "070023",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GABSYN MICROFINANCE BANK LIMITED",
+            "bankCode": "090591",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "SHALOM MICROFINANCE BANK LTD",
+            "bankCode": "090502",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CREDITVILLE MICROFINANCE BANK",
+            "bankCode": "090611",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "KADUPE MICROFINANCE BANK",
+            "bankCode": "090669",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "OTUO MICROFINANCE BANK",
+            "bankCode": "090542",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "OCTOPUS MICROFINANCE BANK",
+            "bankCode": "090576",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "TREASURES MICROFINANCE BANK",
+            "bankCode": "090663",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "78 FINANCE COMPANY LIMITED",
+            "bankCode": "110072",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Paystack Titan",
+            "bankCode": "100039",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "VFD MICROFINANCE BANK",
+            "bankCode": "090110",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "WUDIL MICROFINANCE BANK",
+            "bankCode": "090253",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "ROCKSHIELD MICROFINANCE BANK",
+            "bankCode": "090547",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "DAVENPORT MICROFINANCE BANK",
+            "bankCode": "090673",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "CITYCODE MORTGAGE BANK",
+            "bankCode": "070027",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "GOOD SHEPHERD MICROFINANCE BANK",
+            "bankCode": "090664",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "NDDC MICROFINANCE BANK",
+            "bankCode": "090679",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "AVUENEGBE MICROFINANCE BANK",
+            "bankCode": "090478",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "RANDALPHA MICROFINANCE BANK",
+            "bankCode": "090496",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "9JAPAY MICROFINANCE BANK",
+            "bankCode": "090629",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "9 payment service Bank",
+            "bankCode": "120001",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "MoMo PSB",
+            "bankCode": "120003",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Aella Microfinance Bank",
+            "bankCode": "090614",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "NUGGETS MFB",
+            "bankCode": "090676",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Halo Microfinance Bank",
+            "bankCode": "090539",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Branch International Finance Company Limited",
+            "bankCode": "050006",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Amucha (Nomba)",
+            "bankCode": "090645",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Transpay",
+            "bankCode": "090708",
+            "successRate": 1.0
+        },
+        {
+            "bankName": "Fairmoney MFB",
+            "bankCode": "090551",
+            "successRate": 1.0
+        }
+    ]
