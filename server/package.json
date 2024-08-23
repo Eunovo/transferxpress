@@ -6,6 +6,7 @@
     "clean": "rm -rf ./dist",
     "build": "npm run clean && tsc",
     "start": "npm run build && node dist/src/start_server.js",
+    "load:pfis": "npm run build && node dist/src/load_pfis.js",
     "test": "npm run build && ava"
   },
   "repository": {
