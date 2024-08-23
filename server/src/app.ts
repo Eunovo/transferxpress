@@ -26,6 +26,11 @@ export default function(config: AppConfig, users: Users, tbdex: TBDexService) {
   const app: Express = express();
 
   app.use(express.json());
+  
+  // Log Requests
+  app.use((req, res) => {
+    logger.info({ url: req.url });
+  });
 
   app.get('/health', (_, res) => {
     res.send('OK');
@@ -327,7 +332,7 @@ export default function(config: AppConfig, users: Users, tbdex: TBDexService) {
   });
 
   app.listen(config.port, () => {
-    console.log(`Server is running on port ${config.port}`);
+    logger.info(`Server is running on port ${config.port}`);
   });
 
   return {
