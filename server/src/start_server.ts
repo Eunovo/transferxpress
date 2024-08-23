@@ -7,7 +7,7 @@ import { TBDexService } from "./features/tbdex.js";
 import { TBDexDBImpl, UsersDbImpl } from "./sqlite/db_impl.js";
 import { Users } from "./features/users.js";
 
-const PORT = 4000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 4000;
 
 const db = new sqlite3.Database("db.sqlite");
 Migrate(db);
