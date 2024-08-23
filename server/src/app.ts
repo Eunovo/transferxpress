@@ -28,8 +28,9 @@ export default function(config: AppConfig, users: Users, tbdex: TBDexService) {
   app.use(express.json());
   
   // Log Requests
-  app.use((req, res) => {
+  app.use((req, res, next) => {
     logger.info({ url: req.url });
+    next();
   });
 
   app.get('/health', (_, res) => {
