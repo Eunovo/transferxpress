@@ -8,6 +8,9 @@ import SignupEmailVerification from "@/screens/signup/emailVerification";
 
 type AuthStackParam = {
 login: undefined;
+"email-verification": undefined;
+"personal-info": undefined;
+"create-password": undefined
 };
 export type AuthNavigationStack = NavigationProp<AuthStackParam>;
 export const AuthNavigationStack = ()=>{
@@ -17,7 +20,7 @@ export const AuthNavigationStack = ()=>{
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName="personal-info"
+      // initialRouteName="personal-info"
 >
 <Stack.Screen name="login" component={Login} />
 <Stack.Group >

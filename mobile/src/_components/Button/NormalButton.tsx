@@ -21,7 +21,7 @@ export const ButtonNormal = ({
   const opacity = useSharedValue(1);
   const buttonAnimatedStyle = useAnimatedStyle(() => {
     return {
-      opacity: withTiming(opacity.value),
+      opacity: props.disabled ? 0.6 : withTiming(opacity.value),
     };
   });
   const textAnimatedStyle = useAnimatedStyle(() => {
@@ -60,7 +60,7 @@ export const ButtonNormal = ({
 
     >
       {props.disabled && (
-        <View className="w-full h-full absolute top-0 left-0 z-[2] bg-btn-disabled rounded-xl"></View>
+        <View className="w-full h-full absolute top-0 left-0 z-[2] bg-white/10 rounded-xl"></View>
       )}
 
       <Animated.View

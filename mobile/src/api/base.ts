@@ -24,23 +24,23 @@ transferxpressApi.interceptors.response.use(
     return response;
   },
 //   TODO add interceptor logic
-//   function (error: AxiosError<ErrorResponse>) {
-//     if (error.response?.status === 401) {
-//       store.dispatch(toggleIsAuthenticated(false));
-//     }
-//     if (error.code === "ECONNABORTED") {
-//       displayToast({
-//         type: "danger",
-//         message: "Request timed out",
-//       });
-//       return Promise.reject(error);
-//     }
-//     const errorMessage = `${error.response?.data.message}`;
-//     displayToast({
-//       type: "danger",
-//       message: errorMessage,
-//     });
-//     return Promise.reject(error);
+//   function (error: AxiosError<any>) {
+    // if (error.response?.status === 401) {
+    //   store.dispatch(toggleIsAuthenticated(false));
+    // }
+    // if (error.code === "ECONNABORTED") {
+    //   displayToast({
+    //     type: "danger",
+    //     message: "Request timed out",
+    //   });
+    //   return Promise.reject(error);
+    // }
+    // const errorMessage = `${error.response?.data.message}`;
+    // displayToast({
+    //   type: "danger",
+    //   message: errorMessage,
+    // });
+    // return Promise.reject(error);
 //   }
 );
 

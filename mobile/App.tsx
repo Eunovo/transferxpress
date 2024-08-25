@@ -19,7 +19,17 @@ import { MainNavigationStack } from './src/navigation';
 import { PersistGate } from "redux-persist/integration/react";
 import { Provider } from "react-redux";
 import { persistor, store } from "@/store";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
+// create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 300000,
+    },
+  },
+})
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -29,6 +39,7 @@ function App(): React.JSX.Element {
 
   return (
     <View style={{flex: 1}} className='bg-white' >
+      <QueryClientProvider client={queryClient}>
        <Provider store={store}>
        <PersistGate persistor={persistor}>
       <NavigationContainer>
@@ -36,6 +47,7 @@ function App(): React.JSX.Element {
       </NavigationContainer>
       </PersistGate>
       </Provider>
+      </QueryClientProvider>
     </View>
   );
 }
