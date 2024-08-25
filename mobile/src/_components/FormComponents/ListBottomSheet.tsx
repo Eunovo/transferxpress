@@ -1,5 +1,5 @@
-import { FlatList, Keyboard, TouchableHighlight, View } from "react-native";
-import { useState } from "react";
+import { FlatList, Keyboard, TouchableHighlight, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
 import { Image } from "react-native";
 import { CustomPressable } from "../Button/CustomPressable";
 import XmarkIcon from "@/assets/icons/x_mark.svg";
@@ -27,6 +27,7 @@ interface ListBottomSheetProps {
   shouldUsePlaceholder?: boolean;
   errorMessage?:string;
   hasBeenTouched?:boolean;
+  isIconBase64?:boolean
 }
 
 export const ListBottomSheet = ({
@@ -41,12 +42,18 @@ export const ListBottomSheet = ({
   onModalOpen,
   errorMessage,
   hasBeenTouched,
-  fieldValue
+  fieldValue,
+  isIconBase64
 }: ListBottomSheetProps) => {
     const [showModal, setShowModal] = useState(false);
   const ViewHeight = useSharedValue(SCREEN_HEIGHT * 0.6);
   const [searchText, setSearchText] = useState("");
   const [filteredOptions, setFilteredOptions] = useState(options);
+  useEffect(
+    ()=>{
+setFilteredOptions(options)
+    }, [options.length]
+  )
   const handleChangeSearchText = (value: string) => {
     setSearchText(value);
     if (value) {
@@ -173,16 +180,15 @@ export const ListBottomSheet = ({
               }
               data={filteredOptions}
               renderItem={({ item }) => (
-                <TouchableHighlight
+                <TouchableOpacity
                   onPress={() => {
                     selectItem(item);
                     setSearchText("");
                     setFilteredOptions(options);
                     Keyboard.dismiss();
-                    () => setShowModal(false)
+                  setShowModal(false)
                   }}
-                  underlayColor={"#EEEEEF"}
-                  className="w-full  py-4 px-4 border-b border-b-primary"
+                  className="w-full  py-4 px-4 border-b border-b-primary/50"
                 >
                   <View
                     style={{ flex: 1, gap: 8 }}
@@ -190,7 +196,7 @@ export const ListBottomSheet = ({
                   >
                     {item.icon && (
                       <Image
-                        source={item.icon}
+                        source={ isIconBase64 ? {uri: item.icon} : item.icon}
                         width={20}
                         height={20}
                         alt={item.value}
@@ -201,7 +207,7 @@ export const ListBottomSheet = ({
                       {item.value}
                     </NormalText>
                   </View>
-                </TouchableHighlight>
+                </TouchableOpacity>
               )}
             />
           </Animated.View>

@@ -8,10 +8,14 @@ import { ButtonNormal } from "@/_components/Button/NormalButton";
 import { moderateScale, moderateVerticalScale } from "react-native-size-matters";
 import ArrowIcon from "@/assets/icons/arrow.svg"
 import { CustomPressable } from "@/_components/Button/CustomPressable";
-import { CountriesListSelect } from "@/_components/FormComponents/CountriesListSelect";
+import { ListBottomSheet } from "@/_components/FormComponents/ListBottomSheet";
+import { useFetchCountries } from "@/services/queries/useFetchCountries";
+import { ScreenLoader } from "@/_components/loader_utils/ScreenLoader";
 
 
 export default function SignupPersonalInformation (){
+    const countries = useFetchCountries();
+    const isLoading = !countries.length 
     return(
         <LayoutWithScroll>
             <View className="w-full grow pb-10">
@@ -51,17 +55,22 @@ className="text-white/80">
    >
    {
     ({values, setFieldValue})=>{
+        const countryCallingCode = countries.find(item => item.value === values.country)?.callingCode;
         return(
             <View className="w-full mt-10">
             <View className="w-full mb-4">
-             <CountriesListSelect 
-             title="Country"
-             placeholder="Select your country"
-             value={values.country}
-             onSelect={(value)=>{
-                setFieldValue("country", value)
-             }}
-             />
+            <ListBottomSheet
+      title="Country"
+        required
+        placeholder="Select your country"
+        searchBarPlaceholder="Search for country"
+        fieldValue={values.country}
+        options={countries}
+        selectItem={(value)=>{
+            setFieldValue("country", value.value)
+        }}
+        isIconBase64
+        />
             </View>
             <View className="w-full mb-4">
             <CustomTextInput
@@ -78,11 +87,25 @@ className="text-white/80">
     />
             </View>
             <View className="w-full mb-4">
-            <CustomTextInput
-    title="Phone Number"
-    placeholder="Enter your phone number"
-    
-    />
+{
+    countryCallingCode && (
+        <CustomTextInput
+        title="Phone Number"
+        placeholder="Enter your phone number"
+        readOnly={!countryCallingCode}
+        defaultValue={typeof countryCallingCode === "string" ? `+${countryCallingCode}  ${values.phoneNumber}` : typeof countryCallingCode !== "string" && typeof countryCallingCode !== "undefined" ? `+${countryCallingCode[0]}  ${values.phoneNumber}`: ""}
+        onChangeText={(text)=>{
+            console.log(text.length);
+            
+            const isCallingCodeArray = typeof countryCallingCode !== "undefined" && typeof countryCallingCode !== "string"
+            if(isCallingCodeArray ? text.length < countryCallingCode[0]?.length + 3 :  text.length < countryCallingCode.length + 3 ) return ;
+            const formmatted = typeof countryCallingCode === "string" ? text.replaceAll(`+${countryCallingCode}`, "") : text.replaceAll(`+${countryCallingCode?.[0]}`, "")
+            setFieldValue("phoneNumber", formmatted.trim(), true)
+        }}
+      onFocus={e => console.log(e.nativeEvent.text.length) }
+        />
+    )
+}
             </View>
             <View
                         style={{ gap: 16, maxWidth: moderateScale(400, 0.3) }}
@@ -100,6 +123,13 @@ className="text-white/80">
    }
    </Formik>
             </View>
+        {
+            isLoading && (
+                <ScreenLoader
+                opacity={0.6}
+                />
+            )
+        }
         </LayoutWithScroll>
     )
 }

@@ -17,7 +17,7 @@ export const UserNavigationStack = ()=>{
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName="transfer-stack"
+      // initialRouteName="transfer-stack"
 >
 <Stack.Screen name="main-bottom-tab" component={MainBottomTabNavigator} />
 <Stack.Screen name="transfer-stack" component={TransferNavigationStack} />

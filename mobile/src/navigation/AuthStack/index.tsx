@@ -17,7 +17,7 @@ export const AuthNavigationStack = ()=>{
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName="email-verification"
+      initialRouteName="personal-info"
 >
 <Stack.Screen name="login" component={Login} />
 <Stack.Group >
