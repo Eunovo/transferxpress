@@ -6,7 +6,6 @@ import { View } from "react-native";
 import CaretIcon from "@/assets/icons/caret.svg"
 import { CustomTextInput } from "@/_components/FormComponents/CustomInput";
 import { moderateVerticalScale } from "react-native-size-matters";
-import { TransferNavigationStack } from "@/navigation/UserStack/TransferStack";
 import { useNavigation } from "@react-navigation/native";
 import { UserNavigationStack } from "@/navigation/UserStack";
 
@@ -21,7 +20,7 @@ export default function TransferOptions () {
             title: "Transfer to Bank",
             subTitle:"Transfer funds to surpported banks",
             action: ()=>{
-                navigation.navigate("transfer")
+                navigation.navigate("transfer-stack")
             }
         },
         {

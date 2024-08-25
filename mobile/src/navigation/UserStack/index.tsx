@@ -2,12 +2,12 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import type { NavigationProp } from "@react-navigation/native";
 import MainBottomTabNavigator from "./MainBottomTabs";
-import { TransferNavigationStack } from "./TransferStack";
+import TransferNavigationStack from "./TransferStack";
 
 
 type UserStackParam = {
 "main-bottom-tab": undefined;
-"transfer":undefined
+"transfer-stack":undefined
 };
 export type UserNavigationStack = NavigationProp<UserStackParam>;
 export const UserNavigationStack = ()=>{
@@ -17,10 +17,10 @@ export const UserNavigationStack = ()=>{
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName="transfer"
+      initialRouteName="transfer-stack"
 >
 <Stack.Screen name="main-bottom-tab" component={MainBottomTabNavigator} />
-<Stack.Screen name="transfer" component={TransferNavigationStack} />
+<Stack.Screen name="transfer-stack" component={TransferNavigationStack} />
 </Stack.Navigator>
     );
 }

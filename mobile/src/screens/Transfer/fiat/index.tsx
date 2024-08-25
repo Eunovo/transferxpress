@@ -7,14 +7,26 @@ import { View } from "react-native";
 import { moderateScale, moderateVerticalScale } from "react-native-size-matters";
 import ArrowIcon from "@/assets/icons/arrow.svg"
 import { TransferDetails } from "@/_components/Transfer/fiat/TransferDetails";
+import { useState } from "react";
 
 
 
 export default function TransferFiat (){
+
+    const [isNextStage, setIsNextStage] = useState(false);
+    
     return(
         <LayoutNormal>
             <View className="w-full grow pb-10">
             <CustomPressable
+            onPress={()=>{
+            if(isNextStage){
+             setIsNextStage(false)
+            }
+            else{
+            //    navigate to prev screen
+            }
+            }}
                 style={{
                     width: moderateScale(40, 0.3),
                     height: moderateVerticalScale(40, 0.3)
@@ -39,8 +51,18 @@ size={13}
 className="text-white/80 mb-10">
   How much do you want to transfer?
    </NormalText>
-{/* <TransferAmount /> */}
-<TransferDetails />
+   {
+    !isNextStage ? (
+<TransferAmount 
+goToNextStage={()=>setIsNextStage(true)}
+/> 
+    ) : (
+<TransferDetails
+/>
+    )
+   }
+
+
             </View>
         </LayoutNormal>
     )

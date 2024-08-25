@@ -1,10 +1,9 @@
 import { View, Image } from "react-native";
 import RNModal from "react-native-modal";
 import { SCREEN_HEIGHT, flagsAndSymbol } from "@/utils/constants";
-import WalletIcon from "@/assets/icons/item.svg";
 import CloseIcon from "@/assets/icons/x_mark.svg";
 import clsx from "clsx";
-import { moderateScale, moderateVerticalScale, scale, verticalScale } from "react-native-size-matters";
+import { moderateScale, moderateVerticalScale } from "react-native-size-matters";
 import { CustomPressable } from "@/_components/Button/CustomPressable";
 import { NormalText } from "@/_components/Text/NormalText";
 import { HeaderText } from "@/_components/Text/HeaderText";
@@ -15,10 +14,10 @@ export type Currency = {
     flag: any;
 };
 interface Props {
-  active: Currency;
+  active: string;
   showModal: boolean;
   closeModal: () => void;
-  handleSelectCurrency: (currency: Currency) => void;
+  handleSelectCurrency: (currency: string) => void;
 }
 
 export const CurrencyOptionsModal = ({
@@ -27,21 +26,7 @@ export const CurrencyOptionsModal = ({
   handleSelectCurrency,
   active,
 }: Props) => {
-    
-//   const { walletDetails } = UseCurrentUserState();
-//   const wallets =
-//     walletDetails && walletDetails.length
-//       ? walletDetails.map((wallet) => ({
-//           ...wallet,
-//           balance: `${flagsAndSymbol[
-//             item.currency as keyof typeof flagsAndSymbol
-//           ]?.symbol} ${formatNumberWithLetter(item.balance)}`,
-//           icon: flagsAndSymbol[item.currency as keyof typeof flagsAndSymbol]
-//             ?.icon,
-//         }))
-//       : [];
 const currencies: Currency[] = Object.keys(flagsAndSymbol).map(item => ({ticker: item, flag: flagsAndSymbol[item as keyof typeof flagsAndSymbol].icon }))
-
   return (
     <RNModal
       style={{
@@ -85,7 +70,7 @@ className="items-center justify-center bg-background border border-secondary rou
           {currencies?.map((item) => (
             <CustomPressable
               key={item.ticker}
-              onPress={() => handleSelectCurrency(item)}
+              onPress={() => handleSelectCurrency(item.ticker)}
               className="flex-row justify-between items-center pb-4 mb-4"
             >
               <View className="flex-row items-center">
@@ -96,10 +81,10 @@ className="items-center justify-center bg-background border border-secondary rou
                   className="w-[25px] max-w-[25px] h-[18px] max-h-[18px]"
                 />
                 <NormalText
-                  weight={active.ticker === item.ticker ? 700 : 400}
+                  weight={active === item.ticker ? 700 : 400}
                   className={clsx(
                     "uppercase text-white/80 ml-2",
-                    active.ticker === item.ticker && "!text-primary"
+                    active === item.ticker && "!text-primary"
                   )}
                 >
                   {item.ticker}

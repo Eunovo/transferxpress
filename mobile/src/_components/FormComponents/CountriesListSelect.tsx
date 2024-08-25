@@ -1,6 +1,6 @@
 import { ListBottomSheet } from "./ListBottomSheet"
-import { useEffect, useState } from "react";
-import { getAllCountries, FlagType } from "react-native-country-picker-modal";
+  import { useEffect, useState } from "react";
+  import { getAllCountries, FlagType } from "react-native-country-picker-modal";
 
 
 interface Props {

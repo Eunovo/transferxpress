@@ -15,7 +15,6 @@ import TransferActiveIcon from "@/assets/icons/transfer_active.svg"
 import MoreActiveIcon from "@/assets/icons/more_active.svg"
 import Transactions from "@/screens/Transactions";
 import More from "@/screens/Others";
-import { TransferNavigationStack } from "../TransferStack";
 import TransferOptions from "@/screens/Transfer/options";
 export type ScreenNames = ["Home"];
 export type MainBottomTabsParamList = {
