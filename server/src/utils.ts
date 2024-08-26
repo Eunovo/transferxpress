@@ -46,8 +46,8 @@ export function softAssert(logger: Logger, condition: boolean, message: string) 
   }
 }
 
-export function extractRequiredPaymentDetails(schema: JsonSchema): Array<keyof PaymentDetails> {
+export function extractRequiredPaymentDetails(schema: JsonSchema): Array<keyof Omit<PaymentDetails, 'walletId' | 'kind'>> {
   if (typeof schema == "boolean") return [];
   if (!("properties" in schema)) return [];
-  return Object.keys(schema.properties).map((key) => key as keyof PaymentDetails);
+  return Object.keys(schema.properties).map((key) => key as keyof Omit<PaymentDetails, 'walletId' | 'kind'>);
 }

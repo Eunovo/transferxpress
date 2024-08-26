@@ -28,6 +28,19 @@ export interface Wallet extends BaseModel {
   userId: ID;
 }
 
+export interface WalletPaymentDetails extends BaseModel {
+  walletId: ID;
+  kind: PaymentKind;
+  accountNumber?: string;
+  routingNumber?: string;
+  bankCode?: string;
+  sortCode?: string;
+  BSB?: string;
+  IBAN?: string;
+  CLABE?: string;
+  address?: string;
+}
+
 export interface Transaction extends BaseModel {
   narration?: string;
   type: "CREDIT" | "DEBIT";
@@ -58,6 +71,7 @@ export interface Beneficiary extends BaseModel {
   kind: PaymentKind;
   accountNumber?: string;
   routingNumber?: string;
+  bankCode?: string;
   sortCode?: string;
   BSB?: string;
   IBAN?: string;
@@ -83,6 +97,7 @@ export interface Transfer extends BaseModel {
   payinCardId?: ID;
   payinAccountNumber?: string;
   payinRoutingNumber?: string;
+  payinBankCode?: string;
   payinSortCode?: string;
   payinBSB?: string;
   payinIBAN?: string;
@@ -90,6 +105,7 @@ export interface Transfer extends BaseModel {
   payinAddress?: string;
   payoutAccountNumber?: string;
   payoutRoutingNumber?: string;
+  payoutBankCode?: string;
   payoutSortCode?: string;
   payoutBSB?: string;
   payoutIBAN?: string;

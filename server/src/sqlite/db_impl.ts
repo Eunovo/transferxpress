@@ -9,7 +9,8 @@ import {
   TransactionReport,
   Transfer,
   SavedCard,
-  PFI
+  PFI,
+  WalletPaymentDetails
 } from "../models.js";
 import { InsertData } from "../utils.js";
 import { ID, TransactionStatus } from "../types.js";
@@ -39,7 +40,11 @@ export class UsersDbImpl implements UsersDb {
     });
   }
 
-  insert(data: InsertData<User>, credentials?: Omit<UserCredential, 'id' | 'userId' | 'createdAt' | 'lastUpdatedAt'>[]): Promise<User> {
+  insert(
+    data: InsertData<User>,
+    credentials: Omit<UserCredential, 'id' | 'userId' | 'createdAt' | 'lastUpdatedAt'>[] = [],
+    wallets: Omit<Wallet, 'id' | 'userId' | 'createdAt' | 'lastUpdatedAt'>[] = []
+  ): Promise<User> {
     return new Promise((resolve, reject) => {
       this.db.serialize(() => {
         this.db.run("BEGIN TRANSACTION");
@@ -53,22 +58,29 @@ export class UsersDbImpl implements UsersDb {
             return reject(err);
           }
           const userId = this.lastID;
-          if (credentials) {
-            db.run(`
-              INSERT INTO UserCredentials (userId, key, value, createdAt, lastUpdatedAt)
-              VALUES ${credentials.map(() => "(?, ?, ?, ?, ?)").join(", ")}
-            `, credentials.reduce((acc: any, c: any) => acc.concat([userId, c.key, c.value, data.createdAt, data.lastUpdatedAt]), []), function (err) {
-              if (err) {
-                db.run("ROLLBACK");
-                return reject(err);
-              }
-              db.run("COMMIT");
-              resolve({ ...data, id: userId });
-            });
-          } else {
-            db.run("COMMIT");
+
+          db.run(`
+            INSERT INTO UserCredentials (userId, key, value, createdAt, lastUpdatedAt)
+            VALUES ${credentials.map(() => "(?, ?, ?, ?, ?)").join(", ")}
+          `, credentials.reduce((acc: any, c: any) => acc.concat([userId, c.key, c.value, data.createdAt, data.lastUpdatedAt]), []), function (err) {
+            if (err) {
+              db.run("ROLLBACK");
+              return reject(err);
+            }
+          });
+
+          db.run(`
+            INSERT INTO Wallets (userId, currencyCode, balance, createdAt, lastUpdatedAt)
+            VALUES ${wallets.map(() => "(?, ?, ?, ?, ?)").join(", ")}
+          `, wallets.reduce((acc: any, w: any) => acc.concat([userId, w.currencyCode, w.balance, data.createdAt, data.lastUpdatedAt]), []), function (err) {
+            if (err) {
+              db.run("ROLLBACK");
+              return reject(err);
+            }
+          });
+
+          db.run("COMMIT");
             resolve({ ...data, id: userId });
-          }
         });
       });
     });
@@ -108,6 +120,31 @@ export class UsersDbImpl implements UsersDb {
       this.db.all(`SELECT * FROM Wallets WHERE userId = ?`, [userId], (err, rows) => {
         if (err) return reject(err);
         resolve(rows as Wallet[]);
+      });
+    });
+  }
+
+  insertWalletPaymentDetails(walletId: ID, data: InsertData<WalletPaymentDetails>): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.db.run(`
+        INSERT INTO WalletPaymentDetails (walletId, kind, accountNumber, routingNumber, bankCode, sortCode, BSB, IBAN, CLABE, address, createdAt, lastUpdatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        walletId,
+        data.kind,
+        data.accountNumber,
+        data.routingNumber,
+        data.bankCode,
+        data.sortCode,
+        data.BSB,
+        data.IBAN,
+        data.CLABE,
+        data.address,
+        data.createdAt,
+        data.lastUpdatedAt
+      ], function(err) {
+        if (err) return reject(err);
+        resolve();
       });
     });
   }
@@ -199,7 +236,7 @@ export class UsersDbImpl implements UsersDb {
   insertBeneficiary(data: InsertData<Beneficiary>): Promise<Beneficiary> {
     return new Promise((resolve, reject) => {
       this.db.run(`
-        INSERT INTO Beneficiaries (userId, kind, accountNumber, routingNumber, sortCode, BSB, IBAN, CLABE, address, createdAt, lastUpdatedAt)
+        INSERT INTO Beneficiaries (userId, kind, accountNumber, routingNumber, bankCode, sortCode, BSB, IBAN, CLABE, address, createdAt, lastUpdatedAt)
         VALUES (?, ?, ?, ?, ?)
       `,
         [
@@ -207,6 +244,7 @@ export class UsersDbImpl implements UsersDb {
           data.kind,
           data.accountNumber,
           data.routingNumber,
+          data.bankCode,
           data.sortCode,
           data.BSB,
           data.IBAN,
@@ -241,6 +279,7 @@ export class UsersDbImpl implements UsersDb {
         payinCardId,
         payinAccountNumber,
         payinRoutingNumber,
+        payinBankCode,
         payinSortCode,
         payinBSB,
         payinIBAN,
@@ -248,6 +287,7 @@ export class UsersDbImpl implements UsersDb {
         payinAddress,
         payoutAccountNumber,
         payoutRoutingNumber,
+        payoutBankCode,
         payoutSortCode,
         payoutBSB,
         payoutIBAN,
@@ -257,7 +297,7 @@ export class UsersDbImpl implements UsersDb {
         reference,
         createdAt,
         lastUpdatedAt)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
         [
           data.userId,
@@ -275,6 +315,7 @@ export class UsersDbImpl implements UsersDb {
           data.payinCardId,
           data.payinAccountNumber,
           data.payinRoutingNumber,
+          data.payinBankCode,
           data.payinSortCode,
           data.payinBSB,
           data.payinIBAN,
@@ -282,6 +323,7 @@ export class UsersDbImpl implements UsersDb {
           data.payinAddress,
           data.payoutAccountNumber,
           data.payoutRoutingNumber,
+          data.payoutBankCode,
           data.payoutSortCode,
           data.payoutBSB,
           data.payoutIBAN,
@@ -356,8 +398,8 @@ export class UsersDbImpl implements UsersDb {
         this.db.run(`
         UPDATE Transfers
         SET payinCurrencyCode = ?, payoutCurrencyCode = ?, pfiId = ?, payinKind = ?, payoutKind = ?, payinAmount = ?, payoutAmount = ?, narration = ?, fee = ?, payinWalletId = ?, payoutWalletId = ?, payinCardId = ?,
-        payinAccountNumber = ?, payinRoutingNumber = ?, payinSortCode = ?, payinBSB = ?, payinIBAN = ?, payinCLABE = ?, payinAddress = ?,
-        payoutAccountNumber = ?, payoutRoutingNumber = ?, payoutSortCode = ?, payoutBSB = ?, payoutIBAN = ?, payoutCLABE = ?, payoutAddress = ?,
+        payinAccountNumber = ?, payinRoutingNumber = ?, payinBankCode = ?, payinSortCode = ?, payinBSB = ?, payinIBAN = ?, payinCLABE = ?, payinAddress = ?,
+        payoutAccountNumber = ?, payoutRoutingNumber = ?, payoutBankCode = ?, payoutSortCode = ?, payoutBSB = ?, payoutIBAN = ?, payoutCLABE = ?, payoutAddress = ?,
         status = ?, reference = ?, lastUpdatedAt = ?
         WHERE id = ?
       `,
@@ -376,6 +418,7 @@ export class UsersDbImpl implements UsersDb {
             data.payinCardId,
             data.payinAccountNumber,
             data.payinRoutingNumber,
+            data.payinBankCode,
             data.payinSortCode,
             data.payinBSB,
             data.payinIBAN,
@@ -383,6 +426,7 @@ export class UsersDbImpl implements UsersDb {
             data.payinAddress,
             data.payoutAccountNumber,
             data.payoutRoutingNumber,
+            data.payoutBankCode,
             data.payoutSortCode,
             data.payoutBSB,
             data.payoutIBAN,

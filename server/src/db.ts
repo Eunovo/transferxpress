@@ -2,6 +2,7 @@ import {
   User,
   UserCredential,
   Wallet,
+  WalletPaymentDetails,
   Transaction,
   TransactionReport,
   SavedCard,
@@ -15,10 +16,15 @@ import { InsertData } from './utils.js';
 export interface UsersDb {
   findOneByEmail(email: string): Promise<User | null>;
   findOneById(id: ID): Promise<User | null>;
-  insert(data: InsertData<User>, credentials?: Omit<UserCredential, 'id' | 'userId' | 'createdAt' | 'lastUpdatedAt'>[]): Promise<User>;
+  insert(
+    data: InsertData<User>,
+    credentials?: Omit<UserCredential, 'id' | 'userId' | 'createdAt' | 'lastUpdatedAt'>[],
+    wallets?: Omit<Wallet, 'id' | 'userId' | 'createdAt' | 'lastUpdatedAt'>[]
+  ): Promise<User>;
   findCredentialsForUserId(userId: ID): Promise<UserCredential[]>;
   insertCredentials(data: InsertData<UserCredential>[]): Promise<void>;
   findWalletsByUserId(userId: ID): Promise<Wallet[]>;
+  insertWalletPaymentDetails(walletId: ID, data: InsertData<WalletPaymentDetails>): Promise<void>;
   findTransactionById(id: ID): Promise<Transaction | null>;
   findTransactionsByUserId(userId: ID): Promise<Transaction[]>;
   findTransactionByTransferId(transferId: ID): Promise<Transaction | null>;

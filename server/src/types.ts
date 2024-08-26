@@ -116,6 +116,7 @@ export type PaymentDetails = {
   walletId: ID;
   accountNumber: string,
   routingNumber: string,
+  bankCode: string,
   sortCode: string,
   BSB: string,
   IBAN: string,

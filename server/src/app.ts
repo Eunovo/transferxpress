@@ -228,6 +228,7 @@ export default function(config: AppConfig, users: Users, tbdex: TBDexService) {
       walletId: { type: "number", optional: true },
       accountNumber: { type: "string", optional: true },
       routingNumber: { type: "string", optional: true },
+      bankCode: { type: "string", optional: true },
       sortCode: { type: "string", optional: true },
       BSB: { type: "string", optional: true },
       IBAN: { type: "string", optional: true },
