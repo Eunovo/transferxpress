@@ -57,8 +57,12 @@ export class Users {
     });
     return Promise.all([
       did,
-      credential
-    ]).then(([did, credential]) => {
+      credential,
+      this.getEmailStatus(data.email)
+    ]).then(([did, credential, emailStatus]) => {
+      if (emailStatus.status !== EmailAvailabilityStatus.AVAILABLE)
+        throw new ServerError({ code: ErrorCode.DUPLICATE_EMAIL });
+
       const now = new Date();
       return this.db.insert(
         { ...data, did, createdAt: now, lastUpdatedAt: now },

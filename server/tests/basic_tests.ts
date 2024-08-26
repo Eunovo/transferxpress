@@ -78,10 +78,10 @@ test.before(async (t: any) => {
 					value.id, value.userId, value.pfiId, value.payinCurrencyCode, value.payoutCurrencyCode, value.payinKind, value.payoutKind,
 					value.payinAmount, value.payoutAmount, value.narration, value.fee, value.payinWalletId, value.payoutWalletId, value.payoutAccountNumber,
 					value.status, value.reference, user.createdAt.toISOString(), user.lastUpdatedAt.toISOString()]), []),
-					function (err) {
-						if (err) return reject(err);
-						resolve({ id: 1, ...user, walletIds: [1] });
-					}
+				function (err) {
+					if (err) return reject(err);
+					resolve({ id: 1, ...user, walletIds: [1] });
+				}
 			);
 		});
 	});
@@ -114,6 +114,32 @@ test.serial("Email is available before registration", (t: any) => {
 		.catch(err => t.fail(err.message));
 });
 
+test.serial("Registration with unavailable email should fail with 'DUPLICATE_EMAIL'", (t: any) => {
+	const { prefixUrl, user, cache } = t.context;
+	cache.set(TBDCacheKeys.PORTABLE_DID(user.email), DIDs[0]);
+	cache.set(TBDCacheKeys.CREDENTIAL({
+		type: 'kcc',
+		data: {
+			name: `${user.firstname} ${user.lastname}`,
+			country: user.country,
+			did: PARSED_DIDs[0].uri
+		}
+	}), "credential");
+	return axios.post(`${prefixUrl}/register`, {
+		email: user.email,
+		password: 'newpassword',
+		firstname: 'Test',
+		lastname: 'User',
+		country: 'Country',
+		phoneNumber: '1234567890'
+	})
+		.then((res) => t.fail('Registration should have failed'))
+		.catch(error => {
+			t.is(error.response.status, 400);
+			t.is(error.response.data.code, 'DUPLICATE_EMAIL');
+		});
+});
+
 test.serial("Register a new user", (t: any) => {
 	const { prefixUrl, cache } = t.context;
 	const email = 'new-user@test.com';
@@ -125,7 +151,7 @@ test.serial("Register a new user", (t: any) => {
 			country: "Country",
 			did: PARSED_DIDs[0].uri
 		}
-	}), "credential")
+	}), "credential");
 	return axios.post(`${prefixUrl}/register`, {
 		email,
 		password: 'password',
