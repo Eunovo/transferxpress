@@ -47,7 +47,10 @@ export class TBDexService {
           .create()
           .then(did => {
             this.cache.set(CacheKeys.DID_DOC(did.document.id), did.document);
-            const result = JSON.stringify(did.export());
+            return did.export();
+          })
+          .then(portableDid => {
+            const result = JSON.stringify(portableDid);
             this.cache.set(cacheKey, result);
             return result;
           });
@@ -72,12 +75,15 @@ export class TBDexService {
     if (req.type !== 'kcc') {
       throw new Error('Unsupported credential type');
     }
+    if (!req.data.did) {
+      throw new Error('Expected did but not provided');
+    }
     const query = new URLSearchParams({ name: req.data.name, country: req.data.country, did: req.data.did });
     const cacheKey = CacheKeys.CREDENTIAL(req);
     return this.cache.get<string>(cacheKey)
       .then(credential => {
         if (credential) return credential;
-        return got.then(got => got.get(`${ISSUER_URL}/issue?${query.toString()}`))
+        return got.then(got => got.get(`${ISSUER_URL}?${query.toString()}`))
           .then(res => {
             this.cache.set(cacheKey, res.body);
             return res.body;
