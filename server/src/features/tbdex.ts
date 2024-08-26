@@ -145,7 +145,7 @@ export class TBDexService {
             Promise.all(
               pfis.map(pfi => TbdexHttpClient.getOfferings({ pfiDid: pfi.did }).then(offerings => ({ pfi, offerings })))
             ).then(offerings => {
-              this.cache.set(CacheKeys.OFFERINGS, offerings);
+              this.cache.set(CacheKeys.OFFERINGS, offerings, (5 * 60 * 1000)); // Cache for 5 mins
               return offerings;
             }).catch(err => Promise.reject(new TBDexError(`Failed to fetch offerings: ${err.message}`)))
           );
