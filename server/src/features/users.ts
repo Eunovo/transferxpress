@@ -18,6 +18,7 @@ import {
   TransactionStatus,
   PayinUpdateResponse,
   Transfer,
+  PaymentDetails,
 } from "../types.js";
 import { TBDexService } from "./tbdex.js";
 import { Beneficiary, PFI, User, UserCredential } from "../models.js";
@@ -66,7 +67,19 @@ export class Users {
       const now = new Date();
       return this.db.insert(
         { ...data, did, createdAt: now, lastUpdatedAt: now },
-        [{ key: 'kcc', value: credential }]
+        [{ key: 'kcc', value: credential }],
+        [
+          { currencyCode: 'BTC', balance: 0 },
+          { currencyCode: 'USDC', balance: 0 },
+          { currencyCode: 'NGN', balance: 0 },
+          { currencyCode: 'USD', balance: 0 },
+          { currencyCode: 'KES', balance: 0 },
+          { currencyCode: 'EUR', balance: 0 },
+          { currencyCode: 'GBP', balance: 0 },
+          { currencyCode: 'MXN', balance: 0 },
+          { currencyCode: 'AUD', balance: 0 },
+          { currencyCode: 'GHS', balance: 0 }
+        ]
       ).then(() => { }); // return void
     });
   }
@@ -283,6 +296,113 @@ export class Users {
       });
   }
 
+  getNewPaymentDetails(wallet: Wallet): Promise<Partial<Omit<PaymentDetails, 'walletId'>>> {
+    let kind: PaymentKind = null;
+    let bankTransferKind = `${wallet.currencyCode}_BANK_TRANSFER`;
+    let addressKind = `${wallet.currencyCode}_WALLET_ADDRESS`;
+    if (isPaymentKind(bankTransferKind)) kind = bankTransferKind;
+    else if (isPaymentKind(addressKind)) kind = addressKind;
+    else throw new Error(`Cannot determine Payment Kind for ${wallet.currencyCode}`);
+
+    const newPaymentDetails: { kind: PaymentKind } & Partial<Omit<PaymentDetails, 'walletId'>> = { kind };
+
+    const fieldsToGenerate: Array<keyof PaymentDetails> = {
+      [PaymentKind.BTC_WALLET_ADDRESS]: ['address'],
+      [PaymentKind.AUD_BANK_TRANSFER]: ['accountNumber', 'BSB'],
+      [PaymentKind.USDC_WALLET_ADDRESS]: ['address'],
+      [PaymentKind.NGN_BANK_TRANSFER]: ['accountNumber', 'bankCode'],
+      [PaymentKind.USD_BANK_TRANSFER]: ['accountNumber', 'routingNumber'],
+      [PaymentKind.KES_BANK_TRANSFER]: ['accountNumber'],
+      [PaymentKind.EUR_BANK_TRANSFER]: ['accountNumber', 'IBAN'],
+      [PaymentKind.GBP_BANK_TRANSFER]: ['accountNumber', 'sortCode'],
+      [PaymentKind.MXN_BANK_TRANSFER]: ['accountNumber', 'CLABE'],
+      [PaymentKind.GHS_BANK_TRANSFER]: ['accountNumber'],
+    }[kind] ?? [];
+
+    if (fieldsToGenerate.length === 0) {
+      // If no additional fields are required, resolve with the basic details
+      return Promise.resolve(newPaymentDetails);
+    }
+
+    // Generate random values for the required fields
+    fieldsToGenerate.forEach(field => {
+      if (field === 'accountNumber' || field === 'routingNumber') {
+        newPaymentDetails[field] = Math.floor(Math.random() * 1000000000).toString().padStart(9, '0');
+      } else if (field === 'bankCode') {
+        newPaymentDetails[field] = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      } else if (field === 'sortCode') {
+        newPaymentDetails[field] = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+      } else if (field === 'BSB') {
+        newPaymentDetails[field] = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+      } else if (field === 'IBAN') {
+        newPaymentDetails[field] = 'GB' + Math.floor(Math.random() * 100000000000000000000).toString().padStart(22, '0');
+      } else if (field === 'CLABE') {
+        newPaymentDetails[field] = Math.floor(Math.random() * 1000000000000000000).toString().padStart(18, '0');
+      } else if (field === 'address') {
+        newPaymentDetails[field] = '0x' + Math.floor(Math.random() * 1000);
+      }
+    });
+
+    // Save the new payment details to the database
+    return this.db.insertWalletPaymentDetails(wallet.id, {
+      ...newPaymentDetails,
+      walletId: wallet.id,
+      createdAt: new Date(),
+      lastUpdatedAt: new Date()
+    })
+      .then(() => newPaymentDetails);
+  }
+
+  generatePayinPaymentDetailsFor(wallet: Wallet): Partial<Omit<PaymentDetails, 'walletId'>> {
+    let kind: PaymentKind = null;
+    let bankTransferKind = `${wallet.currencyCode}_BANK_TRANSFER`;
+    let addressKind = `${wallet.currencyCode}_WALLET_ADDRESS`;
+    if (isPaymentKind(bankTransferKind)) kind = bankTransferKind;
+    else if (isPaymentKind(addressKind)) kind = addressKind;
+    else throw new Error(`Cannot determine Payment Kind for ${wallet.currencyCode}`);
+
+    const newPaymentDetails: { kind: PaymentKind } & Partial<Omit<PaymentDetails, 'walletId'>> = { kind };
+
+    const fieldsToGenerate: Array<keyof PaymentDetails> = {
+      [PaymentKind.BTC_WALLET_ADDRESS]: ['address'],
+      [PaymentKind.AUD_BANK_TRANSFER]: ['accountNumber', 'BSB'],
+      [PaymentKind.USDC_WALLET_ADDRESS]: ['address'],
+      [PaymentKind.NGN_BANK_TRANSFER]: ['accountNumber', 'bankCode'],
+      [PaymentKind.USD_BANK_TRANSFER]: ['accountNumber', 'routingNumber'],
+      [PaymentKind.KES_BANK_TRANSFER]: ['accountNumber'],
+      [PaymentKind.EUR_BANK_TRANSFER]: ['accountNumber', 'IBAN'],
+      [PaymentKind.GBP_BANK_TRANSFER]: ['accountNumber', 'sortCode'],
+      [PaymentKind.MXN_BANK_TRANSFER]: ['accountNumber', 'CLABE'],
+      [PaymentKind.GHS_BANK_TRANSFER]: ['accountNumber'],
+    }[kind] ?? [];
+
+    if (fieldsToGenerate.length === 0) {
+      // If no additional fields are required, resolve with the basic details
+      return newPaymentDetails;
+    }
+
+    // Generate random values for the required fields
+    fieldsToGenerate.forEach(field => {
+      if (field === 'accountNumber' || field === 'routingNumber') {
+        newPaymentDetails[field] = Math.floor(Math.random() * 1000000000).toString().padStart(9, '0');
+      } else if (field === 'bankCode') {
+        newPaymentDetails[field] = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      } else if (field === 'sortCode') {
+        newPaymentDetails[field] = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+      } else if (field === 'BSB') {
+        newPaymentDetails[field] = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+      } else if (field === 'IBAN') {
+        newPaymentDetails[field] = 'GB' + Math.floor(Math.random() * 100000000000000000000).toString().padStart(22, '0');
+      } else if (field === 'CLABE') {
+        newPaymentDetails[field] = Math.floor(Math.random() * 1000000000000000000).toString().padStart(18, '0');
+      } else if (field === 'address') {
+        newPaymentDetails[field] = '0x' + Math.floor(Math.random() * 1000);
+      }
+    });
+
+    return newPaymentDetails;
+  }
+
   saveTransferAmount(user: User, transferId: ID, data: TransferAmountUpdateRequestBody): Promise<TransferSummary> {
     const now = new Date();
 
@@ -294,23 +414,41 @@ export class Users {
       if (transfer === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
       const payinWallet: Wallet | undefined = wallets.find((wallet: Wallet) => wallet.id == transfer.payinWalletId);
       const payoutWallet: Wallet | undefined = wallets.find((wallet: Wallet) => wallet.id == transfer.payoutWalletId);
-      const payinWalletKind = `${payinWallet?.currencyCode}_WALLET_ADDRESS`;
-      const payoutWalletKind = `${payoutWallet?.currencyCode}_WALLET_ADDRESS`;
 
       if (transfer.payinKind === PaymentKind.WALLET_ADDRESS && !payinWallet)
         throw new ServerError({ code: ErrorCode.NOT_FOUND, data: `Payin Wallet with id ${transfer.payinWalletId} not found for transfer ${transferId}` });
       if (transfer.payoutKind === PaymentKind.WALLET_ADDRESS && !payoutWallet)
         throw new ServerError({ code: ErrorCode.NOT_FOUND, data: `Payout Wallet with id ${transfer.payoutWalletId} not found for transfer ${transferId}` });
 
+      const transferQuoteReq = { ...transfer, payoutAmount: parseFloat(data.amount) };
+      if (transfer.payinKind === PaymentKind.WALLET_ADDRESS) {
+        const paymentDetails = this.generatePayinPaymentDetailsFor(payinWallet);
+        transferQuoteReq.payinKind = paymentDetails.kind;
+        transferQuoteReq.payinAccountNumber = paymentDetails.accountNumber;
+        transferQuoteReq.payinRoutingNumber = paymentDetails.routingNumber;
+        transferQuoteReq.payinBankCode = paymentDetails.bankCode;
+        transferQuoteReq.payinSortCode = paymentDetails.sortCode;
+        transferQuoteReq.payinBSB = paymentDetails.BSB;
+        transferQuoteReq.payinIBAN = paymentDetails.IBAN;
+        transferQuoteReq.payinCLABE = paymentDetails.CLABE;
+        transferQuoteReq.payinAddress = paymentDetails.address;
+      }
+      if (transfer.payoutKind === PaymentKind.WALLET_ADDRESS) {
+        const paymentDetails = await this.getNewPaymentDetails(payoutWallet);
+        transferQuoteReq.payoutKind = paymentDetails.kind;
+        transferQuoteReq.payoutAccountNumber = paymentDetails.accountNumber;
+        transferQuoteReq.payoutRoutingNumber = paymentDetails.routingNumber;
+        transferQuoteReq.payoutBankCode = paymentDetails.bankCode;
+        transferQuoteReq.payoutSortCode = paymentDetails.sortCode;
+        transferQuoteReq.payoutBSB = paymentDetails.BSB;
+        transferQuoteReq.payoutIBAN = paymentDetails.IBAN;
+        transferQuoteReq.payoutCLABE = paymentDetails.CLABE;
+        transferQuoteReq.payoutAddress = paymentDetails.address;
+      }
+
       softAssert(usersLogger, !user.did, `[saveTransferAmount] User ${user.id} has no DID`);
       const quotes = await this.tbdex.getQuotes(
-        {
-          ...transfer,
-          payoutAmount: parseFloat(data.amount),
-          payinKind: transfer.payinKind == PaymentKind.WALLET_ADDRESS && isPaymentKind(payinWalletKind) ? payinWalletKind : transfer.payinKind,
-          payoutKind: transfer.payoutKind == PaymentKind.WALLET_ADDRESS && isPaymentKind(payoutWalletKind) ? payoutWalletKind : transfer.payoutKind,
-          payoutAddress: !transfer.payoutAddress && payoutWallet ? "address" : transfer.payoutAddress,
-        },
+        transferQuoteReq,
         user.did ?? "",
         credentials.map((cred: UserCredential) => cred.value)
       );

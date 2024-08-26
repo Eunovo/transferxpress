@@ -104,6 +104,20 @@ export default function(config: AppConfig, users: Users, tbdex: TBDexService) {
   };
 
   // @ts-ignore
+  app.get('/profile', authenticate, (req: AuthenticatedRequest, res) => {
+    res.json({
+      id: req.user.id,
+      email: req.user.email,
+      firstname: req.user.firstname,
+      lastname: req.user.lastname,
+      country: req.user.country,
+      phoneNumber: req.user.phoneNumber,
+      createdAt: req.user.createdAt,
+      lastUpdatedAt: req.user.lastUpdatedAt
+    });
+  });
+
+  // @ts-ignore
   app.get('/wallets', authenticate, (req: AuthenticatedRequest, res, next) => {
     users.getWallets(req.user.id)
       .then(result => res.json(result))
@@ -214,6 +228,7 @@ export default function(config: AppConfig, users: Users, tbdex: TBDexService) {
       walletId: { type: "number", optional: true },
       accountNumber: { type: "string", optional: true },
       routingNumber: { type: "string", optional: true },
+      bankCode: { type: "string", optional: true },
       sortCode: { type: "string", optional: true },
       BSB: { type: "string", optional: true },
       IBAN: { type: "string", optional: true },

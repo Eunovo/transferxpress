@@ -41,6 +41,25 @@ export default function(db: Database) {
     `);
 
     db.run(`
+      CREATE TABLE IF NOT EXISTS WalletPaymentDetails (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        walletId INTEGER NOT NULL,
+        kind TEXT NOT NULL,
+        accountNumber TEXT,
+        routingNumber TEXT,
+        bankCode TEXT,
+        sortCode TEXT,
+        BSB TEXT,
+        IBAN TEXT,
+        CLABE TEXT,
+        address TEXT,
+        createdAt TEXT NOT NULL,
+        lastUpdatedAt TEXT NOT NULL,
+        FOREIGN KEY (walletId) REFERENCES Wallets(id)
+      )
+    `);
+
+    db.run(`
       CREATE TABLE IF NOT EXISTS SavedCards (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         cardNumber TEXT NOT NULL,
@@ -62,6 +81,7 @@ export default function(db: Database) {
         kind TEXT NOT NULL,
         accountNumber TEXT,
         routingNumber TEXT,
+        bankCode TEXT,
         sortCode TEXT,
         BSB TEXT,
         IBAN TEXT,
@@ -103,6 +123,7 @@ export default function(db: Database) {
         payinCardId INTEGER,
         payinAccountNumber TEXT,
         payinRoutingNumber TEXT,
+        payinBankCode TEXT,
         payinSortCode TEXT,
         payinBSB TEXT,
         payinIBAN TEXT,
@@ -110,6 +131,7 @@ export default function(db: Database) {
         payinAddress TEXT,
         payoutAccountNumber TEXT,
         payoutRoutingNumber TEXT,
+        payoutBankCode TEXT,
         payoutSortCode TEXT,
         payoutBSB TEXT,
         payoutIBAN TEXT,
