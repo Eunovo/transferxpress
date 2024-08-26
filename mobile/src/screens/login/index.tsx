@@ -105,9 +105,7 @@ className="w-full bg-secondary">
     </NormalText>
     ) : (
         <Spinner 
-        strokeColor="#fff"
-        circumfrence={70}
-        strokeWidth={70}
+        circumfrence={80} strokeWidth={3}
         />
     )
   }

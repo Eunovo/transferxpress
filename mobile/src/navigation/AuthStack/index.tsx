@@ -6,21 +6,27 @@ import SignupPersonalInformation from "@/screens/signup/personalInformaton";
 import SignupCreatePassword from "@/screens/signup/createPassword";
 import SignupEmailVerification from "@/screens/signup/emailVerification";
 
-type AuthStackParam = {
+export type AuthStackParam = {
 login: undefined;
 "email-verification": undefined;
-"personal-info": undefined;
-"create-password": undefined
+"personal-info": {email:string};
+"create-password": {
+  email: string;
+  firstName:string;
+  lastName:string;
+  country:string;
+  phoneNumber:string
+}
 };
 export type AuthNavigationStack = NavigationProp<AuthStackParam>;
 export const AuthNavigationStack = ()=>{
-    const Stack = createNativeStackNavigator();
+    const Stack = createNativeStackNavigator<AuthStackParam>();
     return(
 <Stack.Navigator
       screenOptions={{
         headerShown: false,
       }}
-      // initialRouteName="personal-info"
+      initialRouteName="create-password"
 >
 <Stack.Screen name="login" component={Login} />
 <Stack.Group >

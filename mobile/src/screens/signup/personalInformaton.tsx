@@ -11,15 +11,26 @@ import { CustomPressable } from "@/_components/Button/CustomPressable";
 import { ListBottomSheet } from "@/_components/FormComponents/ListBottomSheet";
 import { useFetchCountries } from "@/services/queries/useFetchCountries";
 import { ScreenLoader } from "@/_components/loader_utils/ScreenLoader";
+import { AuthNavigationStack, type AuthStackParam } from "@/navigation/AuthStack";
+import type { RouteProp } from "@react-navigation/native";
 
-
-export default function SignupPersonalInformation (){
+interface Props {
+    navigation: AuthNavigationStack;
+    route: RouteProp<AuthStackParam, "personal-info">
+}
+export default function SignupPersonalInformation (
+    {
+navigation,
+route
+    }:Props
+){
     const countries = useFetchCountries();
     const isLoading = !countries.length 
     return(
         <LayoutWithScroll>
             <View className="w-full grow pb-10">
                 <CustomPressable
+                onPress={()=>navigation.goBack()}
                 style={{
                     width: moderateScale(40, 0.3),
                     height: moderateVerticalScale(40, 0.3)
@@ -51,11 +62,17 @@ className="text-white/80">
     country: "",
     phoneNumber:""
    }}
-   onSubmit={()=>{}}
+   onSubmit={(values)=>{
+    navigation.navigate("create-password", {
+        ...route.params,
+        ...values
+    })
+   }}
    >
    {
-    ({values, setFieldValue})=>{
+    ({values, setFieldValue, handleChange, handleBlur, submitForm, touched, errors, dirty})=>{
         const countryCallingCode = countries.find(item => item.value === values.country)?.callingCode;
+        const isDisabled = !dirty;
         return(
             <View className="w-full mt-10">
             <View className="w-full mb-4">
@@ -76,14 +93,24 @@ className="text-white/80">
             <CustomTextInput
     title="First Name"
     placeholder="Enter your name"
-    
+    onChangeText={handleChange("firstName")}
+    defaultValue={values.firstName}
+    onBlur={handleBlur("firstName")}
+    errorMessage={errors.firstName}
+    touched={touched.firstName}
+    maxLength={50}
     />
             </View>
             <View className="w-full mb-4">
             <CustomTextInput
     title="Last Name"
     placeholder="Enter your name"
-    
+    onChangeText={handleChange("lastName")}
+    defaultValue={values.lastName}
+    onBlur={handleBlur("lastName")}
+    errorMessage={errors.lastName}
+    touched={touched.lastName}
+    maxLength={50}
     />
             </View>
             <View className="w-full mb-4">
@@ -111,7 +138,10 @@ className="text-white/80">
                         style={{ gap: 16, maxWidth: moderateScale(400, 0.3) }}
                         className="pt-[64px] mt-auto w-full mx-auto justify-start"
                       >
-    <ButtonNormal className="w-full bg-secondary">
+    <ButtonNormal 
+    disabled={isDisabled}
+    onPress={()=>submitForm()}
+    className="w-full bg-secondary">
         <NormalText weight={500} className="text-primary/80">
           Next
         </NormalText>

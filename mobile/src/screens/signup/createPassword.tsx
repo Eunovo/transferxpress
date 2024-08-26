@@ -11,14 +11,32 @@ import XmarkIcon from "@/assets/icons/x_mark.svg";
 import CheckMarkIcon from "@/assets/icons/check_mark.svg";
 import { CustomPressable } from "@/_components/Button/CustomPressable";
 import ArrowIcon from "@/assets/icons/arrow.svg"
+import { AuthNavigationStack, AuthStackParam } from "@/navigation/AuthStack";
+import { RouteProp } from "@react-navigation/native";
+import { useMutation } from "@tanstack/react-query";
+import { REGISTER_USER } from "@/api/auth";
+import { Spinner } from "@/_components/loader_utils/Spinner";
 
 
-export default function SignupCreatePassword  (){
+interface Props {
+  navigation: AuthNavigationStack;
+  route: RouteProp<AuthStackParam, "create-password">
+}
+export default function SignupCreatePassword  (
+  {
+navigation,
+route
+  }:Props
+){
+  const {mutateAsync, isPending} = useMutation({
+    mutationFn: REGISTER_USER
+  })
     return(
         <LayoutWithScroll>
             <View className="w-full grow pb-10">
                 
             <CustomPressable
+            onPress={()=>navigation.goBack()}
                 style={{
                     width: moderateScale(40, 0.3),
                     height: moderateVerticalScale(40, 0.3)
@@ -48,18 +66,39 @@ className="text-white/80">
 password:"",
 confirmPassword:""
    }}
-   onSubmit={()=>{}}
+   onSubmit={async(values)=>{
+try {
+  const screenParams = route.params;
+  await mutateAsync({
+    email: screenParams.email,
+firstname: screenParams.firstName,
+lastname: screenParams.lastName,
+country:  screenParams.country,
+password: values.confirmPassword,
+phoneNumber: screenParams.phoneNumber
+  })
+  // TODO add toast
+  navigation.navigate("login")
+} catch (error) {
+  return;
+}
+   }}
    >
    {
-    ({values})=>{
-        const {isPasswordValid, rules} = getPasswordValidationRules(values.password)
+    ({values, errors, touched, handleChange, handleBlur, submitForm, dirty})=>{
+        const {isPasswordValid, rules} = getPasswordValidationRules(values.password);
+const isDisabled = !dirty;
         return(
             <View className="w-full mt-10">
             <View className="w-full mb-4">
             <PasswordInput
     title="Password"
     placeholder="Enter your password"
-    
+        onChangeText={handleChange("password")}
+    defaultValue={values.password}
+    onBlur={handleBlur("password")}
+    errorMessage={errors.password}
+    touched={touched.password}
     />
              <View className="flex flex-row items-center flex-wrap gap-x-3 gap-y-3 w-full mt-3">
                       {rules.map((condition) => (
@@ -101,7 +140,11 @@ confirmPassword:""
             <PasswordInput
     title="Confirm Password"
     placeholder="Confirm your password"
-    
+    onChangeText={handleChange("confirmPassword")}
+    defaultValue={values.confirmPassword}
+    onBlur={handleBlur("confirmPassword")}
+    errorMessage={errors.confirmPassword}
+    touched={touched.confirmPassword}
     />
             </View>
     
@@ -109,10 +152,22 @@ confirmPassword:""
                         style={{ gap: 16, maxWidth: moderateScale(400, 0.3) }}
                         className="pt-[64px] mt-auto w-full mx-auto justify-start"
                       >
-    <ButtonNormal className="w-full bg-secondary">
+    <ButtonNormal 
+    disabled={isDisabled}
+    onPress={()=>submitForm()}
+    className="w-full bg-secondary">
+
+        {
+    !isPending ? (
         <NormalText weight={500} className="text-primary/80">
-         Proceed
-        </NormalText>
+               Proceed
+    </NormalText>
+    ) : (
+        <Spinner
+        circumfrence={80} strokeWidth={3}
+        />
+    )
+  }
     </ButtonNormal>
             </View>
         </View>

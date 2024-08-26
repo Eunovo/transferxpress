@@ -8,13 +8,26 @@ import { ButtonNormal } from "@/_components/Button/NormalButton";
 import { moderateScale, moderateVerticalScale } from "react-native-size-matters";
 import ArrowIcon from "@/assets/icons/arrow.svg"
 import { CustomPressable } from "@/_components/Button/CustomPressable";
+import { AuthNavigationStack} from "@/navigation/AuthStack";
+import { useMutation } from "@tanstack/react-query";
+import { VERIFY_EMAIL } from "@/api/auth";
 
-
-export default function SignupEmailVerification (){
+interface Props {
+    navigation:AuthNavigationStack;
+}
+export default function SignupEmailVerification (
+    {
+navigation
+    }:Props
+){
+    const {mutateAsync, isPending} = useMutation({
+        mutationFn: VERIFY_EMAIL
+    })
     return(
         <LayoutWithScroll>
             <View className="w-full grow pb-10">
                 <CustomPressable
+                onPress={()=>navigation.goBack()}
                 style={{
                     width: moderateScale(40, 0.3),
                     height: moderateVerticalScale(40, 0.3)
@@ -36,31 +49,46 @@ export default function SignupEmailVerification (){
    </HeaderText>
    <NormalText 
 size={13}
-className="text-white/80">
+className="text-white/80 max-w-[90%]">
   Enter your email below to create your Transferxpress account
    </NormalText>
    <Formik
    initialValues={{
 email:""
    }}
-   onSubmit={()=>{}}
+   onSubmit={async(values)=>{
+    try {
+        await mutateAsync(values)
+        navigation.navigate("personal-info", values)
+    } catch (error) {
+        return;
+    }
+   }}
    >
    {
-    ({values, setFieldValue})=>{
+    ({values, handleBlur, handleChange, errors, touched, submitForm, dirty})=>{
+        const isDisabled = !dirty || isPending;
         return(
             <View className="w-full grow  mt-10">
            <View className="w-full mb-4">
             <CustomTextInput
     title="Email"
     placeholder="Enter your email"
-    
+    onChangeText={handleChange("email")}
+defaultValue={values.email}
+onBlur={handleBlur("email")}
+errorMessage={errors.email}
+touched={touched.email}
     />
             </View>
             <View
                         style={{ gap: 16, maxWidth: moderateScale(400, 0.3) }}
                         className="pt-[64px] mt-auto w-full mx-auto justify-start"
                       >
-    <ButtonNormal className="w-full bg-secondary">
+    <ButtonNormal 
+    disabled={isDisabled}
+    onPress={()=> submitForm()}
+    className="w-full bg-secondary">
         <NormalText weight={500} className="text-primary/80">
           Next
         </NormalText>
