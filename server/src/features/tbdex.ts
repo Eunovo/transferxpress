@@ -107,7 +107,7 @@ export class TBDexService {
   filterOutBlacklistedPFIs(pfis: PFI[]): Promise<PFI[]> {
     return Promise.all(pfis.map(pfi => this.cache.get(CacheKeys.BLACKLIST(pfi.did))))
       .then(result => {
-        return result.map((blacklisted, i) => blacklisted ? pfis[i] : null).filter((pfi => pfi !== null));
+        return result.map((blacklisted, i) => blacklisted ? null : pfis[i]).filter((pfi => pfi !== null));
       });
   }
 
