@@ -50,13 +50,19 @@ export class Users {
 
   register(data: RegisterRequestBody): Promise<void> {
     const did = this.tbdex.createDid(data.email);
-    const credential = did.then(res =>
-      this.tbdex.acquireCredential({ type: 'kcc', data: { name: `${data.firstname} ${data.lastname}`, country: data.country, did: JSON.parse(res).uri } })
-    );
+    const credential = did.then(res => {
+      const portableDid = JSON.parse(res);
+      if (!portableDid.uri) throw new Error(`Invalid did: ${res}`);
+      return this.tbdex.acquireCredential({ type: 'kcc', data: { name: `${data.firstname} ${data.lastname}`, country: data.country, did: portableDid.uri } })
+    });
     return Promise.all([
       did,
-      credential
-    ]).then(([did, credential]) => {
+      credential,
+      this.getEmailStatus(data.email)
+    ]).then(([did, credential, emailStatus]) => {
+      if (emailStatus.status !== EmailAvailabilityStatus.AVAILABLE)
+        throw new ServerError({ code: ErrorCode.DUPLICATE_EMAIL });
+
       const now = new Date();
       return this.db.insert(
         { ...data, did, createdAt: now, lastUpdatedAt: now },
