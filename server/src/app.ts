@@ -177,6 +177,18 @@ export default function(config: AppConfig, users: Users, tbdex: TBDexService) {
   });
 
   // @ts-ignore
+  app.get('/transfers/:id', authenticate, (req: AuthenticatedRequest, res, next) => {
+    const transferId = transformId(req.params.id);
+    if (transferId == null) {
+      res.status(404).send("Invalid transfer id");
+      return;
+    }
+    users.getTransfer(transferId, req.user.id)
+      .then(result => res.json(result))
+      .catch(err => next(err));
+  });
+
+  // @ts-ignore
   app.post('/transfers/start/:payinCurrencyCode/:payoutCurrencyCode', authenticate, (req: AuthenticatedRequest, res, next) => {
     const payinCurrencyCode = req.params.payinCurrencyCode;
     const payoutCurrencyCode = req.params.payoutCurrencyCode;
