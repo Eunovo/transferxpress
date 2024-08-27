@@ -50,6 +50,7 @@ export interface Transaction {
   walletId: ID;
   narration?: string;
   type: "CREDIT" | "DEBIT";
+  currencyCode: string;
   amount: number;
   reference: string;
   createdAt: Date;

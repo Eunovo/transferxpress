@@ -445,10 +445,10 @@ export class UsersDbImpl implements UsersDb {
         if (transactions.length > 0) {
           db.run(
             `
-              INSERT INTO Transactions (transferId, userId, walletId, narration, type, amount, reference, createdAt, lastUpdatedAt)
-              VALUES ${transactions.map(() => "(?, ?, ?, ?, ?, ?, ?, ?, ?)").join(", ")}
+              INSERT INTO Transactions (transferId, userId, walletId, narration, type, currencyCode, amount, reference, createdAt, lastUpdatedAt)
+              VALUES ${transactions.map(() => "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").join(", ")}
               `,
-            transactions.reduce((acc: any, t: any) => acc.concat([id, t.userId, t.walletId, t.narration, t.type, t.amount, t.reference, t.createdAt, t.lastUpdatedAt]), []),
+            transactions.reduce((acc: any, t: any) => acc.concat([id, t.userId, t.walletId, t.narration, t.type, t.currencyCode, t.amount, t.reference, t.createdAt, t.lastUpdatedAt]), []),
             function (err) { if (err) return db.run("ROLLBACK", () => reject(err)); });
 
           const iter = walletUpdates.entries();
