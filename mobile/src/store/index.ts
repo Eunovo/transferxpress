@@ -11,23 +11,19 @@ import {
   // REGISTER,
 } from "redux-persist";
 import transferReducer from "./transfer/slice"
-
+import userReducer from "./user/slice"
 
 
 const persistConfig = {
-  key: "OLYVEPAY_APP_STATE",
+  key: "TRANSFERXPRESS_APP_STATE",
   storage: AsyncStorage,
   blacklist: [
-    "appReducer",
     "transferReducer",
-    "bulkTransferReducer",
-    "businessAccountReducer",
-    "banksReducer",
-    "billPaymentReducer",
   ],
 };
 
 const rootReducer = combineReducers({
+  userReducer,
 transferReducer
 });
 

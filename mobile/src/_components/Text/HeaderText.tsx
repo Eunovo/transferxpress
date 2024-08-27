@@ -7,7 +7,7 @@ size?: number;
 }
 export const HeaderText = ({
 children,
-weight = 400,
+weight = 500,
 size = 16,
 ...props
 }: Props)=>{
