@@ -1,4 +1,5 @@
 
+import { isIOS } from "@/utils/constants";
 import { forwardRef, ReactElement, type ReactNode } from "react";
 import {
   ScrollView,
@@ -41,7 +42,7 @@ export const LayoutWithScroll = forwardRef<ScrollView, Props>(
           bounces={false}
           contentContainerStyle={{
             flexGrow: 1,
-            paddingTop: PaddingTop + safeAreaTop,
+            paddingTop: isIOS ? scale(16) : PaddingTop + safeAreaTop,
             paddingLeft: scale(16),
             paddingRight: scale(16),
           }}

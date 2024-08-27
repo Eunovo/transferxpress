@@ -8,11 +8,13 @@ import { moderateScale, moderateVerticalScale } from "react-native-size-matters"
 import ArrowIcon from "@/assets/icons/arrow.svg"
 import { TransferDetails } from "@/_components/Transfer/fiat/TransferDetails";
 import { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+import { UserNavigationStack } from "@/navigation/UserStack";
 
 
 
 export default function TransferFiat (){
-
+    const navigation = useNavigation<UserNavigationStack>()
     const [isNextStage, setIsNextStage] = useState(false);
     
     return(
@@ -24,7 +26,7 @@ export default function TransferFiat (){
              setIsNextStage(false)
             }
             else{
-            //    navigate to prev screen
+            navigation.navigate("main-bottom-tab")
             }
             }}
                 style={{
@@ -49,7 +51,9 @@ export default function TransferFiat (){
    <NormalText
 size={13}
 className="text-white/80 mb-10">
-  How much do you want to transfer?
+{
+    isNextStage ? "Please enter recipients details" : "  How much do you want to transfer?"
+}
    </NormalText>
    {
     !isNextStage ? (

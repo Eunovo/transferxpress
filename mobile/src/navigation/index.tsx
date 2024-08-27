@@ -15,7 +15,7 @@ export const MainNavigationStack = ()=>{
       screenOptions={{
         headerShown: false,
       }}
-      // initialRouteName="UserStack"
+      initialRouteName="UserStack"
 >
 <Stack.Screen name="AuthStack" component={AuthNavigationStack} />
 <Stack.Screen name="UserStack" component={UserNavigationStack} />

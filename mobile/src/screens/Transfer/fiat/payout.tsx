@@ -23,6 +23,7 @@ navigation
         <LayoutNormal>
             <View className="w-full grow pb-10">
             <CustomPressable
+            onPress={()=>navigation.goBack()}
                 style={{
                     width: moderateScale(40, 0.3),
                     height: moderateVerticalScale(40, 0.3)

@@ -1,4 +1,5 @@
 
+import { isIOS } from "@/utils/constants";
 import type { ReactNode } from "react";
 import { SafeAreaView, StatusBar, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -31,7 +32,7 @@ export const LayoutNormal = ({
       <View
         style={{
           flex: 1,
-          paddingTop: PaddingTop + safeAreaTop,
+          paddingTop: isIOS ? scale(16) : PaddingTop + safeAreaTop,
           paddingLeft: scale(16),
           paddingRight: scale(16),
         }}

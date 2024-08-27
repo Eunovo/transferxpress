@@ -11,7 +11,7 @@ import { View } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 
 export const TransferDetails = ()=>{
-    const {currency} = useTransferState();
+    const initialState = useTransferState();
     const navigation = useNavigation<TransferNavigationStackType>()
     const dispatch = useAppDispatch()
     const secondaryUniqueIdentifierTitle = {
@@ -20,21 +20,21 @@ export const TransferDetails = ()=>{
      GBP: "Sort code",
      MXN:"CLABE number",
      AUD:"Bank state branch code (BSB)"
-    }[currency];
+    }[initialState.currency.reciever];
     const secondaryUniqueIdentifierMaxLength = {
         USD: 9,
         EUR: 34,
         GBP: 6,
         MXN:18,
         AUD:6
-       }[currency];
+       }[initialState.currency.reciever];
     return(
  <Formik
  initialValues={{
-    accountName: "",
-    accountNumber:"",
-    secondaryUniqueIdentifier:"",
-    narration: ""
+    accountName: initialState.accountName,
+    accountNumber: initialState.accountNumber,
+    secondaryUniqueIdentifier: initialState.secondaryUniqueIdentifier || "",
+    narration: initialState.narration
  }}
  onSubmit={(values)=>{
     dispatch(setTransferState(values))
@@ -42,7 +42,8 @@ export const TransferDetails = ()=>{
  }}
  >
            {
-            ({values, submitForm, touched, errors, handleBlur, setFieldValue})=>{
+            ({values, submitForm, touched, errors, handleBlur, setFieldValue, dirty})=>{
+                const isButtonDisabled = !dirty;
                 return(
                     <View className="w-full">
 <View className="w-full mb-6">
@@ -115,6 +116,7 @@ maxLength={50}
                         className="pt-[64px] mt-auto w-full mx-auto justify-start"
                       >
  <ButtonNormal
+ disabled={isButtonDisabled}
  onPress={()=>submitForm()}
        className="bg-secondary" 
         >

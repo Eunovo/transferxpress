@@ -1,20 +1,28 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 type TransferState = {
-  currency: string;
+  currency: {
+    sender: string;
+    reciever: string
+  }
   amount: string;
   accountName: string;
   accountNumber: string;
   narration: string;
+  exchangeRate: string;
   secondaryUniqueIdentifier?: string
 }
 
 const initialState:TransferState = {
-    currency: "",
+    currency:{
+        sender: "NGN",
+        reciever: "KES"
+    },
     amount: "",
     accountName: "",
     accountNumber: "",
-    narration: ""
+    exchangeRate: "",
+    narration: "",
 };
 
 

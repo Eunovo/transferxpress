@@ -18,7 +18,7 @@ export default function TransferOptions () {
     const options = [
         {
             title: "Transfer to Bank",
-            subTitle:"Transfer funds to surpported banks",
+            subTitle:"Transfer funds to recipients in multiple currencies",
             action: ()=>{
                 navigation.navigate("transfer-stack")
             }

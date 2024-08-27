@@ -10,10 +10,19 @@ import { flagsAndSymbol } from "@/utils/constants";
 import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
 import { useNavigation } from "@react-navigation/native";
 import { UserNavigationStack } from "@/navigation/UserStack";
+import { useAppDispatch } from "@/store/hooks";
+import { clearTransferState } from "@/store/transfer/slice";
+import { useTransferState } from "@/store/transfer/useTransferState";
 
 
 export default function TransferSuccess () {
-    const navigation = useNavigation<UserNavigationStack>()
+    const navigation = useNavigation<UserNavigationStack>();
+    const dispatch = useAppDispatch();
+    const {accountNumber, accountName, currency} = useTransferState();
+    const goBackToHome = ()=>{
+        dispatch(clearTransferState());
+        navigation.navigate("main-bottom-tab")
+    }
     return(
 <LayoutNormal>
 <View className="w-full grow pb-10">
@@ -75,7 +84,7 @@ weight={600}
                 size={14}
                 className="text-white"
                 >
-    Test User
+    {accountName}
 </NormalText>
     </View>
     <View  className="w-full border-t border-white/20 my-4"/>
@@ -94,7 +103,7 @@ weight={600}
                 size={14}
                 className="text-white"
                 >
- 1234567890
+{accountNumber}
 </NormalText>
     </View>
 </View>
@@ -119,9 +128,7 @@ weight={600}
                         className="pt-[64px] mt-auto w-full mx-auto justify-start"
                       >
  <ButtonNormal
- onPress={()=>{
-    navigation.navigate("main-bottom-tab")
- }}
+ onPress={goBackToHome}
        className="bg-secondary" 
         >
             <NormalText 

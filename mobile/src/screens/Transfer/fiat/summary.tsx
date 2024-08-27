@@ -19,15 +19,16 @@ export default function TransferFiatSummary (
 navigation
     }:Props
 ){
-    const {amount, accountName, accountNumber, secondaryUniqueIdentifier, currency, narration} = useTransferState();
-    const currencySybol = flagsAndSymbol[currency as keyof typeof flagsAndSymbol].symbol;
+    const {amount, accountName, accountNumber, secondaryUniqueIdentifier, currency, narration, exchangeRate} = useTransferState();
+    const currencySymbol = flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol].symbol;
     const secondaryUniqueIdentifierTitle = {
         USD: "Routing number",
         EUR: "International Bank Account Number (IBAN)",
         GBP: "Sort code",
         MXN:"CLABE number",
         AUD:"Bank state branch code (BSB)"
-       }[currency];
+       }[currency.reciever];
+       const fee = 0.75;
     return(
         <LayoutNormal>
             <View className="w-full grow pb-10">
@@ -82,7 +83,7 @@ className="text-primary"
           weight={500}
             className="text-white"
             >
- 0.5
+ {currencySymbol} {formatToCurrencyString(fee, 2)}
             </NormalText>
             </View>
             <View
@@ -100,7 +101,7 @@ className="text-primary"
             weight={500}
             className="text-white"
             >
-{currencySybol} {formatToCurrencyString(amount, 2)}
+{currencySymbol} {formatToCurrencyString((amount + fee), 2)}
             </NormalText>
             </View>
             <View
@@ -118,7 +119,7 @@ className="text-primary"
         weight={500}
             className="text-white"
             >
-800000
+{currencySymbol} {formatToCurrencyString(amount, 2)}
             </NormalText>
             </View>
             <View
@@ -136,7 +137,7 @@ className="text-primary"
          weight={500}
             className="text-white"
             >
-   1560
+ {currencySymbol} {exchangeRate ? (1 / Number(exchangeRate)).toFixed(4) : 0}
             </NormalText>
             </View>
             <View  className="w-full border-t border-white/20 my-4"/>
