@@ -13,6 +13,7 @@ import { useFetchCountries } from "@/services/queries/useFetchCountries";
 import { ScreenLoader } from "@/_components/loader_utils/ScreenLoader";
 import { AuthNavigationStack, type AuthStackParam } from "@/navigation/AuthStack";
 import type { RouteProp } from "@react-navigation/native";
+import { BackButton } from "@/_components/Button/BackButton";
 
 interface Props {
     navigation: AuthNavigationStack;
@@ -29,20 +30,9 @@ route
     return(
         <LayoutWithScroll>
             <View className="w-full grow pb-10">
-                <CustomPressable
-                onPress={()=>navigation.goBack()}
-                style={{
-                    width: moderateScale(40, 0.3),
-                    height: moderateVerticalScale(40, 0.3)
-                }}
-                className="rounded-full bg-primary items-center justify-center mb-4"
-                >
-                    <ArrowIcon
-                  fill={"#04293A"}
-                  width={moderateScale(20, 0.3)}
-                  height={moderateVerticalScale(20, 0.3)}
-                    />
-                </CustomPressable>
+            <BackButton
+    onPress={()=>navigation.goBack()}
+/>
    <HeaderText
    weight={700}
    size={24}

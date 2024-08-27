@@ -9,13 +9,12 @@ import { Formik } from "formik";
 import { getPasswordValidationRules } from "@/utils/constants";
 import XmarkIcon from "@/assets/icons/x_mark.svg";
 import CheckMarkIcon from "@/assets/icons/check_mark.svg";
-import { CustomPressable } from "@/_components/Button/CustomPressable";
-import ArrowIcon from "@/assets/icons/arrow.svg"
 import { AuthNavigationStack, AuthStackParam } from "@/navigation/AuthStack";
 import { RouteProp } from "@react-navigation/native";
 import { useMutation } from "@tanstack/react-query";
 import { REGISTER_USER } from "@/api/auth";
 import { Spinner } from "@/_components/loader_utils/Spinner";
+import { BackButton } from "@/_components/Button/BackButton";
 
 
 interface Props {
@@ -35,20 +34,9 @@ route
         <LayoutWithScroll>
             <View className="w-full grow pb-10">
                 
-            <CustomPressable
-            onPress={()=>navigation.goBack()}
-                style={{
-                    width: moderateScale(40, 0.3),
-                    height: moderateVerticalScale(40, 0.3)
-                }}
-                className="rounded-full bg-primary items-center justify-center mb-4"
-                >
-                    <ArrowIcon
-                  fill={"#04293A"}
-                  width={moderateScale(20, 0.3)}
-                  height={moderateVerticalScale(20, 0.3)}
-                    />
-                </CustomPressable>
+            <BackButton
+    onPress={()=>navigation.goBack()}
+/>
             <HeaderText
    weight={700}
    size={24}

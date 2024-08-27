@@ -11,6 +11,7 @@ import { CustomPressable } from "@/_components/Button/CustomPressable";
 import { AuthNavigationStack} from "@/navigation/AuthStack";
 import { useMutation } from "@tanstack/react-query";
 import { VERIFY_EMAIL } from "@/api/auth";
+import { BackButton } from "@/_components/Button/BackButton";
 
 interface Props {
     navigation:AuthNavigationStack;
@@ -26,20 +27,9 @@ navigation
     return(
         <LayoutWithScroll>
             <View className="w-full grow pb-10">
-                <CustomPressable
-                onPress={()=>navigation.goBack()}
-                style={{
-                    width: moderateScale(40, 0.3),
-                    height: moderateVerticalScale(40, 0.3)
-                }}
-                className="rounded-full bg-primary items-center justify-center mb-4"
-                >
-                    <ArrowIcon
-                  fill={"#04293A"}
-                  width={moderateScale(20, 0.3)}
-                  height={moderateVerticalScale(20, 0.3)}
-                    />
-                </CustomPressable>
+            <BackButton
+    onPress={()=>navigation.goBack()}
+/>
    <HeaderText
    weight={700}
    size={24}
