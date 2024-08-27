@@ -209,6 +209,27 @@ export class Users {
       })));
   }
 
+  getTransfer(id: ID, userId: ID): Promise<Transfer> {
+  return this.db.findTransferByIdAndUserId(id, userId)
+    .then(transfer => {
+      if (transfer === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
+      return {
+        id: transfer.id,
+        payinCurrencyCode: transfer.payinCurrencyCode,
+        payoutCurrencyCode: transfer.payoutCurrencyCode,
+        payinAmount: transfer.payinAmount,
+        payoutAmount: transfer.payoutAmount,
+        fee: transfer.fee,
+        payinKind: transfer.payinKind,
+        payoutKind: transfer.payoutKind,
+        narration: transfer.narration,
+        status: transfer.status,
+        createdAt: transfer.createdAt,
+        lastUpdatedAt: transfer.lastUpdatedAt
+      };
+    });
+  }
+
   saveTransferPayinData(userId: ID, transferId: ID, data: PayinRequestBody): Promise<PayinUpdateResponse> {
     const now = new Date();
     const wallets = this.db.findWalletsByUserId(userId);
