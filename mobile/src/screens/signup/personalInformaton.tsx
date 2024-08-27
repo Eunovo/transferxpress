@@ -35,7 +35,7 @@ route
 />
    <HeaderText
    weight={700}
-   size={24}
+   size={20}
    className="text-primary"
    >
     Create your account

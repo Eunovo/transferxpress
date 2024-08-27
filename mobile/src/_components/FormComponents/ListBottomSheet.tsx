@@ -150,7 +150,7 @@ setFilteredOptions(options)
                 onPress={() => setShowModal(false)}
                 style={{
                     width: moderateScale(40, 0.1),
-                    height: moderateVerticalScale(40, 0.1)
+                    height: moderateScale(40, 0.1)
                 }}
                 className="ml-auto bg-dark border border-secondary rounded-full items-center justify-center"
               >

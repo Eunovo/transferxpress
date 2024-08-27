@@ -15,8 +15,8 @@ return(
     <CustomPressable
     onPress={onPress}
         style={{
-            width: moderateScale(40, 0.3),
-            height: moderateVerticalScale(40, 0.3)
+            width: moderateScale(36, 0.3),
+            height: moderateScale(36, 0.3)
         }}
         className="rounded-full bg-primary items-center justify-center mb-4"
         >

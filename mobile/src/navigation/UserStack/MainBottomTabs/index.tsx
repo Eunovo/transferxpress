@@ -16,10 +16,15 @@ import MoreActiveIcon from "@/assets/icons/more_active.svg"
 import Transactions from "@/screens/Transactions";
 import More from "@/screens/Others";
 import TransferOptions from "@/screens/Transfer/options";
+import type { Transaction } from "@/_components/Transactions/TransactionItem";
+
+
 export type ScreenNames = ["Home"];
 export type MainBottomTabsParamList = {
   home: undefined;
-  transactions: undefined;
+  transactions: {
+    transaction: Transaction
+  };
   transfer: undefined;
   others: undefined
 };

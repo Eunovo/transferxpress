@@ -12,6 +12,7 @@ import { moderateScale, moderateVerticalScale } from "react-native-size-matters"
 import PlusIcon from "@/assets/icons/plus_bold.svg";
 import { ButtonNormal } from "@/_components/Button/NormalButton";
 import SendIcon from "@/assets/icons/send.svg";
+import { RecentTransactions } from "@/_components/Home/RecentTransactions";
 
 
 
@@ -122,7 +123,7 @@ className="flex-row items-center justify-center px-3 py-3 bg-secondary rounded-x
     </NormalText>
 </CustomPressable>
                 </View>
-                <View className="w-full mt-6">
+                <View className="w-full flex-1 mt-6">
                     <NormalText 
                     size={13}
                     className="text-white/60 mb-3">
@@ -149,35 +150,7 @@ className="flex-row items-center justify-center px-3 py-3 bg-secondary rounded-x
                      {dollarSymbol} {formatToCurrencyString(61290, 2)}
                      </HeaderText>
                     </View>
-          <View className="w-full">
-          <View
-                    className="w-full flex-row justify-between items-center my-6"
-                    >
-                        <HeaderText
-                        size={20}
-                        weight={600}
-                        className="text-primary"
-                        >
-                            Recent Transactions
-                        </HeaderText>
-                        <CustomPressable
-                        style={{
-                            maxWidth: moderateScale(100, 0.1)
-                        }}
-                        className="px-4 py-2 bg-dark border border-primary/60 rounded-xl"
-                        >
-                            <NormalText
-                            size={13}
-                            className="text-white/60"
-                            >
-                                View all
-                            </NormalText>
-                        </CustomPressable>
-                    </View>
-<View className="w-full h-[100] p-3 border border-primary/60 rounded-2xl">
-
-</View>
-          </View>
+  <RecentTransactions />
                 </View>
             </View>
         </LayoutWithScroll>

@@ -28,7 +28,7 @@ navigation
 />
             <HeaderText
    weight={700}
-   size={24}
+   size={20}
    className="text-primary"
    >
 Send money
