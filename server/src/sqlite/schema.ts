@@ -155,6 +155,7 @@ export default function(db: Database) {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         narration TEXT,
         type TEXT NOT NULL,
+        currencyCode TEXT NOT NULL,
         amount REAL NOT NULL,
         reference TEXT NOT NULL,
         transferId INTEGER,

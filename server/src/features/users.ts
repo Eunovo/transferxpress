@@ -21,7 +21,7 @@ import {
   PaymentDetails,
 } from "../types.js";
 import { TBDexService } from "./tbdex.js";
-import { Beneficiary, PFI, User, UserCredential } from "../models.js";
+import { Beneficiary, PFI, User, UserCredential, Transaction as TransactionModel } from "../models.js";
 import { ServerError } from "../error.js";
 import { ErrorCode } from "../error_codes.js";
 import { extractRequiredPaymentDetails, isPaymentKind, softAssert } from "../utils.js";
@@ -526,13 +526,15 @@ export class Users {
         this.handleTransferComplete(transferId, user.id, msg.data.success);
       });
       const reference = quote.quote.exchangeId;
-      const transactions = [];
+      const transactions: Omit<TransactionModel, 'id' | 'transferId'>[] = [];
       if (transfer.payinWalletId) {
         transactions.push({
           narration: transfer.narration,
           type: 'DEBIT',
           walletId: transfer.payinWalletId,
-          reference, amount: transfer.payinAmount + transfer.fee,
+          reference,
+          currencyCode: transfer.payinCurrencyCode,
+          amount: transfer.payinAmount + transfer.fee,
           userId: user.id,
           createdAt: now,
           lastUpdatedAt: now
@@ -552,12 +554,13 @@ export class Users {
     return this.db.findTransferByIdAndUserId(transferId, userId)
       .then(transfer => {
         if (transfer.status === TransactionStatus.CANCELLED) return;
-        const transactions = [];
+        const transactions: Omit<TransactionModel, 'id' | 'transferId'>[] = [];
         if (transfer.payoutWalletId && success) {
           transactions.push({
             narration: transfer.narration,
             walletId: transfer.payoutWalletId,
             reference: transfer.reference,
+            currencyCode: transfer.payoutCurrencyCode,
             amount: transfer.payoutAmount,
             userId: userId,
             type: 'CREDIT',
@@ -571,6 +574,7 @@ export class Users {
             narration: "Reversal",
             walletId: transfer.payinWalletId,
             reference: transfer.reference,
+            currencyCode: transfer.payinCurrencyCode,
             amount: transfer.payinAmount + transfer.fee,
             userId: userId,
             type: 'CREDIT',

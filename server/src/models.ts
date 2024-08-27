@@ -44,6 +44,7 @@ export interface WalletPaymentDetails extends BaseModel {
 export interface Transaction extends BaseModel {
   narration?: string;
   type: "CREDIT" | "DEBIT";
+  currencyCode: string;
   amount: number;
   reference: string;
   transferId?: ID;
