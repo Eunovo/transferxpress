@@ -148,7 +148,7 @@ export class Users {
 
     return this.tbdex.fetchOfferings()
       .then(offerings => {
-        const payinMethods: CreateTransferResponse['payinMethods'] = [{ kind: PaymentKind.WALLET_ADDRESS, fields: ['walletId'] }];
+        let payinMethods: CreateTransferResponse['payinMethods'] = [];
         this.searchOfferings(offerings, payinCurrencyCode, payoutCurrencyCode, offering => {
           offering.data.payin.methods.forEach(method => {
             if (isPaymentKind(method.kind)) {
@@ -174,7 +174,9 @@ export class Users {
 
         return wallets.then(wallets => {
           wallets = wallets.filter(wallet => wallet.currencyCode === payinCurrencyCode)
-          if (wallets.length > 0) payinMethods.push({ kind: PaymentKind.WALLET_ADDRESS, fields: ['walletId'] });
+          if (wallets.length > 0) {
+            payinMethods = [{ kind: PaymentKind.WALLET_ADDRESS, fields: ['walletId'] }, ...payinMethods];
+          }
           // TODO Add Saved card option if credit card exists among methods
           return insert.then((transfer) => ({ id: transfer.id, payinMethods }));
         });
@@ -243,7 +245,7 @@ export class Users {
 
           this.searchOfferings(offerings, transfer.payinCurrencyCode, transfer.payoutCurrencyCode, offering => {
             // Payout Methods is narrowed by selected Payin Method
-            if (!offering.data.payin.methods.find(method => method.kind == data.kind)) return;
+            if (!offering.data.payin.methods.find(method => data.kind == PaymentKind.WALLET_ADDRESS || method.kind == data.kind)) return;
 
             offering.data.payout.methods.forEach(method => {
               if (isPaymentKind(method.kind)) {
