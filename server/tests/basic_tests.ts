@@ -240,7 +240,7 @@ test.serial("Transfer to wallet", (t: any) => {
 
 test.serial("Transfer from wallet", (t: any) => {
 	const { prefixUrl, auth, cache, user } = t.context;
-	cache.set(TBDCacheKeys.OFFERINGS, [{ pfi: PFIs[0], offerings: [OFFERINGs[8]] }]);
+	cache.set(TBDCacheKeys.OFFERINGS, [{ pfi: PFIs[0], offerings: [OFFERINGs[8], OFFERINGs[8]] }]);
 	let transferId;
 	return axios.post(`${prefixUrl}/transfers/start/BTC/USD`, {}, { headers: { Authorization: auth } })
 		.then(({ data }: AxiosResponse<CreateTransferResponse>) => {
