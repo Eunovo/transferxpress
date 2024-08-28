@@ -845,7 +845,98 @@ export const OFFERINGs = [
       }
     },
     "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDpkaHQ6emtwNWdic3Fnem42OWIzeTVkdHQ1bm5wanRkcTZzeHl1a3B6bzY4bnBzZjc5Ym10Yjl6eSMwIn0..EwYK4bKuEReH3jrQkqO84TzaQDvG8CXeToVB03GeNiaqbNF1S6kUYadaBvU-L1U5_qRahZNBdxPNg-fI0U8SDw"
-  }
+  },
+  // ---------------------- generated offerings
+  {
+    "metadata": {
+      "from": "did:dht:zkp5gbsqgzn69b3y5dtt5nnpjtdq6sxyukpzo68npsf79bmtb9zy",
+      "protocol": "1.0",
+      "kind": "offering",
+      "id": "offering_btc_to_usd_01",
+      "createdAt": "2024-08-20T10:15:30.123Z"
+    },
+    "data": {
+      "description": "Exchange your Bitcoin for US Dollars",
+      "payoutUnitsPerPayinUnit": "30000",
+      "payin": {
+        "currencyCode": "BTC",
+        "methods": [
+          {
+            "kind": "BTC_WALLET_ADDRESS",
+            "requiredPaymentDetails": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "title": "BTC Required Payment Details",
+              "type": "object",
+              "properties": {
+                "address": {
+                  "type": "string",
+                  "description": "Bitcoin wallet address for receiving BTC"
+                }
+              },
+              "required": ["address"]
+            }
+          }
+        ]
+      },
+      "payout": {
+        "currencyCode": "USD",
+        "methods": [
+          {
+            "kind": "USD_BANK_TRANSFER",
+            "estimatedSettlementTime": 86400,
+            "requiredPaymentDetails": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "title": "USD Required Payment Details",
+              "type": "object",
+              "properties": {
+                "accountNumber": {
+                  "type": "string",
+                  "description": "Bank account number for USD transfer"
+                },
+                "routingNumber": {
+                  "type": "string",
+                  "description": "Bank routing number for USD transfer"
+                }
+              },
+              "required": ["accountNumber", "routingNumber"]
+            }
+          }
+        ]
+      },
+      "requiredClaims": {
+        "id": "btc_to_usd_claims_01",
+        "format": {
+          "jwt_vc": {
+            "alg": ["ES256K", "EdDSA"]
+          }
+        },
+        "input_descriptors": [
+          {
+            "id": "kyc_credential_btc_to_usd",
+            "constraints": {
+              "fields": [
+                {
+                  "path": ["$.type[*]"],
+                  "filter": {
+                    "type": "string",
+                    "const": "KnownCustomerCredential"
+                  }
+                },
+                {
+                  "path": ["$.issuer"],
+                  "filter": {
+                    "type": "string",
+                    "const": "did:dht:bh8me68fsdb6xuyy3dsh4aanczexga3k3m7fk4ie6hj5jy6inq5y"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "signature": "eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDpkaHQ6emtwNWdic3Fnem42OWIzeTVkdHQ1bm5wanRkcTZzeHl1a3B6bzY4bnBzZjc5Ym10Yjl6eSMwIn0..EXAMPLE_SIGNATURE"
+  },
 ]
 
 export const PFI_OFFERINGs = [

@@ -148,11 +148,11 @@ export class Users {
 
     return this.tbdex.fetchOfferings()
       .then(offerings => {
-        const payinMethods: CreateTransferResponse['payinMethods'] = [{ kind: PaymentKind.WALLET_ADDRESS, fields: ['walletId'] }];
+        const payinMethods: Map<PaymentKind, CreateTransferResponse['payinMethods'][number]> = new Map();
         this.searchOfferings(offerings, payinCurrencyCode, payoutCurrencyCode, offering => {
           offering.data.payin.methods.forEach(method => {
-            if (isPaymentKind(method.kind)) {
-              payinMethods.push({ kind: method.kind, fields: extractRequiredPaymentDetails(method.requiredPaymentDetails) });
+            if (isPaymentKind(method.kind) && !payinMethods.has(method.kind)) {
+              payinMethods.set(method.kind, { kind: method.kind, fields: extractRequiredPaymentDetails(method.requiredPaymentDetails) });
               return;
             }
             usersLogger.warn(
@@ -162,7 +162,7 @@ export class Users {
           });
         });
 
-        if (payinMethods.length === 0) throw new ServerError({ code: ErrorCode.ROUTE_NOT_FOUND });
+        if (payinMethods.size === 0) throw new ServerError({ code: ErrorCode.ROUTE_NOT_FOUND });
         const insert = this.db.insertTransfer({
           userId,
           payinCurrencyCode,
@@ -174,9 +174,12 @@ export class Users {
 
         return wallets.then(wallets => {
           wallets = wallets.filter(wallet => wallet.currencyCode === payinCurrencyCode)
-          if (wallets.length > 0) payinMethods.push({ kind: PaymentKind.WALLET_ADDRESS, fields: ['walletId'] });
+          let methods = wallets.length > 0
+            ? [{ kind: PaymentKind.WALLET_ADDRESS, fields: ['walletId' as keyof PaymentDetails] }, ...payinMethods.values()]
+            : [...payinMethods.values()];
+
           // TODO Add Saved card option if credit card exists among methods
-          return insert.then((transfer) => ({ id: transfer.id, payinMethods }));
+          return insert.then((transfer) => ({ id: transfer.id, payinMethods: methods }));
         });
       });
   }
@@ -239,15 +242,15 @@ export class Users {
       .then(transfer => {
         if (transfer === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
         return offerings.then(offerings => {
-          const payoutMethods: PayinUpdateResponse = [{ kind: PaymentKind.WALLET_ADDRESS, fields: ['walletId'] }];
+          const payoutMethods: Map<PaymentKind, PayinUpdateResponse[number]> = new Map();
 
           this.searchOfferings(offerings, transfer.payinCurrencyCode, transfer.payoutCurrencyCode, offering => {
             // Payout Methods is narrowed by selected Payin Method
-            if (!offering.data.payin.methods.find(method => method.kind == data.kind)) return;
+            if (!offering.data.payin.methods.find(method => data.kind == PaymentKind.WALLET_ADDRESS || method.kind == data.kind)) return;
 
             offering.data.payout.methods.forEach(method => {
-              if (isPaymentKind(method.kind)) {
-                payoutMethods.push({ kind: method.kind, fields: extractRequiredPaymentDetails(method.requiredPaymentDetails) });
+              if (isPaymentKind(method.kind) && !payoutMethods.has(method.kind)) {
+                payoutMethods.set(method.kind, { kind: method.kind, fields: extractRequiredPaymentDetails(method.requiredPaymentDetails) });
                 return;
               }
               usersLogger.warn(
@@ -259,7 +262,7 @@ export class Users {
 
           // If no payout methods was found, the payin method was not returned from create transfer request
           // There's a chance that the payin method was among returned list but no payout methods were found but we don't care about that
-          if (payoutMethods.length === 0) throw new ServerError({ code: ErrorCode.UNSUPPORTED_METHOD });
+          if (payoutMethods.size === 0) throw new ServerError({ code: ErrorCode.UNSUPPORTED_METHOD });
 
           return wallets.then(wallets => {
             const selectedWallet = wallets.find((wallet) => wallet.id == data.walletId);
@@ -280,7 +283,7 @@ export class Users {
               payinCLABE: data.CLABE,
               payinAddress: data.address,
               lastUpdatedAt: now
-            }).then(() => payoutMethods);
+            }).then(() => [{ kind: PaymentKind.WALLET_ADDRESS, fields: ['walletId'] }, ...payoutMethods.values()]);
           });
         });
       });

@@ -189,7 +189,6 @@ test.serial("Transfer by bank transfer", (t: any) => {
 			t.deepEqual(data, {
 				id: data.id,
 				payinMethods: [
-					{ kind: PaymentKind.WALLET_ADDRESS, fields: ["walletId"] },
 					{ kind: PaymentKind.NGN_BANK_TRANSFER, fields: [] }
 				]
 			});
@@ -219,7 +218,6 @@ test.serial("Transfer to wallet", (t: any) => {
 			t.deepEqual(data, {
 				id: data.id,
 				payinMethods: [
-					{ kind: PaymentKind.WALLET_ADDRESS, fields: ["walletId"] },
 					{ kind: PaymentKind.USD_BANK_TRANSFER, fields: ["accountNumber", "routingNumber"] }
 				]
 			});
@@ -234,6 +232,37 @@ test.serial("Transfer to wallet", (t: any) => {
 			]);
 
 			return axios.post(`${prefixUrl}/transfers/${transferId}/payout`, { kind: PaymentKind.WALLET_ADDRESS, walletId: user.walletIds[0] }, { headers: { Authorization: auth } });
+		})
+		.catch((err) => {
+			t.fail(err.message);
+		});
+});
+
+test.serial("Transfer from wallet", (t: any) => {
+	const { prefixUrl, auth, cache, user } = t.context;
+	cache.set(TBDCacheKeys.OFFERINGS, [{ pfi: PFIs[0], offerings: [OFFERINGs[8], OFFERINGs[8]] }]);
+	let transferId;
+	return axios.post(`${prefixUrl}/transfers/start/BTC/USD`, {}, { headers: { Authorization: auth } })
+		.then(({ data }: AxiosResponse<CreateTransferResponse>) => {
+			t.truthy(data.id);
+			t.deepEqual(data, {
+				id: data.id,
+				payinMethods: [
+					{ kind: PaymentKind.WALLET_ADDRESS, fields: ["walletId"] },
+					{ kind: PaymentKind.BTC_WALLET_ADDRESS, fields: ["address"] }
+				]
+			});
+
+			transferId = data.id;
+			return axios.post(`${prefixUrl}/transfers/${data.id}/payin`, { kind: PaymentKind.WALLET_ADDRESS, walletId: user.walletIds[0] }, { headers: { Authorization: auth } });
+		})
+		.then(({ data }: AxiosResponse<PayinUpdateResponse>) => {
+			t.deepEqual(data, [
+				{ kind: PaymentKind.WALLET_ADDRESS, fields: ["walletId"] },
+				{ kind: PaymentKind.USD_BANK_TRANSFER, fields: ["accountNumber", "routingNumber"] }
+			]);
+
+			return axios.post(`${prefixUrl}/transfers/${transferId}/payout`, { kind: PaymentKind.USD_BANK_TRANSFER, accountNumber: "9876543210", routingNumber: "654321" }, { headers: { Authorization: auth } });
 		})
 		.catch((err) => {
 			t.fail(err.message);
