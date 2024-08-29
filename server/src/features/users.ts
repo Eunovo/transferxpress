@@ -151,14 +151,17 @@ export class Users {
         const payinMethods: Map<PaymentKind, CreateTransferResponse['payinMethods'][number]> = new Map();
         this.searchOfferings(offerings, payinCurrencyCode, payoutCurrencyCode, offering => {
           offering.data.payin.methods.forEach(method => {
-            if (isPaymentKind(method.kind) && !payinMethods.has(method.kind)) {
+            if (!isPaymentKind(method.kind)) {
+              usersLogger.warn(
+                `[startTransfer] Unknown payment kind: ${method.kind}`,
+                { userId, payinCurrencyCode, payoutCurrencyCode, pfiDid: offering.metadata.from, offeringId: offering.id }
+              );
+              return;
+            }
+            if (!payinMethods.has(method.kind)) {
               payinMethods.set(method.kind, { kind: method.kind, fields: extractRequiredPaymentDetails(method.requiredPaymentDetails) });
               return;
             }
-            usersLogger.warn(
-              `[startTransfer] Unknown payment kind: ${method.kind}`,
-              { userId, payinCurrencyCode, payoutCurrencyCode, pfiDid: offering.metadata.from, offeringId: offering.id }
-            );
           });
         });
 
@@ -249,14 +252,17 @@ export class Users {
             if (!offering.data.payin.methods.find(method => data.kind == PaymentKind.WALLET_ADDRESS || method.kind == data.kind)) return;
 
             offering.data.payout.methods.forEach(method => {
-              if (isPaymentKind(method.kind) && !payoutMethods.has(method.kind)) {
+              if (!isPaymentKind(method.kind)) {
+                usersLogger.warn(
+                  `[saveTransferPayinData] Unknown payment kind: ${method.kind}`,
+                  { userId, payinCurrencyCode: transfer.payinCurrencyCode, payoutCurrencyCode: transfer.payoutCurrencyCode, pfiDid: offering.metadata.from, offeringId: offering.id }
+                );
+                return;
+              }
+              if (!payoutMethods.has(method.kind)) {
                 payoutMethods.set(method.kind, { kind: method.kind, fields: extractRequiredPaymentDetails(method.requiredPaymentDetails) });
                 return;
               }
-              usersLogger.warn(
-                `[saveTransferPayinData] Unknown payment kind: ${method.kind}`,
-                { userId, payinCurrencyCode: transfer.payinCurrencyCode, payoutCurrencyCode: transfer.payoutCurrencyCode, pfiDid: offering.metadata.from, offeringId: offering.id }
-              );
             });
           });
 
