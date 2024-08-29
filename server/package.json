@@ -7,7 +7,8 @@
     "build": "npm run clean && tsc",
     "start": "npm run build && node dist/src/start_server.js",
     "load:pfis": "npm run build && node dist/src/load_pfis.js",
-    "test": "npm run build && ava"
+    "test": "npm run build && ava tests/basic_tests.ts",
+    "test:e2e": "npm run build && ava tests/e2e_test.ts"
   },
   "repository": {
     "type": "git",
