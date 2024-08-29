@@ -294,6 +294,7 @@ export class TBDexService {
       }
 
       this.cache.set(CacheKeys.WATCH_EXCHANGE(exchangeId), true);
+      tbdexLogger.info({ exchangeId }, "[watchExchange] Watch started");
       const interval = setInterval(() => {
         TbdexHttpClient.getExchange({
           pfiDid,
@@ -303,6 +304,7 @@ export class TBDexService {
           const close = exchange.find(msg => msg instanceof Close);
           if (close) {
             this.cache.set(CacheKeys.WATCH_EXCHANGE(exchangeId), close);
+            tbdexLogger.info({ exchangeId }, "[watchExchange] Watch ended");
             clearInterval(interval);
             callback(close);
           }

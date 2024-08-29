@@ -574,6 +574,7 @@ export class Users {
   }
 
   private handleTransferComplete(transferId: ID, userId: ID, success: boolean = false): Promise<void> {
+    usersLogger.info({ transferId, userId, success }, "[handleTransferComplete]");
     const status = success ? TransactionStatus.SUCCESS : TransactionStatus.FAILED;
     return this.db.findTransferByIdAndUserId(transferId, userId)
       .then(transfer => {
