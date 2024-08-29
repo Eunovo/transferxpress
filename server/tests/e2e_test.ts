@@ -130,44 +130,44 @@ test.serial("End-to-end test", async (t) => {
             const payinKind = 'WALLET_ADDRESS';
             const payoutKind = ["BTC", "USDC"].includes(to) ? `${to}_WALLET_ADDRESS` : `${to}_BANK_TRANSFER`;
 
-            await client.post<CreateTransferResponse>(`/transfers/start/${from}/${to}`, {})
-                .then(async ({ data }) => {
-                    t.truthy(data.id);
-                    t.truthy(data.payinMethods.find((v) => v.kind == payinKind));
+            try {
+                const { data } = await client.post<CreateTransferResponse>(`/transfers/start/${from}/${to}`, {});
+                t.truthy(data.id);
+                t.truthy(data.payinMethods.find((v) => v.kind == payinKind));
 
-                    const { data: payoutMethods } = await client.post<PayinUpdateResponse>(`/transfers/${data.id}/payin`, {
-                        kind: payinKind,
-                        walletId: fromWallet.id
-                    });
-                    t.truthy(payoutMethods.find((v) => v.kind == payoutKind));
-
-                    await client.post(`/transfers/${data.id}/payout`, {
-                        kind: payoutKind,
-                        accountNumber: "987654321",
-                        routingNumber: "987654321",
-                        bankCode: "654321",
-                        sortCode: "654321",
-                        BSB: "654321",
-                        IBAN: "987654321",
-                        CLABE: "54321",
-                        address: "0xdef456g"
-                    });
-
-                    const { data: summary } = await client.post<TransferSummary>(`/transfers/${data.id}/amount`, { amount });
-                    t.is(summary.payin.currencyCode, from);
-                    t.is(summary.payout.amount, amount);
-                    t.is(summary.payout.currencyCode, to);
-
-                    await client.post(`/transfers/${data.id}/confirm`, {});
-                    const status = await waitUntilTransferComplete(data.id);
-                    t.is(status, TransactionStatus.SUCCESS);
-                }).catch((err) => {
-                    if (err.response && err.response.data && err.response.data.code !== ErrorCode.WALLET_INSUFFICIENT_BALANCE) {
-                        t.fail(`Expected ErrorCode.WALLET_INSUFFICIENT_BALANCE, but got ${err.response.data.code}`);
-                        return;
-                    }
-                    t.log(`${from} Wallet has insufficent balance`);
+                const { data: payoutMethods } = await client.post<PayinUpdateResponse>(`/transfers/${data.id}/payin`, {
+                    kind: payinKind,
+                    walletId: fromWallet.id
                 });
+                t.truthy(payoutMethods.find((v) => v.kind == payoutKind));
+
+                await client.post(`/transfers/${data.id}/payout`, {
+                    kind: payoutKind,
+                    accountNumber: "987654321",
+                    routingNumber: "987654321",
+                    bankCode: "654321",
+                    sortCode: "654321",
+                    BSB: "654321",
+                    IBAN: "987654321",
+                    CLABE: "54321",
+                    address: "0xdef456g"
+                });
+
+                const { data: summary } = await client.post<TransferSummary>(`/transfers/${data.id}/amount`, { amount });
+                t.is(summary.payin.currencyCode, from);
+                t.is(summary.payout.amount, amount);
+                t.is(summary.payout.currencyCode, to);
+
+                await client.post(`/transfers/${data.id}/confirm`, {});
+                const status = await waitUntilTransferComplete(data.id);
+                t.is(status, TransactionStatus.SUCCESS);
+            } catch (err) {
+                if (err.response && err.response.data && err.response.data.code !== ErrorCode.WALLET_INSUFFICIENT_BALANCE) {
+                    t.fail(`Expected ErrorCode.WALLET_INSUFFICIENT_BALANCE, but got ${err.response.data.code}`);
+                    return;
+                }
+                t.log(`${from} Wallet has insufficent balance`);
+            }
         }
     }
 
