@@ -629,6 +629,7 @@ export class Users {
   }
 
   getTransferStatus(user: User, transferId: ID): Promise<{ status: TransactionStatus }> {
+    usersLogger.info({ transferId }, '[getTransferStatus]');
     return new Promise((resolve, reject) => {
       this.db.findTransferByIdAndUserId(transferId, user.id)
         .then((transfer) => {
