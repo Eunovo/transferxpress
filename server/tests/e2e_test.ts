@@ -48,7 +48,7 @@ test.serial("End-to-end test", async (t) => {
 
     const waitUntilTransferComplete = (transferId: unknown) => new Promise<TransactionStatus>((resolve, reject) => {
         const interval = setInterval(() => {
-            client.post<{ status: TransactionStatus }>(`/transfers/${transferId}/status`)
+            client.get<{ status: TransactionStatus }>(`/transfers/${transferId}/status`)
                 .then(({ data: { status } }) => {
                     if (status !== TransactionStatus.PROCESSING) {
                         resolve(status);
