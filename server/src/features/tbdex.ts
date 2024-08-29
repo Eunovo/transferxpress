@@ -260,7 +260,11 @@ export class TBDexService {
       .then(() => TbdexHttpClient.submitOrder(order))
       .then(() => {
         this.cache.set(CacheKeys.WATCH_EXCHANGE(order.exchangeId), true);
+        let sending;
+        let completed = false;
         const interval = setInterval(() => {
+          if (sending == true) return;
+          sending = true;
           TbdexHttpClient.getExchange({
             pfiDid: order.metadata.to,
             did: userBearerDid,
@@ -271,15 +275,19 @@ export class TBDexService {
               this.cache.set(CacheKeys.WATCH_EXCHANGE(order.exchangeId), close);
               clearInterval(interval);
               callback(close);
+              completed = true;
             }
-          }).catch(err => tbdexLogger.warn({ exchangeId: order.exchangeId, userDid: userBearerDid.uri }, `[sendOrder] ${err.message}`));
+          })
+            .catch(err => tbdexLogger.warn({ exchangeId: order.exchangeId, userDid: userBearerDid.uri }, `[sendOrder] ${err.message}`))
+            .finally(() => sending = false);
         }, 100);
         // Timeout after 10 seconds
         setTimeout(() => {
+          if (completed) return;
           this.cache.del(CacheKeys.WATCH_EXCHANGE(order.exchangeId));
           clearInterval(interval); callback(null, new Error("Failed to close order after 10 seconds"));
         }, 10000);
-      });
+      }).catch(err => Promise.reject(new TBDexError(`Failed to submit order: ${err.message}`)));
   }
 
   watchExchange(userDid: string, pfiDid: string, exchangeId: string, callback: (msg: Close | null, error?: Error) => void) {
@@ -294,7 +302,12 @@ export class TBDexService {
       }
 
       this.cache.set(CacheKeys.WATCH_EXCHANGE(exchangeId), true);
+      tbdexLogger.info({ exchangeId }, "[watchExchange] Watch started");
+      let sending;
+      let completed = false;
       const interval = setInterval(() => {
+        if (sending == true) return;
+        sending = true;
         TbdexHttpClient.getExchange({
           pfiDid,
           did: userBearerDid,
@@ -303,13 +316,18 @@ export class TBDexService {
           const close = exchange.find(msg => msg instanceof Close);
           if (close) {
             this.cache.set(CacheKeys.WATCH_EXCHANGE(exchangeId), close);
+            tbdexLogger.info({ exchangeId }, "[watchExchange] Watch ended");
             clearInterval(interval);
             callback(close);
+            completed = true;
           }
-        }).catch(err => tbdexLogger.warn({ exchangeId, userDid: userBearerDid.uri }, `[watchExchange] ${err.message}`));
+        })
+          .catch(err => tbdexLogger.warn({ exchangeId, userDid: userBearerDid.uri }, `[watchExchange] ${err.message}`))
+          .finally(() => sending = false);
       }, 100);
       // Timeout after 10 seconds
       setTimeout(() => {
+        if (completed) return;
         this.cache.del(CacheKeys.WATCH_EXCHANGE(exchangeId));
         clearInterval(interval); callback(null, new Error("Failed to close order after 10 seconds"))
       }, 10000);
