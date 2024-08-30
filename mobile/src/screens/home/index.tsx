@@ -11,6 +11,7 @@ import PlusIcon from "@/assets/icons/plus_bold.svg";
 import { RecentTransactions } from "@/_components/Home/RecentTransactions";
 import { WalletList } from "@/_components/Home/WalletList";
 import { useUserState } from "@/store/user/useUserState";
+import { SelectWalletModal } from "@/_components/Home/SelectWalletMModal";
 
 
 
@@ -49,7 +50,8 @@ export default function Home (){
         }
     ],
  };
- const {activeWallet} = useUserState()
+ const {activeWallet} = useUserState();
+ const [showWalletModal, setShowWalletModal] = useState(false)
     return(
         <LayoutWithScroll>
             <View className="w-full grow pb-10">
@@ -65,8 +67,9 @@ export default function Home (){
                 style={{
                     gap: 16
                 }}
-                className="w-full mt-4">
+                className="w-full my-4">
                 <CustomPressable
+                onPress={()=>setShowWalletModal(true)}
 style={{
     gap: 8
 }}
@@ -85,7 +88,7 @@ className="w-full flex-row items-center justify-center px-3 py-3 bg-secondary ro
     </NormalText>
 </CustomPressable>
                 </View>
-                <View className="w-full flex-1 mt-6">
+                <View className="w-full mt-6 mb-10">
                     <NormalText 
                     size={13}
                     className="text-white/80 mb-3">
@@ -99,7 +102,7 @@ className="w-full flex-row items-center justify-center px-3 py-3 bg-secondary ro
               horizontal
               >
 {
-                    exchnageRates[activeWallet.ticker].map( item => (
+                    (exchnageRates[activeWallet.ticker] || []).map( item => (
                         <View
                         key={item.currency}
                         style={{
@@ -131,14 +134,24 @@ className="w-full flex-row items-center justify-center px-3 py-3 bg-secondary ro
                          weight={600}
                          className="text-white"
                          >
-                         {flagsAndSymbol[item.currency as keyof typeof flagsAndSymbol].symbol}{formatToCurrencyString( item.rate < 1 ?  (1 / item.rate) : item.rate, 2)}
+                         {flagsAndSymbol[activeWallet.ticker as keyof typeof flagsAndSymbol].symbol} {formatToCurrencyString( item.rate < 1 ?  (1 / item.rate) : item.rate, 2)}
                          </HeaderText>
                         </View>
                     ))
                 }
                </ScrollView>
-  <RecentTransactions />
+
                 </View>
+                <RecentTransactions />
+                {
+                    showWalletModal && (
+                        <SelectWalletModal 
+                        showModal={showWalletModal}
+                        closeModal={()=>setShowWalletModal(false)}
+
+                        />
+                    )
+                }
             </View>
         </LayoutWithScroll>
     )

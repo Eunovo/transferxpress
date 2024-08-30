@@ -25,7 +25,7 @@ export const RecentTransactions = ()=>{
     return(
         <View className="w-full">
         <View
-                  className="w-full flex-row justify-between items-center my-6"
+                  className="w-full flex-row justify-between items-center mb-6"
                   >
                       <HeaderText
                       size={20}

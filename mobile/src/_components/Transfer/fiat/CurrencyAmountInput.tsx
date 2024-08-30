@@ -18,13 +18,15 @@ active: {
 title: string;
 setAmount: (value:string)=>void;
 setCurrency: (value:string)=>void;
+isReadOnly?:boolean
 }
 export const CurrencyAmountInput = (
     {
 active,
 title,
 setAmount,
-setCurrency
+setCurrency,
+isReadOnly
     }:Props
 )=>{
     const [showCurrencyModal,setShowCurrencyModal] = useState(false);
@@ -65,6 +67,7 @@ className="w-full bg-dark py-3 px-2 rounded-xl"
     />
 
     <CustomPressable
+    disabled={isReadOnly}
     onPress={()=>{
         setShowCurrencyModal(true)
     }}
@@ -81,9 +84,13 @@ className="w-full bg-dark py-3 px-2 rounded-xl"
          weight={600} className="text-primary/80 mx-2">
           {active.currency}
         </HeaderText>
-        <View className="w-[10px] h-[10px]">
-          <CaretIcon fill={"#ECB365"} fillOpacity={0.8} width={"100%"} height={"100%"} />
-        </View>
+      {
+        !isReadOnly && (
+            <View className="w-[10px] h-[10px]">
+            <CaretIcon fill={"#ECB365"} fillOpacity={0.8} width={"100%"} height={"100%"} />
+          </View>
+        )
+      }
     </CustomPressable>
     </View>
 </View>

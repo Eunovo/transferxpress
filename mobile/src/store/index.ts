@@ -12,19 +12,21 @@ import {
 } from "redux-persist";
 import transferReducer from "./transfer/slice"
 import userReducer from "./user/slice"
-
+import depositReducer from "./deposit/slice"
 
 const persistConfig = {
   key: "TRANSFERXPRESS_APP_STATE",
   storage: AsyncStorage,
   blacklist: [
     "transferReducer",
+    "depositReducer"
   ],
 };
 
 const rootReducer = combineReducers({
   userReducer,
-transferReducer
+transferReducer,
+depositReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

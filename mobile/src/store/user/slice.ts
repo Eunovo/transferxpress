@@ -4,7 +4,13 @@ export type Wallet = {
     amount: string
 }
 type UserState = {
-    profile: null;
+    profile: {
+        id: number;
+        email: string;
+        firstname: string;
+        lastname: string;
+        country: string;
+    } | null;
     wallets: Array<Wallet>;
     activeWallet: Wallet
 }
