@@ -1,8 +1,8 @@
-import { useSelector } from "react-redux";
 import { RootState } from "@/store";
+import { useAppSelector } from "../hooks";
 
 export const useDepositState = () => {
-  const depositState = useSelector(
+  const depositState = useAppSelector(
     (storeState: RootState) => storeState.depositReducer
   );
   return depositState;

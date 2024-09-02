@@ -22,7 +22,7 @@ navigation
     const {activeWallet} = useUserState()
     const {amount, currency, exchangeRate} = useDepositState();
     const sendingCurrencySymbol = flagsAndSymbol[currency as keyof typeof flagsAndSymbol].symbol;
-    const receivingCurrencySymbol = flagsAndSymbol[activeWallet.ticker as keyof typeof flagsAndSymbol].symbol;
+    const receivingCurrencySymbol = flagsAndSymbol[activeWallet?.ticker as keyof typeof flagsAndSymbol].symbol;
        const fee = 0.75;
     return(
         <LayoutNormal>
@@ -77,7 +77,7 @@ className="text-primary"
                 size={14}
                 className="text-white/80"
                 >
-                  Your {activeWallet.ticker} wallet will receive
+                  Your {activeWallet?.ticker} wallet will receive
                 </NormalText>
 
             <NormalText

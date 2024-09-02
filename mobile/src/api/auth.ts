@@ -4,7 +4,7 @@ export const LOGIN_USER = async(data:{
     email:string;
     password: string
 })=>{
- return await transferxpressApi.post("/login", data)
+ return await transferxpressApi.post<LoginUSerDataResponse>("/login", data)
 }
 
 export const VERIFY_EMAIL = async(data:{
@@ -22,4 +22,10 @@ password: string;
 phoneNumber: string
 })=>{
     return await transferxpressApi.post("/register", data)
+}
+
+
+
+type LoginUSerDataResponse = {
+    token: string
 }

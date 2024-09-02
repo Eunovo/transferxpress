@@ -94,7 +94,7 @@ className="text-white/80 mb-10">
           isReadOnly
             title="Wallet to receive"
             active={{
-                currency: activeWallet.ticker,
+                currency: activeWallet?.ticker,
                 amount: amountToReceive
             }}
             setAmount={value => {
@@ -122,7 +122,7 @@ className="text-white/80 mb-10">
   
             <NormalText size={14} weight={600} className="text-white">
               {
-                flagsAndSymbol[activeWallet.ticker as keyof typeof flagsAndSymbol]
+                flagsAndSymbol[activeWallet?.ticker as keyof typeof flagsAndSymbol]
                   .symbol
               }{' '}
               {exchangeRate ? (1 / exchangeRate).toFixed(4) : 0}

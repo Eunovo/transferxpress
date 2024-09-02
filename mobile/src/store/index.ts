@@ -13,6 +13,7 @@ import {
 import transferReducer from "./transfer/slice"
 import userReducer from "./user/slice"
 import depositReducer from "./deposit/slice"
+import appReducer from "./app/slice"
 
 const persistConfig = {
   key: "TRANSFERXPRESS_APP_STATE",
@@ -24,6 +25,7 @@ const persistConfig = {
 };
 
 const rootReducer = combineReducers({
+  appReducer,
   userReducer,
 transferReducer,
 depositReducer

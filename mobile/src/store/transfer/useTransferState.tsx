@@ -1,8 +1,8 @@
-import { useSelector } from "react-redux";
 import { RootState } from "@/store";
+import { useAppSelector } from "../hooks";
 
 export const useTransferState = () => {
-  const transferState = useSelector(
+  const transferState = useAppSelector(
     (storeState: RootState) => storeState.transferReducer
   );
   return transferState;

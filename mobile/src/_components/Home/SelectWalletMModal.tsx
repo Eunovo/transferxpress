@@ -94,7 +94,7 @@ className="items-center justify-center bg-background border border-secondary rou
               }}
               className="w-full flex-row items-center">
               <Image
-           source={flagsAndSymbol[item.ticker as keyof typeof flagsAndSymbol].icon}
+           source={flagsAndSymbol[item.ticker as keyof typeof flagsAndSymbol]?.icon}
                   width={18}
                   height={12}
                   className="rounded w-[18px] h-[15px]"
@@ -102,7 +102,7 @@ className="items-center justify-center bg-background border border-secondary rou
             <View className="flex-row items-center">
             <NormalText
             size={15}
-            weight={activeWallet.ticker === item.ticker ? 700 : 400}
+            weight={activeWallet?.ticker === item.ticker ? 700 : 400}
                   className={clsx(
                     "text-white/80 ml-2"
                   )}
@@ -120,7 +120,7 @@ className="items-center justify-center bg-background border border-secondary rou
             className="items-center justify-center bg-dark border border-secondary rounded-full ml-auto"
             >
   {
-    activeWallet.ticker === item.ticker &&  <View className="w-full h-full rounded-full bg-primary" />
+    activeWallet?.ticker === item.ticker &&  <View className="w-full h-full rounded-full bg-primary" />
   }
             </View>
               </View>

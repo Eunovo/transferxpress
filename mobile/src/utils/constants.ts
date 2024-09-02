@@ -29,7 +29,7 @@ export const flagsAndSymbol = {
     icon: require("@/assets/images/uk_flag.png"),
     symbol: poundSymbol,
   },
-  GHN:{
+  GHS:{
     icon: require("@/assets/images/ghana_flag.png"),
     symbol: ghanaSymbol,
   },
@@ -41,9 +41,17 @@ export const flagsAndSymbol = {
     icon: require("@/assets/images/australia_flag.png"),
     symbol: australiaSymbol,
   },
-  MEX:{
+  MXN:{
     icon: require("@/assets/images/mexico_flag.png"),
     symbol: mexicoSymbol,
+  },
+  BTC:{
+    icon: require("@/assets/images/mexico_flag.png"),
+    symbol: "BTC",
+  },
+  USDC:{
+    icon: require("@/assets/images/mexico_flag.png"),
+    symbol: dollarSymbol,
   }
 };
 export const { width: SCREEN_WIDTH } = Dimensions.get("window");

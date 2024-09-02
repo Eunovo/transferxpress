@@ -12,6 +12,9 @@ import { useMutation } from "@tanstack/react-query";
 import { LOGIN_USER } from "@/api/auth";
 import { AuthNavigationStack } from "@/navigation/AuthStack";
 import { Spinner } from "@/_components/loader_utils/Spinner";
+import { useAppDispatch } from "@/store/hooks";
+import { setAppState } from "@/store/app/slice";
+import { setToken } from "@/api/base";
 
 
 interface Props {
@@ -22,6 +25,7 @@ export default function Login (
 navigation
     }:Props
 ) {
+    const dispatch = useAppDispatch()
     const {mutateAsync, isPending} = useMutation({
         mutationFn: LOGIN_USER
     })
@@ -48,7 +52,11 @@ initialValues={{
 }}
 onSubmit={ async(values)=>{
 try {
-    await mutateAsync(values)
+   const res = await mutateAsync(values) 
+   setToken(res.data.token)
+   dispatch(setAppState({
+    token: res.data.token
+   }))
 } catch (error) {
     return;
 }

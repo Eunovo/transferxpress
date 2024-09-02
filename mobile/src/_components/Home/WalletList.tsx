@@ -14,7 +14,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { CustomPressable } from "../Button/CustomPressable"
 import EyeOpenIcon from "@/assets/icons/eye.svg";
 import EyeClosedIcon from "@/assets/icons/eye_closed.svg";
@@ -25,8 +25,8 @@ import { useAppDispatch } from "@/store/hooks"
 
 export const WalletList = ()=>{
     const dispatch = useAppDispatch()
-const {wallets} = useUserState()
-    // const [currentIndex, setCurrentIndex] = useState(0);
+const {wallets, activeWallet} = useUserState();
+const [currentIndex, setCurrentIndex] = useState(0);
     const viewableItemsChanged = useRef(
         ({
           viewableItems,
@@ -34,10 +34,8 @@ const {wallets} = useUserState()
           viewableItems: ViewToken[];
           changed: ViewToken[];
         }) => {
-          if (typeof viewableItems[0].index === "number") {
-           dispatch(setUserState({
-            activeWallet: wallets[viewableItems[0].index]
-           }))
+          if (typeof viewableItems[0]?.index === "number") {
+       setCurrentIndex(viewableItems[0]?.index)
           }
         }
       );
@@ -46,27 +44,38 @@ const {wallets} = useUserState()
       const onScrollHandler = useAnimatedScrollHandler((event) => {
         scrollX.value = event.contentOffset.x;
       });
-      const [showBalance, setShowBalance] = useState(false)
+      const [showBalance, setShowBalance] = useState(false);
+      useEffect(
+        ()=>{
+          dispatch(setUserState({
+            activeWallet: wallets[currentIndex]
+           }))
+        }, [currentIndex]
+      );
     return(
       <View className="w-full my-6 py-4 bg-dark rounded-xl border border-secondary">
-<Animated.FlatList
+{
+  wallets && Boolean(wallets.length) && activeWallet && (
+    <Animated.FlatList
 data={wallets}
 renderItem={
     ({item, index})=>(
         <View 
         style={{
-            width: SCREEN_WIDTH - scale(32)
+            width: SCREEN_WIDTH - scale(32),
+            maxWidth:SCREEN_WIDTH - scale(32)
         }}
-        className="flex-1 items-center">
+        className="shrink-0 items-center justify-center">
 
             <View
         style={{
-            gap: 8
+            gap: 8,
+            width: scale(130)
         }}
         className="flex-row items-center bg-dark border border-secondary p-2 rounded-xl mb-4"
         >
         <Image
-                  source={flagsAndSymbol[item.ticker as keyof typeof flagsAndSymbol].icon}
+                  source={flagsAndSymbol[item.ticker as keyof typeof flagsAndSymbol]?.icon}
                   width={18}
                   height={12}
                   className="rounded w-[18px] h-[15px]"
@@ -99,7 +108,7 @@ renderItem={
         weight={600}
         className="text-primary"
         >
-        {flagsAndSymbol[item.ticker as keyof typeof flagsAndSymbol].symbol}{ showBalance  ? formatToCurrencyString(item.amount, 2) : "******.**"}
+        { showBalance  ? `${flagsAndSymbol[item.ticker as keyof typeof flagsAndSymbol]?.symbol} ${formatToCurrencyString(item.amount, 2)}` : "******.**"}
         </HeaderText>
         </View>
         <View  className="w-[50%] border-b border-b-white/20" />
@@ -114,13 +123,15 @@ renderItem={
 }
 horizontal
 showsHorizontalScrollIndicator={false}
-keyExtractor={({ticker})=>ticker}
+keyExtractor={({id})=>`${id}`}
 pagingEnabled
 bounces={false}
 onViewableItemsChanged={viewableItemsChanged.current}
 viewabilityConfig={viewConfig.current}
 onScroll={onScrollHandler}
 />
+  )
+}
       </View>
     )
 }

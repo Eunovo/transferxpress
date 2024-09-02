@@ -15,16 +15,19 @@ export const transferxpressApi = axios.create({
 
 export const setToken = (token?: string) => {
   transferxpressApi.defaults.headers["Authorization"] = token
-    ? `Bearer ${token}`
+    ? `${token}`
     : "";
 };
 
 transferxpressApi.interceptors.response.use(
   function (response: AxiosResponse) {
+    console.log(response.data);
+    
     return response;
   },
-//   TODO add interceptor logic
-//   function (error: AxiosError<any>) {
+  function (error: AxiosError<string>) {
+    console.log(error.response?.data);
+    
     // if (error.response?.status === 401) {
     //   store.dispatch(toggleIsAuthenticated(false));
     // }
@@ -40,7 +43,7 @@ transferxpressApi.interceptors.response.use(
     //   type: "danger",
     //   message: errorMessage,
     // });
-    // return Promise.reject(error);
-//   }
+    return Promise.reject(error);
+  }
 );
 

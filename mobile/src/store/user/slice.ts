@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 export type Wallet = {
+    id: number;
     ticker: string;
     amount: string
 }
@@ -12,29 +13,24 @@ type UserState = {
         country: string;
     } | null;
     wallets: Array<Wallet>;
-    activeWallet: Wallet
+    activeWallet: Wallet | null
 }
 
 const initialState:UserState = {
 profile: null,
 wallets: [
     {
+        id: 2,
         ticker: "USD",
         amount: "4000"
     },
     {
+        id: 4,
         ticker: "NGN",
-        amount: "4000000"
-    },
-    {
-        ticker: "KES",
-        amount: "40000"
+        amount: "400000"
     },
 ],
-activeWallet: {
-    ticker: "USD",
-    amount: "4000"
-},
+activeWallet: null,
 };
 
 
