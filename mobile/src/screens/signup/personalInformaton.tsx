@@ -5,15 +5,14 @@ import { NormalText } from "@/_components/Text/NormalText";
 import { Formik } from "formik";
 import { CustomTextInput } from "@/_components/FormComponents/CustomInput";
 import { ButtonNormal } from "@/_components/Button/NormalButton";
-import { moderateScale, moderateVerticalScale } from "react-native-size-matters";
-import ArrowIcon from "@/assets/icons/arrow.svg"
-import { CustomPressable } from "@/_components/Button/CustomPressable";
+import { moderateScale} from "react-native-size-matters";
 import { ListBottomSheet } from "@/_components/FormComponents/ListBottomSheet";
 import { useFetchCountries } from "@/services/queries/useFetchCountries";
 import { ScreenLoader } from "@/_components/loader_utils/ScreenLoader";
 import { AuthNavigationStack, type AuthStackParam } from "@/navigation/AuthStack";
 import type { RouteProp } from "@react-navigation/native";
 import { BackButton } from "@/_components/Button/BackButton";
+import { PhoneNumberInput } from "@/_components/FormComponents/PhoneNumberInput";
 
 interface Props {
     navigation: AuthNavigationStack;
@@ -106,20 +105,15 @@ className="text-white/80">
             <View className="w-full mb-4">
 {
     countryCallingCode && (
-        <CustomTextInput
+        <PhoneNumberInput
         title="Phone Number"
         placeholder="Enter your phone number"
-        readOnly={!countryCallingCode}
-        defaultValue={typeof countryCallingCode === "string" ? `+${countryCallingCode}  ${values.phoneNumber}` : typeof countryCallingCode !== "string" && typeof countryCallingCode !== "undefined" ? `+${countryCallingCode[0]}  ${values.phoneNumber}`: ""}
-        onChangeText={(text)=>{
-            console.log(text.length);
-            
-            const isCallingCodeArray = typeof countryCallingCode !== "undefined" && typeof countryCallingCode !== "string"
-            if(isCallingCodeArray ? text.length < countryCallingCode[0]?.length + 3 :  text.length < countryCallingCode.length + 3 ) return ;
-            const formmatted = typeof countryCallingCode === "string" ? text.replaceAll(`+${countryCallingCode}`, "") : text.replaceAll(`+${countryCallingCode?.[0]}`, "")
-            setFieldValue("phoneNumber", formmatted.trim(), true)
-        }}
-      onFocus={e => console.log(e.nativeEvent.text.length) }
+        countryCallingCode={countryCallingCode}
+        onChangeText={handleChange("phoneNumber")}
+        defaultValue={values.phoneNumber}
+        onBlur={handleBlur("phoneNumber")}
+        errorMessage={errors.phoneNumber}
+        touched={touched.phoneNumber}
         />
     )
 }

@@ -134,7 +134,7 @@ className="text-white/80">
 <NormalText 
     weight={500}
     className="text-primary ml-1"
-    >Sign in</NormalText>
+    >Sign up</NormalText>
 
 </View>
 </CustomPressable>

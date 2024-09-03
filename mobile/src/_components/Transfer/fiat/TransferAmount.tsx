@@ -8,12 +8,15 @@ import {useAppDispatch} from '@/store/hooks';
 import {setTransferState} from '@/store/transfer/slice';
 import {flagsAndSymbol} from '@/utils/constants';
 import {useTransferState} from '@/store/transfer/useTransferState';
+import { useFetchRates } from '@/services/queries/useFetchRates';
+import { ScreenLoader } from '@/_components/loader_utils/ScreenLoader';
 
 interface Props {
   goToNextStage: () => void;
 }
 export const TransferAmount = ({goToNextStage}: Props) => {
   const dispatch = useAppDispatch();
+  const ratesQuery = useFetchRates();
   const {
     amount: recieverAmount,
     currency,
@@ -47,9 +50,11 @@ export const TransferAmount = ({goToNextStage}: Props) => {
       };
     });
   };
-  const exchangeRate = 0.009;
+  const exchangeRate = ratesQuery.rates  ? ratesQuery.rates[sender.currency]?.[receiver.currency]?.exchangeRate : null;
   const isButtonDisabled = !sender.amount || !receiver.amount;
+  const isLoading = ratesQuery.isPending;
   return (
+    <>
     <View>
       <View
         style={{
@@ -62,7 +67,7 @@ export const TransferAmount = ({goToNextStage}: Props) => {
           setAmount={value => {
             editSender('amount', value);
             if (value) {
-              const recieveAmount = (Number(value) * exchangeRate).toFixed(2);
+              const recieveAmount = exchangeRate ? (Number(value) * exchangeRate).toFixed(2) : 0;
               editReceiver('amount', `${recieveAmount}`);
             } else {
               editReceiver('amount', '');
@@ -76,7 +81,7 @@ export const TransferAmount = ({goToNextStage}: Props) => {
           setAmount={value => {
             editReceiver('amount', value);
             if (value) {
-              const sendAmount = (Number(value) / exchangeRate).toFixed(2);
+              const sendAmount = exchangeRate ?  (Number(value) / exchangeRate).toFixed(2) : 0;
               editSender('amount', `${sendAmount}`);
             } else {
               editSender('amount', '');
@@ -98,7 +103,7 @@ export const TransferAmount = ({goToNextStage}: Props) => {
 
           <NormalText size={14} weight={600} className="text-white">
             {
-              flagsAndSymbol[receiver.currency as keyof typeof flagsAndSymbol]
+              flagsAndSymbol[sender.currency as keyof typeof flagsAndSymbol]
                 .symbol
             }{' '}
             {exchangeRate ? (1 / exchangeRate).toFixed(4) : 0}
@@ -118,7 +123,7 @@ export const TransferAmount = ({goToNextStage}: Props) => {
                   sender: sender.currency,
                 },
                 amount: receiver.amount,
-                exchangeRate: exchangeRate.toString(),
+                exchangeRate: exchangeRate ? exchangeRate.toString() : "",
               }),
             );
             goToNextStage();
@@ -128,5 +133,13 @@ export const TransferAmount = ({goToNextStage}: Props) => {
         </ButtonNormal>
       </View>
     </View>
+          {
+            isLoading && (
+                <ScreenLoader
+                opacity={0.6}
+                />
+            )
+        }
+    </>
   );
 };
