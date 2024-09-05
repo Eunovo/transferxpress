@@ -10,6 +10,8 @@ import {flagsAndSymbol} from '@/utils/constants';
 import {useTransferState} from '@/store/transfer/useTransferState';
 import { useFetchRates } from '@/services/queries/useFetchRates';
 import { ScreenLoader } from '@/_components/loader_utils/ScreenLoader';
+import { useMutation } from '@tanstack/react-query';
+import { INITIATE_TRANSFER_PROCESS, SUBMIT_PAYIN_INFORMATION } from '@/api/transfer';
 
 interface Props {
   goToNextStage: () => void;
@@ -50,9 +52,16 @@ export const TransferAmount = ({goToNextStage}: Props) => {
       };
     });
   };
-  const exchangeRate = ratesQuery.rates  ? ratesQuery.rates[sender.currency]?.[receiver.currency]?.exchangeRate : null;
+  const initiateTransferutation = useMutation({
+mutationFn: INITIATE_TRANSFER_PROCESS
+  });
+  const submitPayinInformationMutation = useMutation({
+    mutationFn: SUBMIT_PAYIN_INFORMATION
+  })
+  const currencyPair = ratesQuery.rates ? ratesQuery.rates[sender.currency] : null;
+  const exchangeRate = currencyPair  ? currencyPair?.[receiver.currency]?.exchangeRate : null;
   const isButtonDisabled = !sender.amount || !receiver.amount;
-  const isLoading = ratesQuery.isPending;
+  const isLoading = ratesQuery.isPending || initiateTransferutation.isPending || submitPayinInformationMutation.isPending;
   return (
     <>
     <View>
@@ -115,18 +124,39 @@ export const TransferAmount = ({goToNextStage}: Props) => {
         className="pt-[64px] mt-auto w-full mx-auto justify-start">
         <ButtonNormal
           disabled={isButtonDisabled}
-          onPress={() => {
-            dispatch(
-              setTransferState({
-                currency: {
-                  reciever: receiver.currency,
-                  sender: sender.currency,
-                },
-                amount: receiver.amount,
-                exchangeRate: exchangeRate ? exchangeRate.toString() : "",
-              }),
-            );
-            goToNextStage();
+          onPress={async() => {
+           try {
+            const initiateTransferResponse = await initiateTransferutation.mutateAsync({
+              from: sender.currency,
+              to: receiver.currency
+            });
+            const transferId = initiateTransferResponse.data.id;
+            const payinKind = initiateTransferResponse.data.payinMethods.find(item => item.kind.includes("BANK_TRANSFER"))?.kind;
+     if(payinKind && typeof transferId === "number"){
+      const submitPayinInfoResponse = await submitPayinInformationMutation.mutateAsync({
+        body:{
+          kind: payinKind
+        },
+        transferId
+       });     
+       const payoutMethod = submitPayinInfoResponse.data.find(item => item.kind.includes("BANK_TRANSFER"));
+        dispatch(
+          setTransferState({
+            currency: {
+              reciever: receiver.currency,
+              sender: sender.currency,
+            },
+            amount: receiver.amount,
+            exchangeRate: exchangeRate ? exchangeRate.toString() : "",
+            transferId: initiateTransferResponse.data.id,
+            payoutMethod
+          }),
+        );
+        goToNextStage();
+     }
+           } catch (error) {
+            
+           }
           }}
           className="bg-secondary">
           <NormalText className="text-primary/80">Proceed</NormalText>

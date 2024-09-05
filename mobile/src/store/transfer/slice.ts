@@ -1,15 +1,19 @@
+import { PaymentMethod } from "@/api/transfer";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 type TransferState = {
   currency: {
     sender: string;
     reciever: string
-  }
+  };
   amount: string;
   accountName: string;
   accountNumber: string;
   narration: string;
   exchangeRate: string;
+  transferId: number | null;
+  transferFee?:string;
+  payoutMethod?: PaymentMethod;
   secondaryUniqueIdentifier?: string
 }
 
@@ -23,6 +27,7 @@ const initialState:TransferState = {
     accountNumber: "",
     exchangeRate: "",
     narration: "",
+    transferId: null
 };
 
 

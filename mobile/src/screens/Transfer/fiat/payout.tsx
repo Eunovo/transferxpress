@@ -2,7 +2,6 @@ import { CustomPressable } from "@/_components/Button/CustomPressable";
 import { LayoutNormal } from "@/_components/layouts/LayoutNormal";
 import { View } from "react-native";
 import { moderateScale, moderateVerticalScale } from "react-native-size-matters";
-import ArrowIcon from "@/assets/icons/arrow.svg"
 import { HeaderText } from "@/_components/Text/HeaderText";
 import { NormalText } from "@/_components/Text/NormalText";
 import CopyIcon from "@/assets/icons/copy.svg"

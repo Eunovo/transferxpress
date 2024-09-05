@@ -18,11 +18,13 @@ import { useTransferState } from "@/store/transfer/useTransferState";
 export default function TransferSuccess () {
     const navigation = useNavigation<UserNavigationStack>();
     const dispatch = useAppDispatch();
-    const {accountNumber, accountName, currency} = useTransferState();
+    const {accountNumber, accountName, currency, transferFee, amount} = useTransferState();
     const goBackToHome = ()=>{
         dispatch(clearTransferState());
         navigation.navigate("main-bottom-tab")
-    }
+    };
+    const totalAmountSent = parseFloat(amount) + parseFloat(`${transferFee}`);
+    const currencySymbol = flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol].symbol;
     return(
 <LayoutNormal>
 <View className="w-full grow pb-10">
@@ -65,7 +67,7 @@ className="mb-6"
 size={20}
 className="text-primary text-center"
 >
-{flagsAndSymbol.KES.symbol} {formatToCurrencyString(40000, 2)}
+{currencySymbol} {formatToCurrencyString(totalAmountSent, 2)}
 </HeaderText>
 </View>
 <View className="w-full bg-dark p-3 border border-secondary rounded-xl mb-6">
@@ -120,7 +122,7 @@ weight={600}
                 size={14}
                 className="text-white"
                 >
-0.5
+{currencySymbol} {formatToCurrencyString(transferFee, 2)}
 </NormalText>
 </View>
 <View

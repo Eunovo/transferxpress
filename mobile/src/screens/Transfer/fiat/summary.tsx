@@ -1,8 +1,6 @@
 import { LayoutNormal } from "@/_components/layouts/LayoutNormal";
 import { View } from "react-native";
-import ArrowIcon from "@/assets/icons/arrow.svg"
-import { CustomPressable } from "@/_components/Button/CustomPressable";
-import { moderateScale, moderateVerticalScale } from "react-native-size-matters";
+import { moderateScale} from "react-native-size-matters";
 import { HeaderText } from "@/_components/Text/HeaderText";
 import { NormalText } from "@/_components/Text/NormalText";
 import { ButtonNormal } from "@/_components/Button/NormalButton";
@@ -11,16 +9,22 @@ import { flagsAndSymbol } from "@/utils/constants";
 import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
 import { TransferNavigationStackType } from "@/navigation/UserStack/TransferStack";
 import { BackButton } from "@/_components/Button/BackButton";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { CANCEL_QUOTE, CONFIRM_QUOTE, GET_TRANSFER_STATUS } from "@/api/transfer";
+import { useEffect, useState } from "react";
+import { ScreenLoader } from "@/_components/loader_utils/ScreenLoader";
 
 interface Props {
     navigation: TransferNavigationStackType
 }
+const REFETCH_TIMEOUT_TIME = 30 * 1000;
 export default function TransferFiatSummary (
     {
 navigation
     }:Props
 ){
-    const {amount, accountName, accountNumber, secondaryUniqueIdentifier, currency, narration, exchangeRate} = useTransferState();
+    const {amount, accountName, accountNumber, secondaryUniqueIdentifier, currency, narration, exchangeRate, transferId, transferFee} = useTransferState();
+
     const currencySymbol = flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol].symbol;
     const secondaryUniqueIdentifierTitle = {
         USD: "Routing number",
@@ -29,12 +33,59 @@ navigation
         MXN:"CLABE number",
         AUD:"Bank state branch code (BSB)"
        }[currency.reciever];
-       const fee = 0.75;
+       const confirQuoteMutation = useMutation({
+        mutationFn: CONFIRM_QUOTE
+       });
+       const cancelQuoteMutation = useMutation({
+        mutationFn: CANCEL_QUOTE
+       });
+       const [refetchInterval, setRefetchIntervall] = useState(10000)
+       const transferStatusQuery = useQuery({
+        queryKey: ["getTransferStatus"],
+        queryFn: ()=>GET_TRANSFER_STATUS(transferId!),
+        enabled: confirQuoteMutation.isSuccess,
+        refetchInterval
+       });
+       const transferStatus = transferStatusQuery.data?.data.status;
+       useEffect(
+        ()=>{
+if(transferStatusQuery.isSuccess && transferStatus === "SUCCESS"){
+    navigation.navigate("transfer-fiat-success")
+}
+        }, [transferStatusQuery.isSuccess, transferStatusQuery.isRefetching]
+       )
+       useEffect(
+        ()=>{
+if(transferStatusQuery.isSuccess){
+ const refetchTimeout = setTimeout(
+    ()=>{
+setRefetchIntervall(0)
+navigation.navigate("transfer-fiat-success")
+    }, REFETCH_TIMEOUT_TIME
+)
+return ()=>{
+    clearTimeout(refetchTimeout)
+}
+}
+        }, [transferStatusQuery.isSuccess]
+       );
+
+       const isLaoding = confirQuoteMutation.isPending || transferStatusQuery.isFetching;
+       const totalAmountSent = parseFloat(amount) + parseFloat(`${transferFee}`);
     return(
         <LayoutNormal>
             <View className="w-full grow pb-10">
             <BackButton
-    onPress={()=>navigation.goBack()}
+    onPress={ async()=>{
+   try {
+    if(confirQuoteMutation.isSuccess && transferId){
+       await cancelQuoteMutation.mutateAsync(transferId)
+    }
+    navigation.goBack()
+   } catch (error) {
+    
+   }
+    }}
 />
             <HeaderText
    weight={700}
@@ -73,7 +124,7 @@ className="text-primary"
           weight={500}
             className="text-white"
             >
- {currencySymbol} {formatToCurrencyString(fee, 2)}
+ {currencySymbol} {formatToCurrencyString(transferFee, 2)}
             </NormalText>
             </View>
             <View
@@ -91,7 +142,7 @@ className="text-primary"
             weight={500}
             className="text-white"
             >
-{currencySymbol} {formatToCurrencyString((amount + fee), 2)}
+{currencySymbol} {formatToCurrencyString(totalAmountSent, 2)}
             </NormalText>
             </View>
             <View
@@ -214,7 +265,15 @@ className="text-primary"
                         className="pt-[64px] mt-auto w-full mx-auto justify-start"
                       >
  <ButtonNormal
- onPress={()=>navigation.navigate("transfer-fiat-payout")}
+ onPress={async()=>{
+if(transferId){
+    try {
+        await confirQuoteMutation.mutateAsync(transferId)
+    } catch (error) {
+        
+    }
+}
+ }}
        className="bg-secondary" 
         >
             <NormalText 
@@ -225,6 +284,13 @@ className="text-primary"
         </ButtonNormal>
  </View>
             </View>
+            {
+          isLaoding && (
+                <ScreenLoader
+                opacity={0.6}
+                />
+            )
+        }
         </LayoutNormal>
     )
 }

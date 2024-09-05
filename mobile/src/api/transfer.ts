@@ -9,16 +9,33 @@ export const INITIATE_TRANSFER_PROCESS = async(paths:{
 
 export const SUBMIT_PAYIN_INFORMATION  = async(data:{
     body:{
-        kind: PaymentKind
+        kind: PaymentKind;
+        walletId?:string;
+        accountNumber?:string;
+        routingNumber?:string;
+        sortCode?:string;
+        BSB?:string;
+        IBAN?:string;
+        CLABE?:string;
+        address?:string;
+
     },
     transferId: number
 })=>{
-    return await transferxpressApi.post("/transfers/" + data.transferId + "/payin", data.body)
+    return await transferxpressApi.post<Array<PaymentMethod>>("/transfers/" + data.transferId + "/payin", data.body)
 }
 
 export const SUBMIT_PAYOUT_INFORMATION = async(data:{
     body:{
-        kind: PaymentKind
+        kind: PaymentKind,
+        walletId?:string;
+        accountNumber?:string;
+        routingNumber?:string;
+        sortCode?:string;
+        BSB?:string;
+        IBAN?:string;
+        CLABE?:string;
+        address?:string;
     },
     transferId: number
 })=>{
@@ -35,26 +52,26 @@ export const CREATE_QUOTE = async(data:{
     return await transferxpressApi.post<CreateQuoteDataResponse>("/transfers/" + data.transferId + "/amount", data.body)
 }
 
-export const CONFIRM_QUOTE = async(transferId:string)=>{
+export const CONFIRM_QUOTE = async(transferId:number)=>{
     return await transferxpressApi.post("/transfers/" + transferId + "/confirm", {})
 }
 
-export const CANCEL_QUOTE = async(transferId:string)=>{
+export const CANCEL_QUOTE = async(transferId:number)=>{
     return await transferxpressApi.post("/transfers/" + transferId + "/cancel", {})
 }
 
-export const GET_TRANSFER_STATUS = async(transferId:string)=>{
-    return await transferxpressApi.get("/transfers/" + transferId + "/status")
+export const GET_TRANSFER_STATUS = async(transferId:number)=>{
+    return await transferxpressApi.get<GetTransferStatusDataResponse>("/transfers/" + transferId + "/status")
 }
 
-type PaymentKind = "WALLET_ADDRESS" | "NGN_BANK_TRANSFER" | "USD_BANK_TRANSFER" | "KES_BANK_TRANSFER" | "EUR_BANK_TRANSFER" | "GBP_BANK_TRANSFER" | "MXN_BANK_TRANSFER" | "AUD_BANK_TRANSFER" | "GHS_BANK_TRANSFER";
+export type PaymentKind = "WALLET_ADDRESS" | "NGN_BANK_TRANSFER" | "USD_BANK_TRANSFER" | "KES_BANK_TRANSFER" | "EUR_BANK_TRANSFER" | "GBP_BANK_TRANSFER" | "MXN_BANK_TRANSFER" | "AUD_BANK_TRANSFER" | "GHS_BANK_TRANSFER";
+export type PaymentMethod = {
+    kind: PaymentKind,
+    fields: string[]
+};
 type InitiateTransferProcessDataResponse = {
     id: number;
-    payinMethods: Array<{
-        kind: PaymentKind,
-        fields: string[]
-    }>
-    
+    payinMethods: Array<PaymentMethod>;
     };
 
 type CreateQuoteDataResponse = {
