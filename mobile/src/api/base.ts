@@ -1,9 +1,12 @@
 import axios, { type AxiosResponse, type AxiosError } from "axios";
 import AppConfiguration from "@/config";
+import { store } from "@/store";
+import { setAppState } from "@/store/app/slice";
+import { displayFlashbar } from "@/_components/Flashbar/displayFlashbar";
 
 export const transferxpressApi = axios.create({
   baseURL: AppConfiguration.apiUrl,
-  timeout: 15000,
+  timeout: 30000,
   headers: {
     common: {
       Accept: "*/*",
@@ -28,21 +31,26 @@ transferxpressApi.interceptors.response.use(
   function (error: AxiosError<string>) {
     console.log(error.response?.data);
     
-    // if (error.response?.status === 401) {
-    //   store.dispatch(toggleIsAuthenticated(false));
-    // }
-    // if (error.code === "ECONNABORTED") {
-    //   displayToast({
-    //     type: "danger",
-    //     message: "Request timed out",
-    //   });
-    //   return Promise.reject(error);
-    // }
-    // const errorMessage = `${error.response?.data.message}`;
-    // displayToast({
-    //   type: "danger",
-    //   message: errorMessage,
-    // });
+    if (error.response?.status === 401) {
+      store.dispatch(setAppState({
+        token: null
+      }));
+    }
+    if (error.code === "ECONNABORTED") {
+      displayFlashbar({
+        type: "danger",
+        message: "Request timed out",
+      });
+      return Promise.reject(error);
+    }
+const errorResponseData = error.response?.data;
+if(errorResponseData){
+  const errorMessage = typeof errorResponseData=== "string"  ? errorResponseData : ``;
+  displayFlashbar({
+    type: "danger",
+    message: errorMessage,
+  });
+}
     return Promise.reject(error);
   }
 );

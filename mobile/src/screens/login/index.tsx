@@ -28,7 +28,7 @@ navigation
     const dispatch = useAppDispatch()
     const {mutateAsync, isPending} = useMutation({
         mutationFn: LOGIN_USER
-    })
+    });
     return(
 <LayoutNormal>
     <View className="pb-10 grow">

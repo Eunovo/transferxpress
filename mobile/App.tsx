@@ -5,7 +5,7 @@
  * @format
  */
 
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   useColorScheme,
   View,
@@ -20,6 +20,8 @@ import { PersistGate } from "redux-persist/integration/react";
 import { Provider } from "react-redux";
 import { persistor, store } from "@/store";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import FlashMessage from 'react-native-flash-message';
+import { CustomFlashbar } from '@/_components/Flashbar';
 
 // create a client
 const queryClient = new QueryClient({
@@ -36,7 +38,7 @@ function App(): React.JSX.Element {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-
+  const flashbarRef = useRef<FlashMessage | null>(null);
   return (
     <View style={{flex: 1}} className='bg-white' >
       <QueryClientProvider client={queryClient}>
@@ -48,6 +50,10 @@ function App(): React.JSX.Element {
       </PersistGate>
       </Provider>
       </QueryClientProvider>
+      <FlashMessage
+                ref={flashbarRef}
+                MessageComponent={CustomFlashbar}
+              />
     </View>
   );
 }
