@@ -1,5 +1,6 @@
 import {ButtonNormal} from '@/_components/Button/NormalButton';
 import {CustomTextInput} from '@/_components/FormComponents/CustomInput';
+import { ScreenLoader } from '@/_components/loader_utils/ScreenLoader';
 import {NormalText} from '@/_components/Text/NormalText';
 import {CREATE_QUOTE, SUBMIT_PAYOUT_INFORMATION} from '@/api/transfer';
 import {TransferNavigationStackType} from '@/navigation/UserStack/TransferStack';
@@ -36,8 +37,10 @@ export const TransferDetails = () => {
   const createQuoteMutation = useMutation({
     mutationFn: CREATE_QUOTE
   });
+  const isPending = submitPayoutInformationMutation.isPending || createQuoteMutation.isPending;
   return (
-    <Formik
+<>
+<Formik
       initialValues={{
         accountName: initialState.accountName,
         accountNumber: initialState.accountNumber,
@@ -159,5 +162,13 @@ export const TransferDetails = () => {
         );
       }}
     </Formik>
+    {
+            isPending && (
+                <ScreenLoader
+                opacity={0.6}
+                />
+            )
+        }
+</>
   );
 };
