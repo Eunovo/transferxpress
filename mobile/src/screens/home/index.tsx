@@ -19,6 +19,7 @@ import {useAppDispatch} from '@/store/hooks';
 import {setUserState} from '@/store/user/slice';
 import { ScreenLoader } from '@/_components/loader_utils/ScreenLoader';
 import { Spinner } from '@/_components/loader_utils/Spinner';
+import { MarketRateSkeleton } from '@/_components/loader_utils/MarketRateSkeleton';
 
 export default function Home() {
   const dispatch = useAppDispatch();
@@ -107,13 +108,8 @@ export default function Home() {
           </CustomPressable>
         </View>
         {
-            !exchangeRates && (
-                <View className='w-full items-center'>
-                <Spinner
-                strokeColor='#ECB365'
-                circumfrence={80} strokeWidth={3}
-                />
-                </View>
+            (!exchangeRates || isLoading) && (
+                <MarketRateSkeleton />
             )
         }
    {
