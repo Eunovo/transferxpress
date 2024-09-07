@@ -48,7 +48,7 @@ export const RecentTransactions = ()=>{
                           </NormalText>
                       </CustomPressable>
                   </View>
-<View className="w-full grow p-3 border border-secondary bg-dark rounded-2xl">
+<View className="w-full grow rounded-2xl">
      {Boolean(transactions.length) && (
              transactions.map((item, index) =>(
                 <TransactionRenderItem

@@ -26,12 +26,20 @@ export default function TransferOptions () {
         {
             title: "Transfer as BTC",
             subTitle:"Send BTC to a wallet address",
-            action: ()=>{}
+            action: ()=>{
+                (navigation.navigate as any)("transfer-stack", {
+                    screen:"transfer-btc-address"
+                })
+            }
         },
         {
             title: "Transfer as USDC",
             subTitle:"Send USDC to external wallet address",
-            action: ()=>{}
+            action: ()=>{
+                (navigation.navigate as any)("transfer-stack", {
+                    screen:"transfer-usdc-address"
+                })
+            }
         }
     ];
     const beneficiaries = [

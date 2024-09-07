@@ -64,7 +64,7 @@ route
 Transaction History
    </HeaderText>
    <View
-   className="mt-4 w-full grow p-4 bg-dark border border-secondary rounded-xl"
+   className="mt-4 w-full grow rounded-xl"
    >
      {Boolean(transactions.length) && (
               <FlatList

@@ -40,8 +40,8 @@ export const TransactionRenderItem = ({
     >
       <View className={
         clsx(
-            "w-full flex-row justify-between pb-4 mb-4 border-b border-white/20",
-             index === totalTransactions - 1 && "!border-0 !mb-0 !pb-0"
+            "w-full flex-row justify-between p-3 rounded-xl mb-4 bg-dark border border-secondary ",
+             index === totalTransactions - 1 && "!mb-0"
         )
       }>
         <View
