@@ -10,7 +10,7 @@ export const INITIATE_TRANSFER_PROCESS = async(paths:{
 export const SUBMIT_PAYIN_INFORMATION  = async(data:{
     body:{
         kind: PaymentKind;
-        walletId?:string;
+        walletId?:number;
         accountNumber?:string;
         routingNumber?:string;
         sortCode?:string;
@@ -28,7 +28,7 @@ export const SUBMIT_PAYIN_INFORMATION  = async(data:{
 export const SUBMIT_PAYOUT_INFORMATION = async(data:{
     body:{
         kind: PaymentKind,
-        walletId?:string;
+        walletId?:number;
         accountNumber?:string;
         routingNumber?:string;
         sortCode?:string;

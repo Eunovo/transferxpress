@@ -13,6 +13,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { CANCEL_QUOTE, CONFIRM_QUOTE, GET_TRANSFER_STATUS } from "@/api/transfer";
 import { useEffect, useState } from "react";
 import { ScreenLoader } from "@/_components/loader_utils/ScreenLoader";
+import { Spinner } from "@/_components/loader_utils/Spinner";
 
 interface Props {
     navigation: TransferNavigationStackType
@@ -25,7 +26,8 @@ navigation
 ){
     const {amount, accountName, accountNumber, secondaryUniqueIdentifier, currency, narration, exchangeRate, transferId, transferFee} = useTransferState();
 
-    const currencySymbol = flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol].symbol;
+    const receiverCurrencySymbol = flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol].symbol;
+    const senderCurrencySymbol = flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol].symbol;
     const secondaryUniqueIdentifierTitle = {
         USD: "Routing number",
         EUR: "International Bank Account Number (IBAN)",
@@ -72,6 +74,7 @@ return ()=>{
 
        const isLaoding = confirQuoteMutation.isPending || transferStatusQuery.isFetching;
        const totalAmountSent = parseFloat(amount) + parseFloat(`${transferFee}`);
+       const transferExchangeRate =  exchangeRate &&  Number(exchangeRate) < 1 ? `${flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol]?.symbol} ${formatToCurrencyString(1 / Number(exchangeRate), 2)} = ${flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol]?.symbol} 1` : `${flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol]?.symbol} 1 = ${flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol]?.symbol} ${formatToCurrencyString(exchangeRate , 2)}`;
     return(
         <LayoutNormal>
             <View className="w-full grow pb-10">
@@ -124,7 +127,7 @@ className="text-primary"
           weight={500}
             className="text-white"
             >
- {currencySymbol} {formatToCurrencyString(transferFee, 2)}
+ {receiverCurrencySymbol} {formatToCurrencyString(transferFee, 2)}
             </NormalText>
             </View>
             <View
@@ -142,7 +145,7 @@ className="text-primary"
             weight={500}
             className="text-white"
             >
-{currencySymbol} {formatToCurrencyString(totalAmountSent, 2)}
+{receiverCurrencySymbol} {formatToCurrencyString(totalAmountSent, 2)}
             </NormalText>
             </View>
             <View
@@ -160,7 +163,7 @@ className="text-primary"
         weight={500}
             className="text-white"
             >
-{currencySymbol} {formatToCurrencyString(amount, 2)}
+{receiverCurrencySymbol} {formatToCurrencyString(amount, 2)}
             </NormalText>
             </View>
             <View
@@ -178,7 +181,7 @@ className="text-primary"
          weight={500}
             className="text-white"
             >
- {currencySymbol} {exchangeRate ? (1 / Number(exchangeRate)).toFixed(4) : 0}
+{transferExchangeRate}
             </NormalText>
             </View>
             <View  className="w-full border-t border-white/20 my-4"/>
@@ -276,21 +279,24 @@ if(transferId){
  }}
        className="bg-secondary" 
         >
-            <NormalText 
+              {
+    !isLaoding ? (
+        <NormalText 
+        weight={500}
             className="text-primary/80"
             >
                 Confirm and Proceed
             </NormalText>
+    ) : (
+        <Spinner
+        circumfrence={80} strokeWidth={3}
+        />
+    )
+  }     
         </ButtonNormal>
  </View>
             </View>
-            {
-          isLaoding && (
-                <ScreenLoader
-                opacity={0.6}
-                />
-            )
-        }
+        
         </LayoutNormal>
     )
 }
