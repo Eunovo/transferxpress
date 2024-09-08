@@ -6,8 +6,11 @@ import { View } from "react-native";
 import { moderateScale } from "react-native-size-matters";
 import CaretIcon from "@/assets/icons/caret.svg"
 import UserIcon from "@/assets/icons/user.svg"
+import { useState } from "react";
+import { LogoutModal } from "@/_components/Others/LogoutModal";
 
 export default function More () {
+    const [showLogoutModal, setShowLogoutModal] = useState(false)
     return(
         <LayoutNormal>
             <View className="grow">
@@ -130,7 +133,9 @@ className="text-white/80"
        Other
     </NormalText>
     <View className="w-full bg-dark border border-secondary p-4 rounded-xl">
-<CustomPressable>
+<CustomPressable
+onPress={()=>setShowLogoutModal(true)}
+>
     <View className="w-full flex-row justify-between">
 <NormalText
 className="text-white/80"
@@ -150,6 +155,14 @@ className="text-white/80"
 </View>
 </View>
             </View>
+            {
+                showLogoutModal && (
+                    <LogoutModal 
+                    showModal={showLogoutModal}
+                    closeModal={()=>setShowLogoutModal(false)}
+                    />
+                )
+            }
         </LayoutNormal>
     )
 }
