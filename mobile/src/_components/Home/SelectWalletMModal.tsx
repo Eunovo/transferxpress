@@ -1,4 +1,4 @@
-import { View, Image } from "react-native";
+import { View, Image, DimensionValue } from "react-native";
 import RNModal from "react-native-modal";
 import { SCREEN_HEIGHT, flagsAndSymbol } from "@/utils/constants";
 import CloseIcon from "@/assets/icons/x_mark.svg";
@@ -13,7 +13,8 @@ import { ButtonNormal } from "../Button/NormalButton";
 import { useUserState } from "@/store/user/useUserState";
 import { useNavigation } from "@react-navigation/native";
 import { UserNavigationStack } from "@/navigation/UserStack";
-
+import { useState } from "react";
+import Animated, { useSharedValue, withTiming } from "react-native-reanimated";
 
 export type Currency = {
     ticker: string;
@@ -28,6 +29,7 @@ export const SelectWalletModal = ({
   showModal,
   closeModal,
 }: Props) => {
+  const ViewHeight = useSharedValue(SCREEN_HEIGHT * 0.6);
 const dispatch = useAppDispatch();
 const navigation = useNavigation<UserNavigationStack>()
 const {activeWallet, wallets} = useUserState()
@@ -47,12 +49,29 @@ const {activeWallet, wallets} = useUserState()
       deviceHeight={SCREEN_HEIGHT}
       onBackdropPress={closeModal}
       statusBarTranslucent
-      swipeDirection={"down"}
-      onSwipeComplete={closeModal}
+      swipeDirection={["up","down"]}
+      // onSwipeStart={(state)=>{
+      //   if(state.moveY){
+      //     ViewHeight.value = withTiming(SCREEN_HEIGHT * 0.95);
+      //   }
+   
+      // }}
+      onSwipeComplete={({swipingDirection})=>{
+if(swipingDirection === "down"){
+  closeModal()
+}else{
+  ViewHeight.value = withTiming(SCREEN_HEIGHT * 0.95);
+}
+      }}
     >
-      <View
-        style={{ flex: 1 }}
-        className="w-full pt-6 pb-10 px-6 max-h-[70%] bg-dark rounded-t-xl"
+     <View
+     className="border-2 grow"
+     >
+     <Animated.View
+        style={{ flex: 1,
+          maxHeight: ViewHeight
+         }}
+        className="w-full pt-6 pb-10 px-6 bg-dark rounded-t-xl  mt-auto"
       >
 
    <View className="w-full flex-row items-center justify-between mb-2">
@@ -70,7 +89,7 @@ className="items-center justify-center bg-background border border-secondary rou
 <CloseIcon width={24} height={24} fill={"#ECB365"} />
 </CustomPressable>
    </View>
-        <View className="mt-6">
+        <View className="mt-6 flex-1">
           {wallets.map((item, index) => (
             <CustomPressable
               key={item.ticker}
@@ -144,7 +163,8 @@ className="items-center justify-center bg-background border border-secondary rou
             </NormalText>
         </ButtonNormal>
    </View>
-      </View>
+      </Animated.View>
+     </View>
     </RNModal>
   );
 };

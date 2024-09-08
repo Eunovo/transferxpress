@@ -26,15 +26,16 @@ export const MainNavigationStack = ()=>{
       screenOptions={{
         headerShown: false,
       }}
-      // initialRouteName="UserStack"
+      initialRouteName="UserStack"
 >
-  {
+<Stack.Screen name="UserStack" component={UserNavigationStack} />
+  {/* {
     Boolean(token) ? (
 <Stack.Screen name="UserStack" component={UserNavigationStack} />
     ) : (
 <Stack.Screen name="AuthStack" component={AuthNavigationStack} />
     )
-   }
+   } */}
 
 
 </Stack.Navigator>

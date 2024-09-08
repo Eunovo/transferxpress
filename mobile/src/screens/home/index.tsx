@@ -5,7 +5,7 @@ import {NormalText} from '@/_components/Text/NormalText';
 import {flagsAndSymbol} from '@/utils/constants';
 import {formatToCurrencyString} from '@/utils/formatToCurrencyString';
 import {useEffect, useState} from 'react';
-import {Image, ScrollView, View} from 'react-native';
+import {Image, RefreshControl, ScrollView, View} from 'react-native';
 import {moderateScale} from 'react-native-size-matters';
 import PlusIcon from '@/assets/icons/plus_bold.svg';
 import {RecentTransactions} from '@/_components/Home/RecentTransactions';
@@ -33,6 +33,7 @@ export default function Home() {
     enabled: userProfileQuery.isSuccess,
   });
   const isLoading  = walletQuery.isLoading || userProfileQuery.isLoading;
+  const isRefetching = walletQuery.isRefetching || userProfileQuery.isRefetching;
   useEffect(() => {
     if (userProfileQuery.isSuccess) {
       dispatch(
@@ -81,7 +82,20 @@ export default function Home() {
   const userName = profile ? `${profile.firstname}` : '';
 
   return (
-    <LayoutWithScroll>
+    <LayoutWithScroll
+    refreshControl={
+      <RefreshControl
+        refreshing={isRefetching}
+        onRefresh={() => {
+         userProfileQuery.refetch()
+         walletQuery.refetch()
+        }}
+        colors={["#ECB365"]}
+        tintColor={"#ECB365"}
+        style={{ marginTop: 20 }}
+      />
+    }
+    >
       <View className="w-full grow pb-10">
         <HeaderText
           size={20}

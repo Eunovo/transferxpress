@@ -8,7 +8,7 @@ size?: number;
 export const NormalText = ({
 children,
 weight = 400,
-size = 16,
+size = 15,
 ...props
 }: Props)=>{
     const fontWeight = Number(weight) === 400

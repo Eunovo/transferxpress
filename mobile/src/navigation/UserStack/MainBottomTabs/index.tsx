@@ -14,7 +14,7 @@ import TransactionsActiveIcon from "@/assets/icons/transaction_active.svg"
 import TransferActiveIcon from "@/assets/icons/transfer_active.svg"
 import MoreActiveIcon from "@/assets/icons/more_active.svg"
 import Transactions from "@/screens/Transactions";
-import More from "@/screens/Others";
+import More from "@/screens/others";
 import TransferOptions from "@/screens/Transfer/options";
 import type { Transaction } from "@/_components/Transactions/TransactionItem";
 
@@ -42,7 +42,7 @@ export default function MainBottomTabNavigator() {
         tabBarStyle:[bottomtabStyle.tabStyle, {backgroundColor: "#04293A"}]
       }}
       backBehavior="history"
-      // initialRouteName="Profile"
+      initialRouteName="others"
     >
       <MainBottomTabs.Screen
         name="home"
