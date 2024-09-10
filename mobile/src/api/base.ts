@@ -43,9 +43,9 @@ transferxpressApi.interceptors.response.use(
       });
       return Promise.reject(error);
     }
-const errorResponseData = error.response?.data;
+const errorResponseData:unknown = error.response?.data;
 if(errorResponseData){
-  const errorMessage = typeof errorResponseData=== "string"  ? errorResponseData : ``;
+  const errorMessage = typeof errorResponseData=== "string"  ? errorResponseData : isCustomError(errorResponseData) ? errorResponseData.data : ``;
   displayFlashbar({
     type: "danger",
     message: errorMessage,
@@ -55,3 +55,8 @@ if(errorResponseData){
   }
 );
 
+type CustomError = {code : string; data: string};
+function isCustomError (object:unknown): object is CustomError{
+if(object === undefined || object === null || typeof object !== "object") return false;
+return "code" in object && typeof object.code === "string" && "data" in object && typeof object.data === "string"
+}

@@ -9,11 +9,7 @@ import { flagsAndSymbol } from "@/utils/constants";
 import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
 import { TransferNavigationStackType } from "@/navigation/UserStack/TransferStack";
 import { BackButton } from "@/_components/Button/BackButton";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { CANCEL_QUOTE, CONFIRM_QUOTE, GET_TRANSFER_STATUS } from "@/api/transfer";
-import { useEffect, useState } from "react";
-import { ScreenLoader } from "@/_components/loader_utils/ScreenLoader";
-import { Spinner } from "@/_components/loader_utils/Spinner";
+
 
 interface Props {
     navigation: TransferNavigationStackType
@@ -24,10 +20,8 @@ export default function TransferFiatSummary (
 navigation
     }:Props
 ){
-    const {amount, accountName, accountNumber, secondaryUniqueIdentifier, currency, narration, exchangeRate, transferId, transferFee} = useTransferState();
-
+    const {amount, accountName, accountNumber, secondaryUniqueIdentifier, currency, narration, exchangeRate, transferFee} = useTransferState();
     const receiverCurrencySymbol = flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol].symbol;
-    const senderCurrencySymbol = flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol].symbol;
     const secondaryUniqueIdentifierTitle = {
         USD: "Routing number",
         EUR: "International Bank Account Number (IBAN)",
@@ -35,59 +29,15 @@ navigation
         MXN:"CLABE number",
         AUD:"Bank state branch code (BSB)"
        }[currency.reciever];
-       const confirQuoteMutation = useMutation({
-        mutationFn: CONFIRM_QUOTE
-       });
-       const cancelQuoteMutation = useMutation({
-        mutationFn: CANCEL_QUOTE
-       });
-       const [refetchInterval, setRefetchIntervall] = useState(10000)
-       const transferStatusQuery = useQuery({
-        queryKey: ["getTransferStatus"],
-        queryFn: ()=>GET_TRANSFER_STATUS(transferId!),
-        enabled: confirQuoteMutation.isSuccess,
-        refetchInterval
-       });
-       const transferStatus = transferStatusQuery.data?.data.status;
-       useEffect(
-        ()=>{
-if(transferStatusQuery.isSuccess && transferStatus === "SUCCESS"){
-    navigation.navigate("transfer-fiat-success")
-}
-        }, [transferStatusQuery.isSuccess, transferStatusQuery.isRefetching]
-       )
-       useEffect(
-        ()=>{
-if(transferStatusQuery.isSuccess){
- const refetchTimeout = setTimeout(
-    ()=>{
-setRefetchIntervall(0)
-navigation.navigate("transfer-fiat-success")
-    }, REFETCH_TIMEOUT_TIME
-)
-return ()=>{
-    clearTimeout(refetchTimeout)
-}
-}
-        }, [transferStatusQuery.isSuccess]
-       );
-
-       const isLaoding = confirQuoteMutation.isPending || transferStatusQuery.isFetching;
        const totalAmountSent = parseFloat(amount) + parseFloat(`${transferFee}`);
        const transferExchangeRate =  exchangeRate &&  Number(exchangeRate) < 1 ? `${flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol]?.symbol} ${formatToCurrencyString(1 / Number(exchangeRate), 2)} = ${flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol]?.symbol} 1` : `${flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol]?.symbol} 1 = ${flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol]?.symbol} ${formatToCurrencyString(exchangeRate , 2)}`;
     return(
         <LayoutNormal>
             <View className="w-full grow pb-10">
             <BackButton
-    onPress={ async()=>{
-   try {
-    if(confirQuoteMutation.isSuccess && transferId){
-       await cancelQuoteMutation.mutateAsync(transferId)
-    }
+    onPress={()=>{
     navigation.goBack()
-   } catch (error) {
-    
-   }
+
     }}
 />
             <HeaderText
@@ -227,11 +177,13 @@ className="text-primary"
             </NormalText>
             </View>
             <View
-            className="flex-row justify-between"
+            className="flex-row justify-between items-center"
             >
                 <NormalText
                 size={14}
-                className="text-white/80"
+                     numberOfLines={2}
+              ellipsizeMode="tail"
+                className="text-white/80 max-w-[50%]"
                 >
      {secondaryUniqueIdentifierTitle}
                 </NormalText>
@@ -239,6 +191,7 @@ className="text-primary"
             <NormalText
             size={14}
             className="text-white/80"
+            
             >
 {secondaryUniqueIdentifier}
             </NormalText>
@@ -268,31 +221,19 @@ className="text-primary"
                         className="pt-[64px] mt-auto w-full mx-auto justify-start"
                       >
  <ButtonNormal
- onPress={async()=>{
-if(transferId){
-    try {
-        await confirQuoteMutation.mutateAsync(transferId)
-    } catch (error) {
-        
-    }
-}
+ onPress={()=>{
+navigation.navigate("transfer-fiat-pin")
  }}
        className="bg-secondary" 
         >
-              {
-    !isLaoding ? (
+
         <NormalText 
         weight={500}
             className="text-primary/80"
             >
                 Confirm and Proceed
             </NormalText>
-    ) : (
-        <Spinner
-        circumfrence={80} strokeWidth={3}
-        />
-    )
-  }     
+ 
         </ButtonNormal>
  </View>
             </View>

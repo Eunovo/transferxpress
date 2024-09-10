@@ -42,7 +42,7 @@ export default function MainBottomTabNavigator() {
         tabBarStyle:[bottomtabStyle.tabStyle, {backgroundColor: "#04293A"}]
       }}
       backBehavior="history"
-      initialRouteName="others"
+      // initialRouteName="others"
     >
       <MainBottomTabs.Screen
         name="home"

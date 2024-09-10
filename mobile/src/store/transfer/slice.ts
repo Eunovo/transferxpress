@@ -13,13 +13,14 @@ type TransferState = {
   exchangeRate: string;
   transferId: number | null;
   transferFee?:string;
+  payinMethod?:PaymentMethod;
   payoutMethod?: PaymentMethod;
   secondaryUniqueIdentifier?: string
 }
 
 const initialState:TransferState = {
     currency:{
-        sender: "NGN",
+        sender: "USD",
         reciever: "KES"
     },
     amount: "",

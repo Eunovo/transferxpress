@@ -14,11 +14,13 @@ import TransferAmountUSDC from "@/screens/Transfer/usdc/transferAmount";
 import TransferSummaryUSDC from "@/screens/Transfer/usdc/summary";
 import TransferSuccessUSDC from "@/screens/Transfer/usdc/success";
 import TransferAddressUSDC from "@/screens/Transfer/usdc/address";
+import TransferPinConfirmation from "@/screens/Transfer/fiat/pinConfirmation";
 
 type TransferStackParam = {
 "transfer-fiat-form": undefined;
 "transfer-fiat-summary": undefined;
 "transfer-fiat-payout": undefined;
+"transfer-fiat-pin":undefined;
 "transfer-fiat-success": undefined;
 "transfer-btc-address": undefined;
 "transfer-btc-amount": undefined;
@@ -38,11 +40,12 @@ const TransferNavigationStack = ()=>{
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName="transfer-fiat-form"
+      // initialRouteName="transfer-fiat-pin"
 >
 <Stack.Group>
 <Stack.Screen name="transfer-fiat-form" component={TransferFiat} />
 <Stack.Screen name="transfer-fiat-summary" component={TransferFiatSummary} />
+<Stack.Screen name="transfer-fiat-pin" component={TransferPinConfirmation} />
 <Stack.Screen name="transfer-fiat-payout" component={TransferPayout} />
 <Stack.Screen name="transfer-fiat-success" component={TransferSuccess} />
 </Stack.Group>

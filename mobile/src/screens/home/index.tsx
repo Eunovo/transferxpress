@@ -20,6 +20,7 @@ import {setUserState} from '@/store/user/slice';
 import { ScreenLoader } from '@/_components/loader_utils/ScreenLoader';
 import { Spinner } from '@/_components/loader_utils/Spinner';
 import { MarketRateSkeleton } from '@/_components/loader_utils/MarketRateSkeleton';
+import { Currencies } from '@/api/rates';
 
 export default function Home() {
   const dispatch = useAppDispatch();
@@ -139,7 +140,7 @@ export default function Home() {
       className="grow-0"
       horizontal>
       {
- Object.entries(exchangeRates[activeWallet?.ticker]).map(item => {
+ Object.entries(exchangeRates[activeWallet?.ticker as Currencies]).map(item => {
           return (
             <View
               key={item[0]}

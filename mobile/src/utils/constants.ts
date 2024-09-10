@@ -101,4 +101,47 @@ return({
   rules: conditions,
   isPasswordValid: passwordIsValid
 })
-}
+};
+
+export const  DEPOSIT_MOCK_FIELDS = {
+  USD: {
+     "Account Number":"0123456789",
+      secondaryUniqueIdentifier:"123456780"
+  },
+  EUR: {
+      "Account Number":"0324567891",
+      secondaryUniqueIdentifier:"1234567890"
+  },
+  GBP: {
+      "Account Number":"22233344550",
+      secondaryUniqueIdentifier:"4235456"
+  },
+  MXN: {
+      "Account Number":"7699403330",
+      secondaryUniqueIdentifier:"7980456"
+  },
+  AUD: {
+      "Account Number":"5678903032",
+      secondaryUniqueIdentifier:"234467"
+  },
+  KES:{
+      "Account Number":"55553355903",
+      secondaryUniqueIdentifier: ""
+
+  },
+  NGN: {
+      "Account Number":"1000567890", 
+      secondaryUniqueIdentifier: ""
+  },
+  GHS:{
+      "Account Number":"555777322221",
+      secondaryUniqueIdentifier:""
+  }
+};
+export const secondaryUniqueIdentifierTitles = {
+  USD: 'Routing number',
+  EUR: 'International Bank Account Number (IBAN)',
+  GBP: 'Sort code',
+  MXN: 'CLABE number',
+  AUD: 'Bank state branch code (BSB)',
+};

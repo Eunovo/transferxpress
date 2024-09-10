@@ -4,8 +4,7 @@ export const GET_MARKET_RATES = async()=>{
     return await transferxpressApi.get<Rates>("/market-data")
 }
 
-type Currencies = string;
-// "NGN" | "USD" | "KES" | "EUR" | "GBP" | "MXN" | "AUD"
+export type Currencies =  "NGN" | "USD" | "KES" | "EUR" | "GBP" | "MXN" | "AUD";
 type CurrencyPair = Record<Currencies, {
     pfiId: number;
     exchangeRate: number;

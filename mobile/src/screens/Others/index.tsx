@@ -8,9 +8,13 @@ import CaretIcon from "@/assets/icons/caret.svg"
 import UserIcon from "@/assets/icons/user.svg"
 import { useState } from "react";
 import { LogoutModal } from "@/_components/Others/LogoutModal";
+import { useUserState } from "@/store/user/useUserState";
 
 export default function More () {
-    const [showLogoutModal, setShowLogoutModal] = useState(false)
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const {profile} = useUserState();
+    const userFullName = profile ? `${profile.firstname} ${profile.lastname}` : "";
+    const userEmail = profile ? `${profile.email}` : "";
     return(
         <LayoutNormal>
             <View className="grow">
@@ -43,12 +47,13 @@ fill={"#ECB365"}
     weight={700}
     className="text-white/80 mb-1"
     >
-        Ango Jeffrey
+        {userFullName}
     </HeaderText>
     <NormalText
+    size={14}
     className="text-white/60"
     >
-        ango@star.com
+        {userEmail}
     </NormalText>
 </View>
 </View>

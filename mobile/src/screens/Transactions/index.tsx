@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { ViewTransactionModal } from "@/_components/Transactions/ViewTransactionModal";
 import type { DashboardNavigation, MainBottomTabsParamList } from "@/navigation/UserStack/MainBottomTabs";
 import type { RouteProp } from "@react-navigation/native";
-
+import FilterIcon from "@/assets/icons/transaction_filter.svg"
 interface Props {
     navigation: DashboardNavigation;
     route: RouteProp<MainBottomTabsParamList, "transactions">
@@ -59,10 +59,32 @@ route
             <HeaderText
    weight={700}
    size={20}
-   className="text-primary"
+   className="text-primary mb-10"
    >
 Transaction History
    </HeaderText>
+<View
+className="w-full items-end"
+>
+  <CustomPressable
+  style={{
+    gap: 12
+  }}
+  className="flex-row items-center bg-dark px-3 py-2 border border-secondary rounded-xl"
+  >
+    <NormalText
+    size={13}
+    className="text-white"
+    >
+      Filter
+    </NormalText>
+    <FilterIcon 
+    strokeOpacity={0.5}
+    width={16}
+    height={16}
+    />
+  </CustomPressable>
+</View>
    <View
    className="mt-4 w-full grow rounded-xl"
    >

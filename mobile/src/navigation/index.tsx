@@ -7,6 +7,7 @@ import { useAppDispatch } from "@/store/hooks";
 import { useEffect } from "react";
 import { clearAppState } from "@/store/app/slice";
 import { clearUserState } from "@/store/user/slice";
+import { useLogout } from "@/hooks/useLogout";
 
 type MainStackParam = {
 UserStack: undefined;
@@ -15,11 +16,13 @@ AuthStack: undefined;
 export type MainNavigationStack = NavigationProp<MainStackParam>;
 export const MainNavigationStack = ()=>{
     const Stack = createNativeStackNavigator();
-    const dispatch = useAppDispatch()
+    const dispatch = useAppDispatch();
+    const logout = useLogout()
     const {token} = useAppState()
     useEffect(() => {
-      dispatch(clearAppState());
-      dispatch(clearUserState());
+      logout()
+      // dispatch(clearAppState());
+      // dispatch(clearUserState());
     }, []);
     return(
 <Stack.Navigator
@@ -28,14 +31,13 @@ export const MainNavigationStack = ()=>{
       }}
       initialRouteName="UserStack"
 >
-<Stack.Screen name="UserStack" component={UserNavigationStack} />
-  {/* {
+  {
     Boolean(token) ? (
 <Stack.Screen name="UserStack" component={UserNavigationStack} />
     ) : (
 <Stack.Screen name="AuthStack" component={AuthNavigationStack} />
     )
-   } */}
+   }
 
 
 </Stack.Navigator>

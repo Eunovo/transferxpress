@@ -1,5 +1,5 @@
-import { CustomPressable } from "@/_components/Button/CustomPressable";
-import { LayoutNormal } from "@/_components/layouts/LayoutNormal";
+
+import { LayoutNormal } from "@/_components/layouts/LayoutNormal"
 import { HeaderText } from "@/_components/Text/HeaderText";
 import { NormalText } from "@/_components/Text/NormalText";
 import { View } from "react-native";
@@ -9,14 +9,21 @@ import { ButtonNormal } from "@/_components/Button/NormalButton";
 import { useNavigation } from "@react-navigation/native";
 import { UserNavigationStack } from "@/navigation/UserStack";
 import { useAppDispatch } from "@/store/hooks";
-import { clearDepositState } from "@/store/deposit/slice";
+import { clearTransferState } from "@/store/transfer/slice";
+import { useTransferState } from "@/store/transfer/useTransferState";
+import { flagsAndSymbol } from "@/utils/constants";
 
 
 export default function DepositSuccess () {
     const navigation = useNavigation<UserNavigationStack>();
     const dispatch = useAppDispatch();
+    const {currency, amount, exchangeRate} = useTransferState();
+    const amountToReceive = (Number(amount) * Number(exchangeRate)).toFixed(
+        2,
+      );
+      const receivingCurrencySymbol = flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol].symbol;
     const goBackToHome = ()=>{
-        dispatch(clearDepositState());
+        dispatch(clearTransferState());
         navigation.navigate("main-bottom-tab")
     }
     return(
@@ -46,18 +53,30 @@ weight={700}
 size={20}
 className="text-primary text-center"
 >
-Transfer Request Successful
+Funding Successful
 </HeaderText>
+<View
+style={{
+    gap: 4
+}}
+className="flex-row flex-wrap justify-center items-center max-w-[80%] mx-auto"
+>
 <NormalText
 size={13}
-className="text-white/80 text-center max-w-[80%]">
-Your transacton is processing, we will notify you once it is completed
+className="text-white/80">
+Your {currency.reciever} wallet has been funded with 
    </NormalText>
+   <NormalText
+   className="text-primary"
+   >
+  {receivingCurrencySymbol} {amountToReceive}
+   </NormalText>
+</View>
 </View>
 
 <View
                         style={{ gap: 16, maxWidth: moderateScale(400, 0.3) }}
-                        className="pt-[64px] w-full mt-auto  mx-auto justify-start"
+                        className="pt-[64px] w-full my-auto  mx-auto justify-start"
                       >
  <ButtonNormal
  onPress={goBackToHome}

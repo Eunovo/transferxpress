@@ -40,7 +40,7 @@ export const LogoutModal = ({
         style={{ flex: 1, maxHeight: verticalScale(270) }}
         className="bg-dark rounded-t-xl px-6 pt-10"
       >
-     <View className="w-full flex-row items-center justify-between mb-6">
+     <View className="w-full flex-row items-center justify-between mb-">
    <HeaderText weight={500} className="text-white/80">
      Are you sure you want to logout?
         </HeaderText>

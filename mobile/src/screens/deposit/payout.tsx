@@ -2,7 +2,6 @@ import { CustomPressable } from "@/_components/Button/CustomPressable";
 import { LayoutNormal } from "@/_components/layouts/LayoutNormal";
 import { View } from "react-native";
 import { moderateScale, moderateVerticalScale } from "react-native-size-matters";
-import ArrowIcon from "@/assets/icons/arrow.svg"
 import { HeaderText } from "@/_components/Text/HeaderText";
 import { NormalText } from "@/_components/Text/NormalText";
 import CopyIcon from "@/assets/icons/copy.svg"
@@ -11,22 +10,123 @@ import { flagsAndSymbol } from "@/utils/constants";
 import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
 import { BackButton } from "@/_components/Button/BackButton";
 import { DepositNavigationStackType } from "@/navigation/UserStack/DepositStack";
-import { useDepositState } from "@/store/deposit/useDepositState";
+import { useTransferState } from "@/store/transfer/useTransferState";
+import { useUserState } from "@/store/user/useUserState";
+import { copyText } from "@/utils/copyText";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { CANCEL_QUOTE, CONFIRM_QUOTE, GET_TRANSFER_STATUS } from "@/api/transfer";
+import { useEffect, useState } from "react";
+import { Spinner } from "@/_components/loader_utils/Spinner";
 
 interface Props {
     navigation: DepositNavigationStackType
-}
+};
+const REFETCH_TIMEOUT_TIME = 30 * 1000;
+const  FIELDS = {
+    USD: {
+       "Account Number":"0123456789",
+        secondaryUniqueIdentifier:"123456780"
+    },
+    EUR: {
+        "Account Number":"0324567891",
+        secondaryUniqueIdentifier:"1234567890"
+    },
+    GBP: {
+        "Account Number":"22233344550",
+        secondaryUniqueIdentifier:"4235456"
+    },
+    MXN: {
+        "Account Number":"7699403330",
+        secondaryUniqueIdentifier:"7980456"
+    },
+    AUD: {
+        "Account Number":"5678903032",
+        secondaryUniqueIdentifier:"234467"
+    },
+    KES:{
+        "Account Number":"55553355903",
+        secondaryUniqueIdentifier: ""
+
+    },
+    NGN: {
+        "Account Number":"1000567890", 
+        secondaryUniqueIdentifier: ""
+    },
+    GHS:{
+        "Account Number":"555777322221",
+        secondaryUniqueIdentifier:""
+    }
+};
+const secondaryUniqueIdentifierTitles = {
+    USD: 'Routing number',
+    EUR: 'International Bank Account Number (IBAN)',
+    GBP: 'Sort code',
+    MXN: 'CLABE number',
+    AUD: 'Bank state branch code (BSB)',
+  };
 export default function DepositPayout (
     {
 navigation
     }:Props
 ) {
-    const {amount, currency} = useDepositState()
+    const {amount, currency, transferId} = useTransferState();
+    const {profile, activeWallet} = useUserState();
+    const accountName = profile ? `${profile.firstname} ${profile.lastname} - ${activeWallet?.ticker}` : "";
+    const accountNumber = FIELDS[activeWallet?.ticker as keyof typeof FIELDS]["Account Number"];
+    const secondaryUniqueIdentifier = FIELDS[activeWallet?.ticker as keyof typeof FIELDS]?.secondaryUniqueIdentifier;
+    const secondaryUniqueIdentifierTitle = secondaryUniqueIdentifierTitles[activeWallet?.ticker as keyof typeof secondaryUniqueIdentifierTitles];
+    const confirQuoteMutation = useMutation({
+        mutationFn: CONFIRM_QUOTE
+       });
+       const cancelQuoteMutation = useMutation({
+        mutationFn: CANCEL_QUOTE
+       });
+       const [refetchInterval, setRefetchIntervall] = useState(10000)
+       const transferStatusQuery = useQuery({
+        queryKey: ["getTransferStatus"],
+        queryFn: ()=>GET_TRANSFER_STATUS(transferId!),
+        enabled: confirQuoteMutation.isSuccess,
+        refetchInterval
+       });
+       const transferStatus = transferStatusQuery.data?.data.status;
+       useEffect(
+        ()=>{
+    if(transferStatusQuery.isSuccess && transferStatus === "SUCCESS" ){
+    navigation.navigate("deposit-success")
+    }
+        }, [transferStatusQuery.isSuccess, transferStatusQuery.isRefetching]
+       )
+       useEffect(
+        ()=>{
+    if(transferStatusQuery.isSuccess){
+    const refetchTimeout = setTimeout(
+    ()=>{
+    setRefetchIntervall(0)
+    navigation.navigate("deposit-success")
+    }, REFETCH_TIMEOUT_TIME
+    )
+    return ()=>{
+    clearTimeout(refetchTimeout)
+    }
+    }
+        }, [transferStatusQuery.isSuccess]
+       );
+    
+       const isLoading = confirQuoteMutation.isPending || transferStatusQuery.isFetching;
     return(
         <LayoutNormal>
             <View className="w-full grow pb-10">
 <BackButton
-    onPress={()=>navigation.goBack()}
+           onPress={ async()=>{
+            try {
+             if(confirQuoteMutation.isSuccess && transferId){
+                await cancelQuoteMutation.mutateAsync(transferId)
+             }
+             navigation.goBack()
+            } catch (error) {
+             
+            }
+             }}
 />
             <HeaderText
    weight={700}
@@ -63,7 +163,7 @@ className="items-center pb-4 border-b border-secondary"
     weight={600}
     className="text-primary"
     >
-        {flagsAndSymbol[currency as keyof typeof flagsAndSymbol].symbol} {formatToCurrencyString(amount, 2)}
+        {flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol].symbol} {formatToCurrencyString(amount, 2)}
     </HeaderText>
 </View>
 
@@ -84,18 +184,60 @@ className="flex-row items-center">
 weight={500}
 className="text-white"
 >
-   1234567890
+{accountNumber}
 </NormalText>
+<CustomPressable
+onPress={()=>{
+    copyText(accountNumber)
+}}
+>
 <CopyIcon
 fill={"#ECB365"}
 fillOpacity={0.6}
 width={moderateScale(16, 0.1)}
 height={moderateVerticalScale(16, 0.1)}
 />
+</CustomPressable>
 </View>
 </View>
 
-
+{
+    secondaryUniqueIdentifier && (
+        <View
+className="w-full flex-row items-center justify-between"
+>
+<NormalText
+className="text-white/80 max-w-[50%]"
+>
+   {secondaryUniqueIdentifierTitle}
+</NormalText>
+<View 
+style={{
+    gap: 8
+}}
+className="flex-row items-center">
+<NormalText
+weight={500}
+className="text-white"
+>
+{secondaryUniqueIdentifier}
+</NormalText>
+<CustomPressable
+onPress={()=>{
+copyText(secondaryUniqueIdentifier)
+}}
+>
+<CopyIcon
+fill={"#ECB365"}
+fillOpacity={0.6}
+width={moderateScale(16, 0.1)}
+height={moderateVerticalScale(16, 0.1)}
+/>
+</CustomPressable>
+</View>
+</View>
+    )
+}
    </View>
 
    <View
@@ -103,16 +245,42 @@ height={moderateVerticalScale(16, 0.1)}
                     className="pt-[64px] mt-auto w-full mx-auto justify-start"
                   >
 <ButtonNormal 
-onPress={()=>{
-    navigation.navigate("deposit-success")
+onPress={async()=>{
+    try {
+        if(transferId){
+            await confirQuoteMutation.mutateAsync(transferId);
+            navigation.navigate("deposit-success")
+        }
+    } catch (error) {
+        
+    }
+
 }}
 className="w-full bg-secondary">
-    <NormalText
-     weight={500} className="text-primary/80">
-        I have sent the money
+    {
+    !isLoading ? (
+        <NormalText weight={500} className="text-primary/80">
+     I have sent the money
     </NormalText>
+    ) : (
+        <Spinner
+        circumfrence={80} strokeWidth={3}
+        />
+    )
+  }
 </ButtonNormal>
-<CustomPressable>
+<CustomPressable
+           onPress={ async()=>{
+            try {
+             if(confirQuoteMutation.isSuccess && transferId){
+                await cancelQuoteMutation.mutateAsync(transferId)
+             }
+             navigation.goBack()
+            } catch (error) {
+             
+            }
+             }}
+>
 <View 
 className="flex-wrap flex-row justify-center mt-2"
 >
@@ -121,6 +289,7 @@ weight={500}
 className="text-white/80">
    Cancel Transfer
 </NormalText>
+
 </View>
 </CustomPressable>
 </View>

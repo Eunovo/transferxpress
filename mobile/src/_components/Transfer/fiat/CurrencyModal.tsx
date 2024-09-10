@@ -18,6 +18,7 @@ interface Props {
   showModal: boolean;
   closeModal: () => void;
   handleSelectCurrency: (currency: string) => void;
+  supportedCurrencies?:string[]
 }
 
 export const CurrencyOptionsModal = ({
@@ -25,8 +26,9 @@ export const CurrencyOptionsModal = ({
   closeModal,
   handleSelectCurrency,
   active,
+  supportedCurrencies
 }: Props) => {
-const currencies: Currency[] = Object.keys(flagsAndSymbol).map(item => ({ticker: item, flag: flagsAndSymbol[item as keyof typeof flagsAndSymbol].icon }))
+const currencies: Currency[] = Object.keys(flagsAndSymbol).filter(item => supportedCurrencies?.includes(item)).map(item => ({ticker: item, flag: flagsAndSymbol[item as keyof typeof flagsAndSymbol].icon }))
   return (
     <RNModal
       style={{

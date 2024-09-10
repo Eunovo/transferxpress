@@ -74,6 +74,8 @@ export const TransferAmount = ({goToNextStage}: Props) => {
       ? currencyPair?.[receiver.currency]?.exchangeRate
       : null;
   useEffect(() => {
+    editSender("amount", "");
+    editReceiver("amount", "")
     if (!exchangeRate) {
       displayFlashbar({
         type: 'danger',

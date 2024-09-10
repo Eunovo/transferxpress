@@ -7,9 +7,9 @@ import { ButtonNormal } from "@/_components/Button/NormalButton";
 import { flagsAndSymbol } from "@/utils/constants";
 import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
 import { BackButton } from "@/_components/Button/BackButton";
-import { useDepositState } from "@/store/deposit/useDepositState";
 import { DepositNavigationStackType } from "@/navigation/UserStack/DepositStack";
 import { useUserState } from "@/store/user/useUserState";
+import { useTransferState } from "@/store/transfer/useTransferState";
 
 interface Props {
     navigation: DepositNavigationStackType
@@ -19,11 +19,27 @@ export default function DepositSummary (
 navigation
     }:Props
 ){
-    const {activeWallet} = useUserState()
-    const {amount, currency, exchangeRate} = useDepositState();
-    const sendingCurrencySymbol = flagsAndSymbol[currency as keyof typeof flagsAndSymbol].symbol;
+    const {activeWallet} = useUserState();
+    const {amount, currency, exchangeRate, transferFee} = useTransferState();
+    const sendingCurrencySymbol = flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol].symbol;
     const receivingCurrencySymbol = flagsAndSymbol[activeWallet?.ticker as keyof typeof flagsAndSymbol].symbol;
-       const fee = 0.75;
+       const totalAmountSent = parseFloat(amount) + parseFloat(`${transferFee}`);
+       const amountToReceive = (Number(amount) * Number(exchangeRate)).toFixed(
+        2,
+      );
+       const transferExchangeRate =    exchangeRate && Number(exchangeRate) < 1
+       ? `${
+           flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol]?.symbol
+         } ${formatToCurrencyString(1 / Number(exchangeRate), 2)} = ${
+           flagsAndSymbol[activeWallet?.ticker as keyof typeof flagsAndSymbol]
+             ?.symbol
+         } 1`
+       : `${
+           flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol]?.symbol
+         } 1 = ${
+           flagsAndSymbol[activeWallet?.ticker as keyof typeof flagsAndSymbol]
+             ?.symbol
+         } ${formatToCurrencyString(exchangeRate, 2)}`;
     return(
         <LayoutNormal>
             <View className="w-full grow pb-10">
@@ -67,7 +83,7 @@ className="text-primary"
             weight={500}
             className="text-white"
             >
-{sendingCurrencySymbol} {formatToCurrencyString((amount + fee), 2)}
+{sendingCurrencySymbol} {formatToCurrencyString(totalAmountSent, 2)}
             </NormalText>
             </View>
             <View
@@ -85,7 +101,7 @@ className="text-primary"
         weight={500}
             className="text-white"
             >
-{receivingCurrencySymbol} {formatToCurrencyString(amount, 2)}
+{receivingCurrencySymbol} {formatToCurrencyString(amountToReceive, 2)}
             </NormalText>
             </View>
             <View
@@ -103,7 +119,7 @@ className="text-primary"
           weight={500}
             className="text-white"
             >
- {sendingCurrencySymbol} {formatToCurrencyString(fee, 2)}
+ {sendingCurrencySymbol} {formatToCurrencyString(transferFee, 2)}
             </NormalText>
             </View>
     
@@ -122,7 +138,7 @@ className="text-primary"
          weight={500}
             className="text-white"
             >
- {sendingCurrencySymbol} {exchangeRate ? (1 / Number(exchangeRate)).toFixed(4) : 0}
+{transferExchangeRate}
             </NormalText>
             </View>
            

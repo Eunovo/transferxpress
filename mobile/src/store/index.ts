@@ -12,7 +12,6 @@ import {
 } from "redux-persist";
 import transferReducer from "./transfer/slice"
 import userReducer from "./user/slice"
-import depositReducer from "./deposit/slice"
 import appReducer from "./app/slice"
 
 const persistConfig = {
@@ -28,7 +27,6 @@ const rootReducer = combineReducers({
   appReducer,
   userReducer,
 transferReducer,
-depositReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

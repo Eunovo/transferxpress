@@ -3,7 +3,7 @@ import { HeaderText, HeaderTextStyles } from "@/_components/Text/HeaderText"
 import { NormalText } from "@/_components/Text/NormalText"
 import { Image, TextInput, View } from "react-native"
 import { moderateScale } from "react-native-size-matters"
-import { type Currency, CurrencyOptionsModal } from "./CurrencyModal"
+import { CurrencyOptionsModal } from "./CurrencyModal"
 import { useState } from "react"
 import { flagsAndSymbol } from "@/utils/constants"
 import CaretIcon from "@/assets/icons/caret_solid.svg";
@@ -18,7 +18,8 @@ active: {
 title: string;
 setAmount: (value:string)=>void;
 setCurrency: (value:string)=>void;
-isReadOnly?:boolean
+isReadOnly?:boolean;
+supportedCurrencies?:string[]
 }
 export const CurrencyAmountInput = (
     {
@@ -26,7 +27,8 @@ active,
 title,
 setAmount,
 setCurrency,
-isReadOnly
+isReadOnly,
+supportedCurrencies
     }:Props
 )=>{
     const [showCurrencyModal,setShowCurrencyModal] = useState(false);
@@ -104,6 +106,7 @@ className="w-full bg-dark py-3 px-2 rounded-xl"
                 }}
                 showModal={showCurrencyModal}
                 closeModal={()=>setShowCurrencyModal(false)}
+                supportedCurrencies={supportedCurrencies}
                 />
             )
          }
