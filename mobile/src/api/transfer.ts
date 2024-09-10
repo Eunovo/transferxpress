@@ -96,7 +96,7 @@ type CreateQuoteDataResponse = {
     }
 };
 
-type TransferStatus = "CREATED" | "PROCESSING" | "SUCCESS" | "FAILED" | "CANCELLED";
+export type TransferStatus = "CREATED" | "PROCESSING" | "SUCCESS" | "FAILED" | "CANCELLED";
 type GetTransferStatusDataResponse = {
     status: TransferStatus;
 }

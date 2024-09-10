@@ -8,7 +8,10 @@ import CalendarIcon from "@/assets/icons/calendar.svg"
 import { moderateScale } from "react-native-size-matters";
 import { CustomPressable } from "../Button/CustomPressable";
 import XmarkIcon from "@/assets/icons/x_mark.svg";
-import { Transaction } from "@/api/transactions";
+import { GET_TRANSFER_DETAILS, Transaction } from "@/api/transactions";
+import { formatDate } from "@/utils/formatDate";
+import { useQuery } from "@tanstack/react-query";
+import { Spinner } from "../loader_utils/Spinner";
 
 
 interface Props {
@@ -23,6 +26,13 @@ closeModal,
 details
     }:Props
 )=>{
+    const date = new Date(parseFloat(details.createdAt)).toDateString();
+    const transferDetailsQuery = useQuery({
+        queryKey: ["getTransferDetails"],
+        queryFn: ()=>GET_TRANSFER_DETAILS(details.transferId)
+    });
+    const transferDetails = transferDetailsQuery.data?.data;
+    const sendingCurrencySymbol = flagsAndSymbol[details.currencyCode].symbol;
     return(
         <RNModal
         style={{
@@ -61,11 +71,22 @@ details
                 <XmarkIcon width={24} height={24} fill="#ECB365" />
               </CustomPressable>
       </View>
-<HeaderText
+      {
+        transferDetailsQuery.isPending ? (
+            <View className="grow items-center justify-center">
+            <Spinner
+              circumfrence={80}
+              strokeWidth={3}
+              strokeColor="#ECB365"
+            />
+          </View>
+        ) : (
+            <>
+            <HeaderText
 size={20}
 className="text-primary text-center mb-2"
 >
-{flagsAndSymbol[details.currencyCode].symbol} {formatToCurrencyString(details.amount, 2)}
+{sendingCurrencySymbol} {formatToCurrencyString(details.amount, 2)}
 </HeaderText>
 <View 
 style={{
@@ -80,7 +101,7 @@ height={moderateScale(14)}
 <NormalText
 size={13}
 className="text-white/80">
-12:00AM . 20 Oct, 2024
+12:00AM . {formatDate(date)}
    </NormalText>
 </View>
 <View className="w-full bg-dark p-3 border border-secondary rounded-xl mb-6">
@@ -192,10 +213,14 @@ weight={600}
                 size={14}
                 className="text-white"
                 >
-0.5
+{sendingCurrencySymbol} {transferDetails?.fee ? formatToCurrencyString(transferDetails.fee, 2) : 0}
 </NormalText>
     </View>
 </View>
+            </>
+        )
+      }
+
             </View>
             </RNModal>
     )
