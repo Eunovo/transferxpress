@@ -18,11 +18,13 @@ import {GET_USER_PROFILE, GET_USER_WALLETS} from '@/api/user';
 import {useAppDispatch} from '@/store/hooks';
 import {setUserState} from '@/store/user/slice';
 import { ScreenLoader } from '@/_components/loader_utils/ScreenLoader';
-import { Spinner } from '@/_components/loader_utils/Spinner';
 import { MarketRateSkeleton } from '@/_components/loader_utils/MarketRateSkeleton';
 import { Currencies } from '@/api/rates';
 import { useNavigation } from '@react-navigation/native';
 import { UserNavigationStack } from '@/navigation/UserStack';
+import SwapIcon from "@/assets/icons/swap.svg"
+
+
 
 export default function Home() {
   const dispatch = useAppDispatch();
@@ -130,7 +132,7 @@ export default function Home() {
               gap: 8,
             }}
             className="w-[50%] shrink flex-row items-center justify-center px-3 py-3 bg-secondary rounded-xl">
-            {/* <PlusIcon fill={'#ECB365'} fillOpacity={0.8} /> */}
+            <SwapIcon fill={'#ECB365'} fillOpacity={0.8} />
             <NormalText size={15} weight={500} className="text-primary/80">
               Swap money
             </NormalText>

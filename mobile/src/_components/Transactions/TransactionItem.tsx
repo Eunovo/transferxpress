@@ -6,19 +6,11 @@ import { moderateScale, scale } from 'react-native-size-matters';
 import { formatDate } from '@/utils/formatDate';
 import clsx from 'clsx';
 import TransactionArrowIcon from "@/assets/icons/transaction_arrow.svg"
+import {type Transaction } from '@/api/transactions';
 
 
 
-export type Transaction = {
-  id: number;
-  reference: string;
-  walletId: number;
-  type: string;
-  amount: string;
-  createdAt: string;
-  completedAt: string;
-  narration: string;
-};
+
 interface Props {
   totalTransactions: number;
   item: Transaction;
@@ -33,7 +25,8 @@ export const TransactionRenderItem = ({
   viewDetails,
   isFromHomeScreen,
 }: Props) => {
-    const isDebit = item.type === "debit";
+    const isDebit = item.type === "DEBIT";
+    const date = new Date(parseFloat(item.createdAt)).toDateString();
   return (
     <CustomPressable
     onPress={()=>viewDetails?.(item)}
@@ -80,7 +73,7 @@ className={
              Oluwabukumi Anifowosetobiloba
             </NormalText>
             <NormalText size={12} className="text-white/80">
-            {formatDate(item.completedAt)}
+            {formatDate(date)}
             </NormalText>
           </View>
         </View>

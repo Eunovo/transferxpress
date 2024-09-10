@@ -1,7 +1,6 @@
 import { flagsAndSymbol, SCREEN_HEIGHT } from "@/utils/constants"
 import { View } from "react-native"
 import RNModal from "react-native-modal";
-import { Transaction } from "./TransactionItem";
 import { HeaderText } from "../Text/HeaderText";
 import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
 import { NormalText } from "../Text/NormalText";
@@ -9,6 +8,7 @@ import CalendarIcon from "@/assets/icons/calendar.svg"
 import { moderateScale } from "react-native-size-matters";
 import { CustomPressable } from "../Button/CustomPressable";
 import XmarkIcon from "@/assets/icons/x_mark.svg";
+import { Transaction } from "@/api/transactions";
 
 
 interface Props {
@@ -19,7 +19,8 @@ interface Props {
 export const ViewTransactionModal = (
     {
 showModal,
-closeModal
+closeModal,
+details
     }:Props
 )=>{
     return(
@@ -64,7 +65,7 @@ closeModal
 size={20}
 className="text-primary text-center mb-2"
 >
-{flagsAndSymbol.KES.symbol} {formatToCurrencyString(40000, 2)}
+{flagsAndSymbol[details.currencyCode].symbol} {formatToCurrencyString(details.amount, 2)}
 </HeaderText>
 <View 
 style={{
@@ -153,7 +154,7 @@ weight={600}
                 size={14}
                 className="text-white"
                 >
-my test narration
+{details.narration}
 </NormalText>
 </View>
 <View className="w-full bg-dark p-3 border border-secondary rounded-xl">
@@ -170,9 +171,9 @@ Reference
 <NormalText
 weight={600}
                 size={14}
-                className="text-white"
+                className="text-white w-[50%]"
                 >
-hijkefdlikil3334434
+{details.reference}
 </NormalText>
     </View>
 

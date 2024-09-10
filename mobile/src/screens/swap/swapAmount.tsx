@@ -78,6 +78,7 @@ navigation
       mutationFn: INITIATE_TRANSFER_PROCESS,
     });
     const supportedCurrencyPair = sender.currency && ratesQuery.rates ? ratesQuery.rates[sender.currency as Currencies] : undefined;
+    const supportedSendingCurrencies = ratesQuery.rates ? Object.keys(ratesQuery.rates) : undefined;
     const supportedReceivingCurrencies = supportedCurrencyPair ?  Object.keys(supportedCurrencyPair) : undefined;
     const exchangeRate =  supportedCurrencyPair && receiver.currency ?  supportedCurrencyPair[receiver.currency as Currencies]?.exchangeRate  : null;
     useEffect(() => {
@@ -154,6 +155,7 @@ if(supportedReceivingCurrencies?.length){
 
               <CurrencyAmountInput
                 title="I send"
+                supportedCurrencies={supportedSendingCurrencies}
                 active={sender}
                 setAmount={value => {
                   editSender('amount', value);

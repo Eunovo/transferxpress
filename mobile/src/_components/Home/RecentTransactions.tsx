@@ -3,25 +3,19 @@ import { HeaderText } from "../Text/HeaderText"
 import { CustomPressable } from "../Button/CustomPressable"
 import { moderateScale } from "react-native-size-matters"
 import { NormalText } from "../Text/NormalText"
-import { TransactionRenderItem, type Transaction } from "../Transactions/TransactionItem"
+import { TransactionRenderItem,} from "../Transactions/TransactionItem"
 import { useNavigation } from "@react-navigation/native"
 import { DashboardNavigation } from "@/navigation/UserStack/MainBottomTabs"
+import { GET_TRANSACTIONS, Transaction } from "@/api/transactions"
+import { useQuery } from "@tanstack/react-query"
 
 export const RecentTransactions = ()=>{
     const navigation = useNavigation<DashboardNavigation>();
-    const todayISOString = new Date().toISOString()
-    const transactions:Array<Transaction> = [
-        {
-            id: 1,
-            reference: "a9808989328923223",
-            walletId: 32,
-            type: "debit",
-            amount: "7000",
-            createdAt: todayISOString,
-            completedAt: todayISOString,
-            narration: "Test narration"
-        },
-    ];
+    const transactionsQuery = useQuery({
+        queryKey: ["getUserTransactions"],
+        queryFn: ()=>GET_TRANSACTIONS()
+      });
+      const transactions = transactionsQuery.data?.data.slice(0, 4) || [];
     return(
         <View className="w-full">
         <View
@@ -35,6 +29,7 @@ export const RecentTransactions = ()=>{
                           Recent Transactions
                       </HeaderText>
                       <CustomPressable
+                      onPress={()=>navigation.navigate("transactions")}
                       style={{
                           maxWidth: moderateScale(100, 0.1)
                       }}
