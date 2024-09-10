@@ -18,6 +18,7 @@ import {
 import {useUserState} from '@/store/user/useUserState';
 import {formatToCurrencyString} from '@/utils/formatToCurrencyString';
 import {displayFlashbar} from '@/_components/Flashbar/displayFlashbar';
+import { Currencies } from '@/api/rates';
 
 interface Props {
   goToNextStage: () => void;
@@ -67,11 +68,11 @@ export const TransferAmount = ({goToNextStage}: Props) => {
     mutationFn: SUBMIT_PAYIN_INFORMATION,
   });
   const currencyPair = ratesQuery.rates
-    ? ratesQuery.rates[sender.currency]
+    ? ratesQuery.rates[sender.currency as Currencies]
     : null;
   const exchangeRate =
  currencyPair
-      ? currencyPair?.[receiver.currency]?.exchangeRate
+      ? currencyPair?.[receiver.currency as Currencies]?.exchangeRate
       : null;
   useEffect(() => {
     editSender("amount", "");

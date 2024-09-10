@@ -28,7 +28,7 @@ export const CurrencyOptionsModal = ({
   active,
   supportedCurrencies
 }: Props) => {
-const currencies: Currency[] = Object.keys(flagsAndSymbol).filter(item => supportedCurrencies?.includes(item)).map(item => ({ticker: item, flag: flagsAndSymbol[item as keyof typeof flagsAndSymbol].icon }))
+const currencies: Currency[] = Object.keys(flagsAndSymbol).filter(item => supportedCurrencies ? supportedCurrencies?.includes(item) : true).map(item => ({ticker: item, flag: flagsAndSymbol[item as keyof typeof flagsAndSymbol].icon }))
   return (
     <RNModal
       style={{

@@ -16,13 +16,10 @@ AuthStack: undefined;
 export type MainNavigationStack = NavigationProp<MainStackParam>;
 export const MainNavigationStack = ()=>{
     const Stack = createNativeStackNavigator();
-    const dispatch = useAppDispatch();
     const logout = useLogout()
     const {token} = useAppState()
     useEffect(() => {
-      logout()
-      // dispatch(clearAppState());
-      // dispatch(clearUserState());
+      logout();
     }, []);
     return(
 <Stack.Navigator

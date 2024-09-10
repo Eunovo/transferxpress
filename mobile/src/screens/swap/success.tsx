@@ -15,7 +15,7 @@ import { flagsAndSymbol } from "@/utils/constants";
 import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
 
 
-export default function DepositSuccess () {
+export default function SwapSuccess () {
     const navigation = useNavigation<UserNavigationStack>();
     const dispatch = useAppDispatch();
     const {currency, amount, exchangeRate} = useTransferState();
@@ -70,7 +70,7 @@ Your {currency.reciever} wallet has been funded with
    <NormalText
    className="text-primary"
    >
-  {receivingCurrencySymbol} {formatToCurrencyString(amountToReceive)}
+  {receivingCurrencySymbol} {formatToCurrencyString(amountToReceive, 2)}
    </NormalText>
 </View>
 </View>
