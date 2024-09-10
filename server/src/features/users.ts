@@ -518,7 +518,9 @@ export class Users {
         payin: {
           currencyCode: transfer.payinCurrencyCode,
           amount: payinSubTotal.toString(),
-          fee: payinFee.toString(),
+          fees: [
+            { name: "Transaction fee", amount: payinFee.toString() }
+          ],
           paymentInstructions: "Demo Instructions"
         },
         payout: {

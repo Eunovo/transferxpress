@@ -151,7 +151,7 @@ export interface TransferSummary {
   payin: {
     currencyCode: string;
     amount: string;
-    fee: string;
+    fees: { name: string, amount: string }[];
     paymentInstructions?: string;
   };
   payout: {
