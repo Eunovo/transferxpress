@@ -184,46 +184,54 @@ if(supportedReceivingCurrencies?.length){
           <ButtonNormal
             disabled={isButtonDisabled}
             onPress={async () => {
-              try {
-                const initiateTransferResponse =
-                  await initiateTransferutation.mutateAsync({
-                    from: sender.currency,
-                    to: receiver.currency,
+              const sendingWallet = wallets.find(item => item.ticker === sender.currency);
+              const isInsufficientFunds = sender.amount && sendingWallet?.amount ? Number(sender.amount) >= Number(sendingWallet?.amount) : false;
+            if(isInsufficientFunds){
+              return displayFlashbar({
+                type: "danger",
+                message: "Insufficient funds"
+              })
+            }
+            try {
+              const initiateTransferResponse =
+                await initiateTransferutation.mutateAsync({
+                  from: sender.currency,
+                  to: receiver.currency,
+                });
+              const transferId = initiateTransferResponse.data.id;
+              const payinKind =
+                initiateTransferResponse.data.payinMethods.find(item =>
+                  item.kind.includes('WALLET'),
+                )?.kind;
+              if (payinKind && typeof transferId === 'number') {
+                const submitPayinInfoResponse =
+                  await submitPayinInformationMutation.mutateAsync({
+                    body: {
+                      kind: payinKind,
+                      walletId: wallets.find(
+                        item => item.ticker === sender.currency,
+                      )?.id,
+                    },
+                    transferId,
                   });
-                const transferId = initiateTransferResponse.data.id;
-                const payinKind =
-                  initiateTransferResponse.data.payinMethods.find(item =>
-                    item.kind.includes('WALLET'),
-                  )?.kind;
-                if (payinKind && typeof transferId === 'number') {
-                  const submitPayinInfoResponse =
-                    await submitPayinInformationMutation.mutateAsync({
-                      body: {
-                        kind: payinKind,
-                        walletId: wallets.find(
-                          item => item.ticker === sender.currency,
-                        )?.id,
-                      },
-                      transferId,
-                    });
-                  const payoutMethod = submitPayinInfoResponse.data.find(item =>
-                    item.kind.includes('BANK_TRANSFER'),
-                  );
-                  dispatch(
-                    setTransferState({
-                      currency: {
-                        reciever: receiver.currency,
-                        sender: sender.currency,
-                      },
-                      amount: receiver.amount,
-                      exchangeRate: exchangeRate ? exchangeRate.toString() : '',
-                      transferId: initiateTransferResponse.data.id,
-                      payoutMethod,
-                    }),
-                  );
-                  goToNextStage();
-                }
-              } catch (error) {}
+                const payoutMethod = submitPayinInfoResponse.data.find(item =>
+                  item.kind.includes('BANK_TRANSFER'),
+                );
+                dispatch(
+                  setTransferState({
+                    currency: {
+                      reciever: receiver.currency,
+                      sender: sender.currency,
+                    },
+                    amount: receiver.amount,
+                    exchangeRate: exchangeRate ? exchangeRate.toString() : '',
+                    transferId: initiateTransferResponse.data.id,
+                    payoutMethod,
+                  }),
+                );
+                goToNextStage();
+              }
+            } catch (error) {}
             }}
             className="bg-secondary">
             <NormalText className="text-primary/80">Proceed</NormalText>

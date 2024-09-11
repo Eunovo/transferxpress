@@ -219,6 +219,14 @@ if(supportedReceivingCurrencies?.length){
             <ButtonNormal
               disabled={isButtonDisabled}
               onPress={async () => {
+                const sendingWallet = wallets.find(item => item.ticker === sender.currency);
+                const isInsufficientFunds = sender.amount && sendingWallet?.amount ? Number(sender.amount) >= Number(sendingWallet?.amount) : false;
+                if(isInsufficientFunds){
+                  return displayFlashbar({
+                    type: "danger",
+                    message: "Insufficient funds"
+                  })
+                }
                 try {
                   if (receiver.currency) {
                     const initiateTransferResponse =

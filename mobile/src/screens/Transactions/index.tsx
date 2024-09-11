@@ -42,7 +42,9 @@ const transactions = transactionsQuery.data?.data || [];
         <LayoutNormal>
             <View className="w-full grow pb-10">
            <BackButton 
-           onPress={()=>{}}
+           onPress={()=>{
+            navigation.goBack()
+           }}
            />
             <HeaderText
    weight={700}
