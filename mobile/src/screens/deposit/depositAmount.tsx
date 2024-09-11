@@ -179,6 +179,7 @@ export const DepositAmount = ({navigation}: Props) => {
               }
             }}
             setCurrency={() => {}}
+            showBalance
           />
         </View>
 

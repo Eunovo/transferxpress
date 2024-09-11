@@ -8,6 +8,8 @@ import { useState } from "react"
 import { flagsAndSymbol } from "@/utils/constants"
 import CaretIcon from "@/assets/icons/caret_solid.svg";
 import { formatNumberWithCommas } from "@/utils/formatNumberWithCommas"
+import { useUserState } from "@/store/user/useUserState"
+import { formatToCurrencyString } from "@/utils/formatToCurrencyString"
 
 
 interface Props {
@@ -19,7 +21,8 @@ title: string;
 setAmount: (value:string)=>void;
 setCurrency: (value:string)=>void;
 isReadOnly?:boolean;
-supportedCurrencies?:string[]
+supportedCurrencies?:string[];
+showBalance?:boolean
 }
 export const CurrencyAmountInput = (
     {
@@ -28,10 +31,13 @@ title,
 setAmount,
 setCurrency,
 isReadOnly,
-supportedCurrencies
+supportedCurrencies,
+showBalance
     }:Props
 )=>{
     const [showCurrencyModal,setShowCurrencyModal] = useState(false);
+    const {wallets} = useUserState();
+    const walletBalance = showBalance ? wallets.find(item => item.ticker === active.currency)?.amount : 0;
     return(
 <View>
 <View
@@ -95,6 +101,7 @@ className="w-full bg-dark py-3 px-2 rounded-xl"
       }
     </CustomPressable>
     </View>
+
 </View>
         {
             showCurrencyModal && (
@@ -110,6 +117,17 @@ className="w-full bg-dark py-3 px-2 rounded-xl"
                 />
             )
          }
+ {
+  showBalance && (
+    <NormalText
+    weight={500}
+    size={12}
+    className="text-white/80 mt-2"
+    >
+Wallet Balance : {flagsAndSymbol[active.currency as keyof typeof flagsAndSymbol].symbol} {formatToCurrencyString(walletBalance, 2)}
+    </NormalText>
+  )
+ }
               </View>
     )
 }

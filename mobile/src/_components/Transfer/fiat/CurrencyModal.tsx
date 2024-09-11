@@ -18,7 +18,7 @@ interface Props {
   showModal: boolean;
   closeModal: () => void;
   handleSelectCurrency: (currency: string) => void;
-  supportedCurrencies?:string[]
+  supportedCurrencies?:string[];
 }
 
 export const CurrencyOptionsModal = ({

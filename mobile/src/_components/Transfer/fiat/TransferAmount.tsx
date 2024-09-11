@@ -67,24 +67,29 @@ export const TransferAmount = ({goToNextStage}: Props) => {
   const submitPayinInformationMutation = useMutation({
     mutationFn: SUBMIT_PAYIN_INFORMATION,
   });
-  const currencyPair = ratesQuery.rates
-    ? ratesQuery.rates[sender.currency as Currencies]
-    : null;
-  const exchangeRate =
- currencyPair
-      ? currencyPair?.[receiver.currency as Currencies]?.exchangeRate
-      : null;
+  const supportedCurrencyPair = sender.currency && ratesQuery.rates ? ratesQuery.rates[sender.currency as Currencies] : undefined;
+  const supportedSendingCurrencies = ratesQuery.rates ? Object.keys(ratesQuery.rates) : undefined;
+  const supportedReceivingCurrencies = supportedCurrencyPair ?  Object.keys(supportedCurrencyPair) : undefined;
+  const exchangeRate =  supportedCurrencyPair && receiver.currency ?  supportedCurrencyPair[receiver.currency as Currencies]?.exchangeRate  : null;
   useEffect(() => {
-    editSender("amount", "");
-    editReceiver("amount", "")
-    if (!exchangeRate) {
+    editSender('amount', '');
+    editReceiver("amount", "");
+    if(!exchangeRate && !supportedReceivingCurrencies){
       displayFlashbar({
-        type: 'danger',
-        message: 'Currency pair does not exist',
-      });
+          type: "danger",
+          message: "Currency pair is unavailable"
+      })
     }
-  }, [exchangeRate, sender.currency, receiver.currency]);
-  
+  }, [exchangeRate]);
+  useEffect(
+      ()=>{
+if(supportedReceivingCurrencies?.length){
+        if(supportedReceivingCurrencies){
+      editReceiver("currency", supportedReceivingCurrencies[0])
+    }
+}
+      }, [supportedReceivingCurrencies?.length, sender.currency]
+  )
   const transferExchangeRate =
     exchangeRate && Number(exchangeRate) < 1
       ? `${
@@ -120,6 +125,7 @@ export const TransferAmount = ({goToNextStage}: Props) => {
           <CurrencyAmountInput
             title="Amount to send"
             active={sender}
+            supportedCurrencies={supportedSendingCurrencies}
             setAmount={value => {
               editSender('amount', value);
               if (value) {
@@ -132,23 +138,29 @@ export const TransferAmount = ({goToNextStage}: Props) => {
               }
             }}
             setCurrency={value => editSender('currency', value)}
+            showBalance
           />
-          <CurrencyAmountInput
-            title="Recipient to receive"
-            active={receiver}
-            setAmount={value => {
-              editReceiver('amount', value);
-              if (value) {
-                const sendAmount = exchangeRate
-                  ? (Number(value) / exchangeRate).toFixed(2)
-                  : 0;
-                editSender('amount', `${sendAmount}`);
-              } else {
-                editSender('amount', '');
-              }
-            }}
-            setCurrency={value => editReceiver('currency', value)}
-          />
+{
+  supportedReceivingCurrencies && (
+    <CurrencyAmountInput
+    title="Recipient to receive"
+    active={receiver}
+    supportedCurrencies={supportedReceivingCurrencies}
+    setAmount={value => {
+      editReceiver('amount', value);
+      if (value) {
+        const sendAmount = exchangeRate
+          ? (Number(value) / exchangeRate).toFixed(2)
+          : 0;
+        editSender('amount', `${sendAmount}`);
+      } else {
+        editSender('amount', '');
+      }
+    }}
+    setCurrency={value => editReceiver('currency', value)}
+  />
+  )
+}
         </View>
 
         <View

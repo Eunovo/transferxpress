@@ -169,6 +169,7 @@ if(supportedReceivingCurrencies?.length){
                   }
                 }}
                 setCurrency={value => editSender('currency', value)}
+                showBalance
               />
            
    {
@@ -191,6 +192,7 @@ if(supportedReceivingCurrencies?.length){
           setCurrency={(value) => {
             editReceiver("currency", value)
           }}
+          showBalance
         />
     )
    }
