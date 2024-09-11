@@ -61,7 +61,7 @@ export const TransferDetails = () => {
          const transferQuoteDataResponse  =  await createQuoteMutation.mutateAsync({
                 transferId: initialState.transferId,
                 body:{
-                    amount: initialState.amount,
+                  amount: `${Number(initialState.amount) * Number(initialState.exchangeRate)}`,
                     narration: values.narration
                 }
                });

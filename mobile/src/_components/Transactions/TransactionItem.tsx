@@ -23,7 +23,6 @@ export const TransactionRenderItem = ({
   item,
   index,
   viewDetails,
-  isFromHomeScreen,
 }: Props) => {
     const isDebit = item.type === "DEBIT";
     const date = new Date(parseFloat(item.createdAt)).toDateString();
@@ -62,7 +61,7 @@ className={
 />
           </View>
           <View
-          className='grow shrink w-[50%]'
+          className='shrink w-[50%]'
           >
             <NormalText
               size={14}

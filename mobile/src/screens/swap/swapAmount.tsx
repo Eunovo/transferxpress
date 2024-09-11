@@ -20,7 +20,7 @@ import {useAppDispatch} from '@/store/hooks';
 import {setTransferState} from '@/store/transfer/slice';
 import {useTransferState} from '@/store/transfer/useTransferState';
 import { useUserState } from '@/store/user/useUserState';
-import {DEPOSIT_MOCK_FIELDS, flagsAndSymbol, secondaryUniqueIdentifierTitles} from '@/utils/constants';
+import {flagsAndSymbol} from '@/utils/constants';
 import {formatToCurrencyString} from '@/utils/formatToCurrencyString';
 import {useNavigation} from '@react-navigation/native';
 import {useMutation} from '@tanstack/react-query';
@@ -154,7 +154,7 @@ if(supportedReceivingCurrencies?.length){
             className="w-full">
 
               <CurrencyAmountInput
-                title="I send"
+                title="Send"
                 supportedCurrencies={supportedSendingCurrencies}
                 active={sender}
                 setAmount={value => {
@@ -176,7 +176,7 @@ if(supportedReceivingCurrencies?.length){
     supportedReceivingCurrencies && (
         <CurrencyAmountInput
         supportedCurrencies={supportedReceivingCurrencies}
-          title="Amount to receive"
+          title="Receive"
           active={receiver}
           setAmount={value => {
             editReceiver("amount", value);
@@ -260,7 +260,7 @@ if(supportedReceivingCurrencies?.length){
                     const createQuoteResponse =
                       await createQuoteMutation.mutateAsync({
                         body: {
-                          amount: sender.amount,
+                          amount: `${Number(sender.amount) * Number(exchangeRate)}`,
                           narration: `SWAP-${transferId}`,
                         },
                         transferId,

@@ -28,7 +28,11 @@ route
     const isLoading = !countries.length 
     return(
         <LayoutWithScroll>
-            <View className="w-full grow pb-10">
+            <View 
+                     style={{
+                        paddingTop: moderateScale(40, 0.1)
+                    }}
+            className="w-full grow pb-10">
             <BackButton
     onPress={()=>navigation.goBack()}
 />

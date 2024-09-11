@@ -19,7 +19,7 @@ import {useAppDispatch} from '@/store/hooks';
 import {setTransferState} from '@/store/transfer/slice';
 import {useTransferState} from '@/store/transfer/useTransferState';
 import {useUserState} from '@/store/user/useUserState';
-import {DEPOSIT_MOCK_FIELDS, flagsAndSymbol, secondaryUniqueIdentifierTitles} from '@/utils/constants';
+import {DEPOSIT_MOCK_FIELDS, flagsAndSymbol, secondaryUniqueIdentifierTitlesAndKeys} from '@/utils/constants';
 import {formatToCurrencyString} from '@/utils/formatToCurrencyString';
 import {useNavigation} from '@react-navigation/native';
 import {useMutation} from '@tanstack/react-query';
@@ -218,7 +218,7 @@ export const DepositAmount = ({navigation}: Props) => {
                     );
                   console.log(payinMethod, "payin method");
                   const payinData = DEPOSIT_MOCK_FIELDS[sender.currency as Currencies];
-                  const secondaryUniqueIdentifierTitle = secondaryUniqueIdentifierTitles[sender.currency as keyof typeof secondaryUniqueIdentifierTitles] || "";
+                  const secondaryUniqueIdentifierTitle = secondaryUniqueIdentifierTitlesAndKeys[sender.currency as keyof typeof secondaryUniqueIdentifierTitlesAndKeys].key || "";
                   const submitPayinResponse =
                     await submitPayinInformationMutation.mutateAsync({
                       body: {
@@ -241,7 +241,7 @@ export const DepositAmount = ({navigation}: Props) => {
                   const createQuoteResponse =
                     await createQuoteMutation.mutateAsync({
                       body: {
-                        amount: sender.amount,
+                        amount: `${Number(sender.amount) * Number(exchangeRate)}`,
                         narration: `DEPOSIT-${transferId}`,
                       },
                       transferId,

@@ -5,9 +5,7 @@ import { NormalText } from "@/_components/Text/NormalText";
 import { Formik } from "formik";
 import { CustomTextInput } from "@/_components/FormComponents/CustomInput";
 import { ButtonNormal } from "@/_components/Button/NormalButton";
-import { moderateScale, moderateVerticalScale } from "react-native-size-matters";
-import ArrowIcon from "@/assets/icons/arrow.svg"
-import { CustomPressable } from "@/_components/Button/CustomPressable";
+import { moderateScale } from "react-native-size-matters";
 import { AuthNavigationStack} from "@/navigation/AuthStack";
 import { useMutation } from "@tanstack/react-query";
 import { VERIFY_EMAIL } from "@/api/auth";
@@ -26,7 +24,11 @@ navigation
     })
     return(
         <LayoutWithScroll>
-            <View className="w-full grow pb-10">
+            <View 
+              style={{
+                paddingTop: moderateScale(40, 0.1)
+            }}
+            className="w-full grow pb-10">
             <BackButton
     onPress={()=>navigation.goBack()}
 />

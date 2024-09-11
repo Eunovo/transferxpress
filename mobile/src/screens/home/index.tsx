@@ -151,7 +151,7 @@ export default function Home() {
     </NormalText>
     <ScrollView
       contentContainerStyle={{
-        gap: 12,
+        gap: 12
       }}
       className="grow-0"
       horizontal>
@@ -163,7 +163,7 @@ export default function Home() {
               style={{
                 width: moderateScale(120, 0.3),
               }}
-              className="bg-dark border border-secondary rounded-xl p-3">
+              className="justify-center bg-dark border border-secondary rounded-xl px-3 py-2">
               <View
                 style={{
                   gap: 8,

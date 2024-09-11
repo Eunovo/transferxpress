@@ -13,6 +13,7 @@ import FilterIcon from "@/assets/icons/transaction_filter.svg"
 import { useQuery } from "@tanstack/react-query";
 import { GET_TRANSACTIONS, type Transaction } from "@/api/transactions";
 import { ScreenLoader } from "@/_components/loader_utils/ScreenLoader";
+import { moderateScale } from "react-native-size-matters";
 
 
 interface Props {
@@ -76,7 +77,10 @@ className="w-full items-end"
   </CustomPressable>
 </View>
    <View
-   className="mt-4 w-full grow rounded-xl"
+   style={{
+    marginBottom: moderateScale(80, 0.1),
+   }}
+   className="mt-4 pb-10 w-full grow rounded-xl"
    >
      {Boolean(transactions.length) && (
               <FlatList

@@ -66,11 +66,14 @@ renderItem={
             maxWidth:SCREEN_WIDTH - scale(32)
         }}
         className="shrink-0 items-center justify-center">
-
+     <CustomPressable
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            onPress={()=>setShowBalance(prev => !prev)}
+          >
             <View
         style={{
             gap: 8,
-            width: scale(130)
+            minWidth: scale(130)
         }}
         className="flex-row items-center bg-dark border border-secondary p-2 rounded-xl mb-4"
         >
@@ -86,17 +89,15 @@ renderItem={
         >
             {item.ticker} Balance
         </NormalText>
-        <CustomPressable
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            onPress={()=>setShowBalance(prev => !prev)}
-          >
+   
             {showBalance ? (
               <EyeClosedIcon stroke={"#fff"} width={16} height={16} />
             ) : (
               <EyeOpenIcon stroke={"#fff"} width={16} height={16} />
             )}
-          </CustomPressable>
+        
         </View>
+        </CustomPressable>
         <View
         style={{
             gap: 8

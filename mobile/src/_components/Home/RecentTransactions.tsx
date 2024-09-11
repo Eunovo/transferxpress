@@ -31,12 +31,12 @@ export const RecentTransactions = ()=>{
                       <CustomPressable
                       onPress={()=>navigation.navigate("transactions")}
                       style={{
-                          maxWidth: moderateScale(100, 0.1)
+                          maxWidth: moderateScale(80, 0.1)
                       }}
-                      className="px-4 py-2 bg-dark border border-primary/60 rounded-xl"
+                      className="px-3 py-2 bg-dark border border-primary/60 rounded-xl"
                       >
                           <NormalText
-                          size={13}
+                          size={12}
                           className="text-white/60"
                           >
                               View all

@@ -34,11 +34,10 @@ const MainBottomTabs = createBottomTabNavigator<MainBottomTabsParamList>();
 export default function MainBottomTabNavigator() {
   return (
     <MainBottomTabs.Navigator
-    //   tabBar={(props) => <CustomTabBar tabBarProps={{ ...props }} />}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: "#ECB365",
-        tabBarInactiveTintColor: "rgba(255, 255, 255, 0.6)",
+        tabBarInactiveTintColor: "rgba(205, 205, 205, 0.6)",
         tabBarStyle:[bottomtabStyle.tabStyle, {backgroundColor: "#04293A"}]
       }}
       backBehavior="history"
@@ -52,7 +51,7 @@ export default function MainBottomTabNavigator() {
           style={{
             color
           }}
-          size={14}
+          size={13}
         weight={500}
           >
           Home
@@ -64,14 +63,14 @@ export default function MainBottomTabNavigator() {
             (
               <HomeActiveIcon
           width={moderateScale(20)}
-          height={moderateScale(20)}
+          height={moderateVerticalScale(20)}
           fill={"#ECB365"}
              className="shrink-0"
           />
             ) : (
               <HomeIcon 
-          width={moderateScale(25)}
-          height={moderateScale(25)}
+          width={moderateScale(20)}
+          height={moderateVerticalScale(20)}
           fill={"#FFF"}
           fillOpacity={0.8}
              className="shrink-0"
@@ -91,7 +90,7 @@ export default function MainBottomTabNavigator() {
             style={{
               color
             }}
-            size={14}
+            size={13}
           weight={500}
             >
           Transactions
@@ -102,15 +101,19 @@ export default function MainBottomTabNavigator() {
               focused ? 
               (
                 <TransactionsActiveIcon
-            width={moderateScale(25)}
-            height={moderateScale(25)}
+            width={moderateScale(20)}
+            height={moderateVerticalScale(20)}
+            style={{
+              maxWidth: moderateScale(20),
+              maxHeight: moderateVerticalScale(20)
+            }}
             fill={"#ECB365"}
                className="shrink-0"
             />
               ) : (
                 <TransactionsIcon 
-            width={moderateScale(25)}
-            height={moderateScale(25)}
+            width={moderateScale(20)}
+            height={moderateVerticalScale(20)}
             fill={"#FFF"}
             fillOpacity={0.8}
                className="shrink-0"
@@ -129,7 +132,7 @@ export default function MainBottomTabNavigator() {
             style={{
               color
             }}
-            size={14}
+            size={13}
           weight={500}
             >
            Transfer
@@ -140,15 +143,15 @@ export default function MainBottomTabNavigator() {
               focused ? 
               (
                 <TransferActiveIcon
-            width={moderateScale(25)}
-            height={moderateScale(25)}
+            width={moderateScale(20)}
+            height={moderateVerticalScale(20)}
             fill={"#ECB365"}
                className="shrink-0"
             />
               ) : (
                 <TransferIcon 
-            width={moderateScale(25)}
-            height={moderateScale(25)}
+            width={moderateScale(20)}
+            height={moderateVerticalScale(20)}
             fill={"#FFF"}
             fillOpacity={0.8}
                className="shrink-0"
@@ -167,7 +170,7 @@ export default function MainBottomTabNavigator() {
             style={{
               color
             }}
-            size={14}
+            size={13}
           weight={500}
             >
            More
@@ -178,15 +181,15 @@ export default function MainBottomTabNavigator() {
               focused ? 
               (
                 <MoreActiveIcon
-            width={moderateScale(25)}
-            height={moderateScale(25)}
+            width={moderateScale(20)}
+            height={moderateVerticalScale(20)}
             fill={"#ECB365"}
                className="shrink-0"
             />
               ) : (
                 <MoreIcon 
-            width={moderateScale(25)}
-            height={moderateScale(25)}
+            width={moderateScale(20)}
+            height={moderateVerticalScale(20)}
             fill={"#FFF"}
             fillOpacity={0.8}
             className="shrink-0"
@@ -202,15 +205,10 @@ export default function MainBottomTabNavigator() {
 }
 
 const bottomtabStyle = ScaledSheet.create({
-  iconsize: {
-      width: '22@s',
-      height: '22@s',
-  },
   tabStyle: {
       elevation: 3,
-      height: moderateVerticalScale(80, 0.1),
-      paddingBottom: moderateScale(20, 0.1),
-      // shadowColor: pallete.bottomTabSHadow,
+      height: moderateVerticalScale(60, 0.1),
+      paddingBottom: moderateScale(12, 0.1),
       shadowOffset: {width: 0, height: 8},
       shadowOpacity: 0.1,
       shadowRadius: '40@s',

@@ -31,7 +31,11 @@ navigation
     });
     return(
 <LayoutNormal>
-    <View className="pb-10 grow">
+    <View
+              style={{
+                paddingTop: moderateScale(48, 0.1)
+            }}
+    className="pb-10 grow">
 <HeaderText 
 weight={700}
 size={24}

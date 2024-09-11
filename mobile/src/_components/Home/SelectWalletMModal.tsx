@@ -54,7 +54,7 @@ const {activeWallet, wallets} = useUserState()
      >
      <View
         style={{ flex: 1,
-          maxHeight: "70%"
+          maxHeight: "90%"
          }}
         className="w-full pt-6 pb-10 px-6 bg-dark rounded-t-xl  mt-auto"
       >

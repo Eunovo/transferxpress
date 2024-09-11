@@ -138,10 +138,25 @@ export const  DEPOSIT_MOCK_FIELDS = {
       secondaryUniqueIdentifier:""
   }
 };
-export const secondaryUniqueIdentifierTitles = {
-  USD: 'Routing number',
-  EUR: 'International Bank Account Number (IBAN)',
-  GBP: 'Sort code',
-  MXN: 'CLABE number',
-  AUD: 'Bank state branch code (BSB)',
+export const secondaryUniqueIdentifierTitlesAndKeys = {
+  USD: {
+    title:'Routing number',
+    key: "routingNumber"
+  },
+  EUR: {
+    title: 'International Bank Account Number (IBAN)',
+    key: "IBAN"
+  },
+  GBP: {
+    title: 'Sort code',
+    key: "sortCode"
+  },
+  MXN: {
+    title: 'CLABE number',
+    key: "CLABE"
+  },
+  AUD: {
+    title: 'Bank state branch code (BSB)',
+    key: "BSB"
+  },
 };

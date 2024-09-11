@@ -1,10 +1,8 @@
-import {CustomPressable} from '@/_components/Button/CustomPressable';
 import {LayoutNormal} from '@/_components/layouts/LayoutNormal';
 import {HeaderText} from '@/_components/Text/HeaderText';
 import {NormalText} from '@/_components/Text/NormalText';
 import {View} from 'react-native';
-import {moderateScale, moderateVerticalScale} from 'react-native-size-matters';
-import CheckmarkIcon from '@/assets/icons/check_mark.svg';
+import {moderateScale} from 'react-native-size-matters';
 import {ButtonNormal} from '@/_components/Button/NormalButton';
 import {BackButton} from '@/_components/Button/BackButton';
 import {TransferNavigationStackType} from '@/navigation/UserStack/TransferStack';

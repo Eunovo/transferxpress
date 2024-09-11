@@ -14,7 +14,6 @@ import { BackButton } from "@/_components/Button/BackButton";
 interface Props {
     navigation: TransferNavigationStackType
 }
-const REFETCH_TIMEOUT_TIME = 30 * 1000;
 export default function TransferFiatSummary (
     {
 navigation
