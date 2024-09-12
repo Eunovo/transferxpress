@@ -124,7 +124,6 @@ export default function(db: Database) {
         payinAmount REAL,
         payoutAmount REAL,
         narration TEXT,
-        fee REAL,
         payinWalletId INTEGER,
         payoutWalletId INTEGER,
         payinCardId INTEGER,
@@ -154,6 +153,19 @@ export default function(db: Database) {
         FOREIGN KEY (payinWalletId) REFERENCES Wallets(id),
         FOREIGN KEY (payoutWalletId) REFERENCES Wallets(id),
         FOREIGN KEY (payinCardId) REFERENCES SavedCards(id)
+      )
+    `);
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS TransferFees (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        amount REAL NOT NULL,
+        currencyCode TEXT NOT NULL,
+        transferId INTEGER NOT NULL,
+        createdAt TEXT NOT NULL,
+        lastUpdatedAt TEXT NOT NULL,
+        FOREIGN KEY (transferId) REFERENCES Transfers(id)
       )
     `);
 

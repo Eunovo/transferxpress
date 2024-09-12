@@ -24,7 +24,7 @@ import {
   SavingsPlan,
 } from "../types.js";
 import { TBDexService } from "./tbdex.js";
-import { Beneficiary, PFI, User, UserCredential, Transaction as TransactionModel } from "../models.js";
+import { Beneficiary, PFI, User, UserCredential, Transaction as TransactionModel, Wallet as WalletModel, TransferFee } from "../models.js";
 import { ServerError } from "../error.js";
 import { ErrorCode } from "../error_codes.js";
 import { extractRequiredPaymentDetails, isPaymentKind, softAssert } from "../utils.js";
@@ -201,7 +201,7 @@ export class Users {
     });
   }
 
-  getTransfers(userId: ID): Promise<Transfer[]> {
+  getTransfers(userId: ID): Promise<Omit<Transfer, 'fee'>[]> {
     return this.db.findTransfersByUserIdAndStatus(userId, [TransactionStatus.PROCESSING, TransactionStatus.SUCCESS, TransactionStatus.CANCELLED, TransactionStatus.FAILED])
       .then((transfers) => transfers.map(transfer => ({
         id: transfer.id,
@@ -209,7 +209,6 @@ export class Users {
         payoutCurrencyCode: transfer.payoutCurrencyCode,
         payinAmount: transfer.payinAmount,
         payoutAmount: transfer.payoutAmount,
-        fee: transfer.fee,
         payinKind: transfer.payinKind,
         payoutKind: transfer.payoutKind,
         narration: transfer.narration,
@@ -229,7 +228,10 @@ export class Users {
           payoutCurrencyCode: transfer.payoutCurrencyCode,
           payinAmount: transfer.payinAmount,
           payoutAmount: transfer.payoutAmount,
-          fee: transfer.fee,
+          fee: transfer.fees.reduce((acc, cur) => {
+            console.assert(cur.currencyCode == transfer.payinCurrencyCode);
+            return acc + cur.amount;
+          }, 0),
           payinKind: transfer.payinKind,
           payoutKind: transfer.payoutKind,
           narration: transfer.narration,
@@ -446,8 +448,8 @@ export class Users {
       this.db.findCredentialsForUserId(user.id)
     ]).then(async ([transfer, wallets, credentials]) => {
       if (transfer === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
-      const payinWallet: Wallet | undefined = wallets.find((wallet: Wallet) => wallet.id == transfer.payinWalletId);
-      const payoutWallet: Wallet | undefined = wallets.find((wallet: Wallet) => wallet.id == transfer.payoutWalletId);
+      const payinWallet: WalletModel | undefined = wallets.find((wallet: Wallet) => wallet.id == transfer.payinWalletId);
+      const payoutWallet: WalletModel | undefined = wallets.find((wallet: Wallet) => wallet.id == transfer.payoutWalletId);
 
       if (transfer.payinKind === PaymentKind.WALLET_ADDRESS && !payinWallet)
         throw new ServerError({ code: ErrorCode.NOT_FOUND, data: `Payin Wallet with id ${transfer.payinWalletId} not found for transfer ${transferId}` });
@@ -505,26 +507,58 @@ export class Users {
       if (payinWallet && payinWallet.balance < payinTotal) throw new ServerError({ code: ErrorCode.WALLET_INSUFFICIENT_BALANCE });
 
       this.cache.set(CacheKeys.TRANSFER_QUOTE(transferId), bestQuote, (new Date(bestQuote.quote.data.expiresAt).getTime() - Date.now())); // Cache quote until it expires
+
+      const percentOf = (percentage: number, value: number) => {
+        return value * (percentage / 100);
+      }
+
+      const fees: Omit<TransferFee, 'id' | 'transferId'>[] = [
+        {
+          name: "PROVIDER",
+          amount: payinFee,
+          currencyCode: transfer.payinCurrencyCode,
+          createdAt: now,
+          lastUpdatedAt: now
+        },
+        {
+          name: "PROCESSING",
+          amount: percentOf(5, transfer.payinAmount),
+          currencyCode: transfer.payinCurrencyCode,
+          createdAt: now,
+          lastUpdatedAt: now
+        },
+      ];
+      if (payinWallet?.type === 'SAVINGS') {
+        const savingsPlan = mapWalletToSavingsPlan(payinWallet);
+        const prematurePenalty = savingsPlan.penalties.find((p) => p.name === 'PREMATURE_WITHDRAWAL');
+        if (savingsPlan.state === 'ACTIVE') {
+          fees.push({
+            name: "PENALTY",
+            amount: percentOf(prematurePenalty.percentage, transfer.payinAmount),
+            currencyCode: transfer.payinCurrencyCode,
+            createdAt: now,
+            lastUpdatedAt: now
+          });
+        }
+      }
+
       await this.db.updateTransferById(
         transferId,
         {
           ...transfer,
           pfiId: bestQuote.pfi.id,
-          fee: payinFee,
           payinAmount: payinSubTotal,
           payoutAmount: parseFloat(data.amount),
           narration: data.narration,
           lastUpdatedAt: now
-        }
+        }, [], fees
       );
 
       return {
         payin: {
           currencyCode: transfer.payinCurrencyCode,
           amount: payinSubTotal.toString(),
-          fees: [
-            { name: "Transaction fee", amount: payinFee.toString() }
-          ],
+          fees: fees.map((fee) => ({ name: fee.name, amount: fee.amount.toString() })),
           paymentInstructions: "Demo Instructions"
         },
         payout: {
@@ -563,6 +597,7 @@ export class Users {
       });
       const reference = quote.quote.exchangeId;
       const transactions: Omit<TransactionModel, 'id' | 'transferId'>[] = [];
+      const providerFee = transfer.fees.find((fee) => fee.name === 'PROVIDER')?.amount ?? 0;
       if (transfer.payinWalletId) {
         transactions.push({
           narration: transfer.narration,
@@ -570,13 +605,28 @@ export class Users {
           walletId: transfer.payinWalletId,
           reference,
           currencyCode: transfer.payinCurrencyCode,
-          amount: transfer.payinAmount + transfer.fee,
+          amount: transfer.payinAmount + providerFee,
           userId: user.id,
           createdAt: now,
           lastUpdatedAt: now
-        })
+        });
+
+        for (let fee of transfer.fees) {
+          if (fee.name === 'PROVIDER') continue;
+          transactions.push({
+            narration: `${fee.name.toLowerCase()} fee`,
+            type: 'DEBIT',
+            walletId: transfer.payinWalletId,
+            reference,
+            currencyCode: fee.currencyCode,
+            amount: fee.amount,
+            userId: user.id,
+            createdAt: now,
+            lastUpdatedAt: now
+          });
+        }
       }
-      // TODO Add processing fee
+
       await this.db.updateTransferById(
         transferId,
         { ...transfer, reference, status: TransactionStatus.PROCESSING, lastUpdatedAt: now },
@@ -588,44 +638,50 @@ export class Users {
   private handleTransferComplete(transferId: ID, userId: ID, success: boolean = false): Promise<void> {
     usersLogger.info({ transferId, userId, success }, "[handleTransferComplete]");
     const status = success ? TransactionStatus.SUCCESS : TransactionStatus.FAILED;
-    return this.db.findTransferByIdAndUserId(transferId, userId)
-      .then(transfer => {
-        if (transfer.status === TransactionStatus.CANCELLED) return;
-        const transactions: Omit<TransactionModel, 'id' | 'transferId'>[] = [];
-        if (transfer.payoutWalletId && success) {
-          transactions.push({
-            narration: transfer.narration,
-            walletId: transfer.payoutWalletId,
-            reference: transfer.reference,
-            currencyCode: transfer.payoutCurrencyCode,
-            amount: transfer.payoutAmount,
-            userId: userId,
-            type: 'CREDIT',
-            createdAt: new Date(),
-            lastUpdatedAt: new Date()
-          });
-        }
-        if (transfer.payinWalletId && !success) {
-          // Refund user
-          transactions.push({
-            narration: "Reversal",
-            walletId: transfer.payinWalletId,
-            reference: transfer.reference,
-            currencyCode: transfer.payinCurrencyCode,
-            amount: transfer.payinAmount + transfer.fee,
-            userId: userId,
-            type: 'CREDIT',
-            createdAt: new Date(),
-            lastUpdatedAt: new Date()
-          });
-        }
-        usersLogger.info(
-          { transferId, userId, status, amount: `${transfer.payoutCurrencyCode} ${transfer.payoutAmount}`},
-          "[handleTransferComplete]"
-        );
-        return this.db.updateTransferById(transferId, { ...transfer, status, lastUpdatedAt: new Date() }, transactions).then(() => { });
-      })
+    return Promise.all([
+      this.db.findTransferByIdAndUserId(transferId, userId),
+      this.db.findTransactionsByTransferId(transferId)
+    ]).then(([transfer, existingTranxs]) => {
+      if (transfer.status === TransactionStatus.CANCELLED) return;
+      const transactions: Omit<TransactionModel, 'id' | 'transferId'>[] = [];
+      if (success && transfer.payoutWalletId) {
+        transactions.push({
+          narration: transfer.narration,
+          walletId: transfer.payoutWalletId,
+          reference: transfer.reference,
+          currencyCode: transfer.payoutCurrencyCode,
+          amount: transfer.payoutAmount,
+          userId: userId,
+          type: 'CREDIT',
+          createdAt: new Date(),
+          lastUpdatedAt: new Date()
+        });
+      }
+      if (!success && existingTranxs) {
+        this.reverseTransactions(existingTranxs).forEach((t) => transactions.push(t));
+      }
+
+      usersLogger.info(
+        { transferId, userId, status, amount: `${transfer.payoutCurrencyCode} ${transfer.payoutAmount}` },
+        "[handleTransferComplete]"
+      );
+      return this.db.updateTransferById(transferId, { ...transfer, status, lastUpdatedAt: new Date() }, transactions).then(() => { });
+    })
       .catch(err => { usersLogger.error(`[handleTransferComplete] ${err.message}`, { transferId, userId, success }) });
+  }
+
+  reverseTransactions(transactions: TransactionModel[]): Omit<TransactionModel, 'id' | 'transferId'>[] {
+    return transactions.map((tranx) => ({
+      narration: `Reversal ${tranx.narration}`,
+      walletId: tranx.walletId,
+      reference: tranx.reference,
+      currencyCode: tranx.currencyCode,
+      amount: tranx.amount,
+      userId: tranx.userId,
+      type: tranx.type == 'CREDIT' ? 'DEBIT' : 'CREDIT',
+      createdAt: new Date(),
+      lastUpdatedAt: new Date()
+    }))
   }
 
   cancelTransfer(userId: ID, transferId: ID): Promise<void> {

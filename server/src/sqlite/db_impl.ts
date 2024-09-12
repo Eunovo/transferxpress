@@ -10,7 +10,8 @@ import {
   Transfer,
   SavedCard,
   PFI,
-  WalletPaymentDetails
+  WalletPaymentDetails,
+  TransferFee
 } from "../models.js";
 import { InsertData } from "../utils.js";
 import { ID, TransactionStatus } from "../types.js";
@@ -251,12 +252,11 @@ export class UsersDbImpl implements UsersDb {
     });
   }
 
-  findTransactionByTransferId(transferId: number): Promise<Transaction | null> {
+  findTransactionsByTransferId(transferId: number): Promise<Transaction[]> {
     return new Promise((resolve, reject) => {
-      this.db.get(`SELECT * FROM Transactions WHERE transferId = ?`, [transferId], (err, row) => {
+      this.db.all(`SELECT * FROM Transactions WHERE transferId = ?`, [transferId], (err, rows) => {
         if (err) return reject(err);
-        if (!row) return resolve(null);
-        resolve(row as Transaction);
+        resolve(rows as Transaction[]);
       });
     });
   }
@@ -356,7 +356,6 @@ export class UsersDbImpl implements UsersDb {
         payinAmount,
         payoutAmount,
         narration,
-        fee,
         payinWalletId,
         payoutWalletId,
         payinCardId,
@@ -380,7 +379,7 @@ export class UsersDbImpl implements UsersDb {
         reference,
         createdAt,
         lastUpdatedAt)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
         [
           data.userId,
@@ -392,7 +391,6 @@ export class UsersDbImpl implements UsersDb {
           data.payinAmount,
           data.payoutAmount,
           data.narration,
-          data.fee,
           data.payinWalletId,
           data.payoutWalletId,
           data.payinCardId,
@@ -446,23 +444,34 @@ export class UsersDbImpl implements UsersDb {
         WHERE Transfers.id = ? AND Transfers.userId = ?
       `, [id, userId], (err, row) => {
         if (err) return reject(err);
-        const transfer = row as Transfer;
-        transfer.pfi = {
-          // @ts-ignore
-          id: row.pfiId,
-          // @ts-ignore
-          did: row.did,
-          // @ts-ignore
-          name: row.name,
-          createdAt: null,
-          lastUpdatedAt: null
-        };
-        resolve(transfer);
+
+        this.db.all(`SELECT * FROM TransferFees WHERE transferId = ?`, [id], (err, rows: TransferFee[]) => {
+          if (err) return reject(err);
+
+          const transfer = row as Transfer;
+          transfer.pfi = {
+            // @ts-ignore
+            id: row.pfiId,
+            // @ts-ignore
+            did: row.did,
+            // @ts-ignore
+            name: row.name,
+            createdAt: null,
+            lastUpdatedAt: null
+          };
+          transfer.fees = rows;
+          resolve(transfer);
+        });
       });
     });
   }
 
-  updateTransferById(id: number, data: InsertData<Transfer>, transactions: Omit<Transaction, 'id' | 'transferId'>[] = []): Promise<void> {
+  updateTransferById(
+    id: number,
+    data: InsertData<Transfer>,
+    transactions: Omit<Transaction, 'id' | 'transferId'>[] = [],
+    fees: Omit<TransferFee, 'id' | 'transferId'>[] = []
+  ): Promise<void> {
     const walletUpdates: Map<ID, number> = transactions.reduce((acc, transaction) => {
       if (!transaction.walletId) return acc;
       const current = acc.get(transaction.walletId) || 0;
@@ -480,7 +489,7 @@ export class UsersDbImpl implements UsersDb {
         this.db.run("BEGIN TRANSACTION");
         this.db.run(`
         UPDATE Transfers
-        SET payinCurrencyCode = ?, payoutCurrencyCode = ?, pfiId = ?, payinKind = ?, payoutKind = ?, payinAmount = ?, payoutAmount = ?, narration = ?, fee = ?, payinWalletId = ?, payoutWalletId = ?, payinCardId = ?,
+        SET payinCurrencyCode = ?, payoutCurrencyCode = ?, pfiId = ?, payinKind = ?, payoutKind = ?, payinAmount = ?, payoutAmount = ?, narration = ?, payinWalletId = ?, payoutWalletId = ?, payinCardId = ?,
         payinAccountNumber = ?, payinRoutingNumber = ?, payinBankCode = ?, payinSortCode = ?, payinBSB = ?, payinIBAN = ?, payinCLABE = ?, payinAddress = ?,
         payoutAccountNumber = ?, payoutRoutingNumber = ?, payoutBankCode = ?, payoutSortCode = ?, payoutBSB = ?, payoutIBAN = ?, payoutCLABE = ?, payoutAddress = ?,
         status = ?, reference = ?, lastUpdatedAt = ?
@@ -495,7 +504,6 @@ export class UsersDbImpl implements UsersDb {
             data.payinAmount,
             data.payoutAmount,
             data.narration,
-            data.fee,
             data.payinWalletId,
             data.payoutWalletId,
             data.payinCardId,
@@ -522,7 +530,7 @@ export class UsersDbImpl implements UsersDb {
           ],
           function (err) {
             if (err) return db.run("ROLLBACK", () => reject(err));
-            if (transactions.length === 0) return db.run("COMMIT", () => resolve());
+            if (transactions.length === 0 && fees.length === 0) return db.run("COMMIT", () => resolve());
           });
 
         if (transactions.length > 0) {
@@ -541,10 +549,24 @@ export class UsersDbImpl implements UsersDb {
             nextEntry = iter.next();
             db.run(`UPDATE Wallets SET balance = balance + ? WHERE id = ?`, [entry.value[1], entry.value[0]], function (err) {
               if (err) db.run("ROLLBACK", () => reject(err));
-              if (nextEntry.done) db.run("COMMIT", () => resolve());
+              if (nextEntry.done && fees.length === 0) db.run("COMMIT", () => resolve());
             });
             entry = nextEntry;
           }
+        }
+
+        if (fees.length > 0) {
+          db.run(
+            `
+              INSERT INTO TransferFees (transferId, name, amount, currencyCode, createdAt, lastUpdatedAt)
+              VALUES ${fees.map(() => "(?, ?, ?, ?, ?, ?)")}
+            `,
+            fees.reduce((acc: any, f: any) => acc.concat([id, f.name, f.amount, f.currencyCode, f.createdAt, f.lastUpdatedAt]), []),
+            function (err) {
+              if (err) return db.run("ROLLBACK", () => reject(err));
+              db.run("COMMIT", () => resolve());
+            }
+          );
         }
       });
     });

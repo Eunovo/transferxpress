@@ -1,5 +1,6 @@
 import { Close } from "@tbdex/http-client"
 import { PaymentKind, TransactionStatus } from "../src/types.js"
+import { Transaction } from "../src/models.js"
 
 export const DIDs = [
   `{"uri":"did:jwk:eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6Ijh1Tlp4UkRMVG5nWUdNNTJlUXY4aERySkxLS0xFOHgxOWZCM19taHBZZTQiLCJraWQiOiJmLU8xWDgzR0dPZlg3T0VLc3pmdHhPeWJ1WGwwY3h3SzdmS3dqelNHejZNIiwiYWxnIjoiRWREU0EifQ","document":{"@context":["https://www.w3.org/ns/did/v1"],"id":"did:jwk:eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6Ijh1Tlp4UkRMVG5nWUdNNTJlUXY4aERySkxLS0xFOHgxOWZCM19taHBZZTQiLCJraWQiOiJmLU8xWDgzR0dPZlg3T0VLc3pmdHhPeWJ1WGwwY3h3SzdmS3dqelNHejZNIiwiYWxnIjoiRWREU0EifQ","verificationMethod":[{"id":"did:jwk:eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6Ijh1Tlp4UkRMVG5nWUdNNTJlUXY4aERySkxLS0xFOHgxOWZCM19taHBZZTQiLCJraWQiOiJmLU8xWDgzR0dPZlg3T0VLc3pmdHhPeWJ1WGwwY3h3SzdmS3dqelNHejZNIiwiYWxnIjoiRWREU0EifQ#0","type":"JsonWebKey","controller":"did:jwk:eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6Ijh1Tlp4UkRMVG5nWUdNNTJlUXY4aERySkxLS0xFOHgxOWZCM19taHBZZTQiLCJraWQiOiJmLU8xWDgzR0dPZlg3T0VLc3pmdHhPeWJ1WGwwY3h3SzdmS3dqelNHejZNIiwiYWxnIjoiRWREU0EifQ","publicKeyJwk":{"crv":"Ed25519","kty":"OKP","x":"8uNZxRDLTngYGM52eQv8hDrJLKKLE8x19fB3_mhpYe4","kid":"f-O1X83GGOfX7OEKszftxOybuXl0cxwK7fKwjzSGz6M","alg":"EdDSA"}}],"authentication":["did:jwk:eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6Ijh1Tlp4UkRMVG5nWUdNNTJlUXY4aERySkxLS0xFOHgxOWZCM19taHBZZTQiLCJraWQiOiJmLU8xWDgzR0dPZlg3T0VLc3pmdHhPeWJ1WGwwY3h3SzdmS3dqelNHejZNIiwiYWxnIjoiRWREU0EifQ#0"],"assertionMethod":["did:jwk:eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6Ijh1Tlp4UkRMVG5nWUdNNTJlUXY4aERySkxLS0xFOHgxOWZCM19taHBZZTQiLCJraWQiOiJmLU8xWDgzR0dPZlg3T0VLc3pmdHhPeWJ1WGwwY3h3SzdmS3dqelNHejZNIiwiYWxnIjoiRWREU0EifQ#0"],"capabilityInvocation":["did:jwk:eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6Ijh1Tlp4UkRMVG5nWUdNNTJlUXY4aERySkxLS0xFOHgxOWZCM19taHBZZTQiLCJraWQiOiJmLU8xWDgzR0dPZlg3T0VLc3pmdHhPeWJ1WGwwY3h3SzdmS3dqelNHejZNIiwiYWxnIjoiRWREU0EifQ#0"],"capabilityDelegation":["did:jwk:eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6Ijh1Tlp4UkRMVG5nWUdNNTJlUXY4aERySkxLS0xFOHgxOWZCM19taHBZZTQiLCJraWQiOiJmLU8xWDgzR0dPZlg3T0VLc3pmdHhPeWJ1WGwwY3h3SzdmS3dqelNHejZNIiwiYWxnIjoiRWREU0EifQ#0"],"keyAgreement":["did:jwk:eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6Ijh1Tlp4UkRMVG5nWUdNNTJlUXY4aERySkxLS0xFOHgxOWZCM19taHBZZTQiLCJraWQiOiJmLU8xWDgzR0dPZlg3T0VLc3pmdHhPeWJ1WGwwY3h3SzdmS3dqelNHejZNIiwiYWxnIjoiRWREU0EifQ#0"]},"metadata":{},"privateKeys":[{"crv":"Ed25519","d":"w4xt6g9f6epQCrmKx-jSeSPWFqrhJBQ8YRyYNmDTvCY","kty":"OKP","x":"8uNZxRDLTngYGM52eQv8hDrJLKKLE8x19fB3_mhpYe4","kid":"f-O1X83GGOfX7OEKszftxOybuXl0cxwK7fKwjzSGz6M","alg":"EdDSA"}]}`,
@@ -1025,3 +1026,33 @@ export const TRANSFERs = [
     reference: "reference"
   },
 ]
+
+
+export const TRANSACTIONS: Transaction[] = [
+  {
+    id: 2,
+    transferId: 2,
+    narration: "Exchange BTC for GHS",
+    type: 'DEBIT',
+    walletId: 1,
+    reference: "reference",
+    currencyCode: "BTC",
+    amount: 0.000033,
+    userId: 1,
+    createdAt: new Date(),
+    lastUpdatedAt: new Date()
+  },
+  {
+    id: 4,
+    transferId: 4,
+    narration: "Exchange BTC for GHS",
+    type: 'DEBIT',
+    walletId: 1,
+    reference: "reference",
+    currencyCode: "BTC",
+    amount: 0.000033,
+    userId: 1,
+    createdAt: new Date(),
+    lastUpdatedAt: new Date()
+  }
+];

@@ -8,7 +8,8 @@ import {
   SavedCard,
   Beneficiary,
   Transfer,
-  PFI
+  PFI,
+  TransferFee
 } from './models.js';
 import { ID, TransactionStatus } from './types.js';
 import { InsertData } from './utils.js';
@@ -30,16 +31,16 @@ export interface UsersDb {
   insertWalletPaymentDetails(walletId: ID, data: InsertData<WalletPaymentDetails>): Promise<void>;
   findTransactionById(id: ID): Promise<Transaction | null>;
   findTransactionsByUserId(userId: ID): Promise<Transaction[]>;
-  findTransactionByTransferId(transferId: ID): Promise<Transaction | null>;
+  findTransactionsByTransferId(transferId: ID): Promise<Transaction[]>;
   insertTransactionReport(data: InsertData<TransactionReport>, pfi: Pick<PFI, "id" | "blacklisted" | "rating">): Promise<TransactionReport>;
   insertSavedCard(data: InsertData<SavedCard>): Promise<SavedCard>;
   findSavedCardsByUserId(userId: ID): Promise<SavedCard[]>;
   findBeneficiariesByUserId(userId: ID): Promise<Beneficiary[]>;
   insertBeneficiary(data: InsertData<Beneficiary>): Promise<Beneficiary>;
-  insertTransfer(data: InsertData<Transfer>): Promise<Transfer>;
+  insertTransfer(data: Omit<InsertData<Transfer>, 'fees'>): Promise<Transfer>;
   findTransfersByUserIdAndStatus(userId: ID, statuses?: TransactionStatus[]): Promise<Transfer[]>;
   findTransferByIdAndUserId(id: ID, userId: ID): Promise<Transfer>;
-  updateTransferById(id: ID, data: InsertData<Transfer>, transactions?: Omit<Transaction, 'id' | 'transferId'>[]): Promise<void>;
+  updateTransferById(id: ID, data: InsertData<Transfer>, transactions?: Omit<Transaction, 'id' | 'transferId'>[], fees?: Omit<TransferFee, 'id' | 'transferId'>[]): Promise<void>;
 }
 
 export interface TBDexDB {

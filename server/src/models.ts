@@ -98,7 +98,6 @@ export interface Transfer extends BaseModel {
   payinAmount?: number;
   payoutAmount?: number;
   narration?: string;
-  fee?: number;
   payinWalletId?: ID;
   payoutWalletId?: ID;
   payinCardId?: ID;
@@ -121,6 +120,14 @@ export interface Transfer extends BaseModel {
   status: TransactionStatus;
   speedOfSettlementRating?: number;
   reference?: string;
+  fees: TransferFee[]
+}
+
+export interface TransferFee extends BaseModel {
+  name: 'PROVIDER' | 'PROCESSING' | 'PENALTY';
+  amount: number;
+  currencyCode: string;
+  transferId: ID;
 }
 
 export interface PFI extends BaseModel {

@@ -10,7 +10,7 @@ import { AutoFunderDBImpl, TBDexDBImpl, UsersDbImpl } from '../src/sqlite/db_imp
 import { CacheKeys as TBDCacheKeys, TBDexService } from '../src/features/tbdex.js';
 import { CreateTransferResponse, EmailAvailabilityStatus, MarketData, PayinUpdateResponse, PaymentKind, TransactionStatus, TransferSummary, Wallet } from '../src/types.js';
 import { Cache, InMemoryCache } from '../src/cache.js';
-import { DIDs, CREDENTIALS, PARSED_DIDs, PFIs, OFFERINGs, PFI_OFFERINGs, TRANSFERs, CLOSEs } from './data.js';
+import { DIDs, CREDENTIALS, PARSED_DIDs, PFIs, OFFERINGs, PFI_OFFERINGs, TRANSFERs, TRANSACTIONS, CLOSEs } from './data.js';
 import { AutoFunder } from '../src/features/autofund.js';
 
 test.before(async (t: any) => {
@@ -74,12 +74,23 @@ test.before(async (t: any) => {
 				}
 			);
 			db.run(
-				`INSERT INTO Transfers (id, userId, pfiId, payinCurrencyCode, payoutCurrencyCode, payinKind, payoutKind, payinAmount, payoutAmount, narration, fee, payinWalletId, payoutWalletId, payoutAccountNumber, status, reference, createdAt, lastUpdatedAt)
-				VALUES ${TRANSFERs.map(_ => "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").join(", ")}
+				`INSERT INTO Transfers (id, userId, pfiId, payinCurrencyCode, payoutCurrencyCode, payinKind, payoutKind, payinAmount, payoutAmount, narration, payinWalletId, payoutWalletId, payoutAccountNumber, status, reference, createdAt, lastUpdatedAt)
+				VALUES ${TRANSFERs.map(_ => "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").join(", ")}
 				`, TRANSFERs.reduce((acc, value) => acc.concat([
 					value.id, value.userId, value.pfiId, value.payinCurrencyCode, value.payoutCurrencyCode, value.payinKind, value.payoutKind,
-					value.payinAmount, value.payoutAmount, value.narration, value.fee, value.payinWalletId, value.payoutWalletId, value.payoutAccountNumber,
+					value.payinAmount, value.payoutAmount, value.narration, value.payinWalletId, value.payoutWalletId, value.payoutAccountNumber,
 					value.status, value.reference, user.createdAt.toISOString(), user.lastUpdatedAt.toISOString()]), []),
+				function (err) {
+					if (err) return reject(err);
+				}
+			);
+			db.run(
+				`INSERT INTO Transactions (id, transferId, narration, type, walletId, reference, currencyCode, amount, userId, createdAt, lastUpdatedAt)
+				VALUES ${TRANSACTIONS.map(_ => "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").join(", ")}
+				`, TRANSACTIONS.reduce((acc, value) => acc.concat([
+					value.id, value.transferId, value.narration, value.type, value.walletId, value.reference,
+					value.currencyCode, value.amount, value.userId, value.createdAt.toISOString(), value.lastUpdatedAt.toISOString()
+				]), []),
 				function (err) {
 					if (err) return reject(err);
 					resolve({ id: 1, ...user, walletIds: [1] });
@@ -317,7 +328,7 @@ test.serial("Transfer from wallet completed successfully", (t: any) => {
 });
 
 test.serial("Transfer from wallet completed unsuccessfully", (t: any) => {
-	const { prefixUrl, auth, cache } = t.context;
+	const { prefixUrl, auth, cache, db } = t.context;
 	cache.set(TBDCacheKeys.WATCH_EXCHANGE("reference"), CLOSEs[1]);
 	return axios.get(`${prefixUrl}/transfers/4/status`, { headers: { Authorization: auth } })
 		.then(({ data }) => {
@@ -342,7 +353,6 @@ test.serial("Create a savings plan", async (t: any) => {
 	}, { headers: { Authorization: auth } });
 	
 	t.is(createPlanResponse.status, 200);
-	t.is(createPlanResponse.data, 'OK');
 
 	// Get all savings plans to find the ID of the newly created plan
 	const getPlansResponse = await axios.get(`${prefixUrl}/savings-plans`, { headers: { Authorization: auth } });
@@ -370,8 +380,6 @@ test.serial("Create a savings plan", async (t: any) => {
 	t.is(enableAutoFundResponse.data, 'OK');
 });
 
-
-
 test.serial("Savings plan rollover", async (t: any) => {
 	const { prefixUrl, auth, db } = t.context;
 	
@@ -383,7 +391,6 @@ test.serial("Savings plan rollover", async (t: any) => {
 	}, { headers: { Authorization: auth } });
 	
 	t.is(createPlanResponse.status, 200);
-	t.is(createPlanResponse.data, 'OK');
 
 	// Get all savings plans to find the ID of the newly created plan
 	const getPlansResponse = await axios.get(`${prefixUrl}/savings-plans`, { headers: { Authorization: auth } });

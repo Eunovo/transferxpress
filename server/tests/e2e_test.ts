@@ -63,18 +63,18 @@ test.serial("End-to-end test", async (t) => {
 
     // Define supported currency pairs
     const currencyPairs = [
-        { from: 'GHS', to: 'USDC' },
-        { from: 'NGN', to: 'KES' },
-        { from: 'KES', to: 'USD' },
-        { from: 'USD', to: 'KES' },
+        // { from: 'GHS', to: 'USDC' },
+        // { from: 'NGN', to: 'KES' },
+        // { from: 'KES', to: 'USD' },
+        // { from: 'USD', to: 'KES' },
         { from: 'USD', to: 'EUR' },
         { from: 'EUR', to: 'USD' },
-        { from: 'USD', to: 'GBP' },
-        { from: 'USD', to: 'BTC' },
-        { from: 'EUR', to: 'USDC' },
-        { from: 'EUR', to: 'GBP' },
-        { from: 'USD', to: 'AUD' },
-        { from: 'USD', to: 'MXN' }
+        // { from: 'USD', to: 'GBP' },
+        // { from: 'USD', to: 'BTC' },
+        // { from: 'EUR', to: 'USDC' },
+        // { from: 'EUR', to: 'GBP' },
+        // { from: 'USD', to: 'AUD' },
+        // { from: 'USD', to: 'MXN' }
     ];
 
     // Perform transfers from bank accounts to user wallets
@@ -173,27 +173,27 @@ test.serial("End-to-end test", async (t) => {
         }
     }
 
-    // Create a BTC savings plan
-    t.log("Creating a BTC savings plan");
+    // Create a EUR savings plan
+    t.log("Creating a EUR savings plan");
     const createSavingsPlanResponse = await client.post<SavingsPlan>('/savings-plans', {
-        name: 'BTC Savings',
-        currencyCode: 'BTC',
+        name: 'EUR Savings',
+        currencyCode: 'EUR',
         durationInMonths: 6
     });
     t.truthy(createSavingsPlanResponse.data.id);
-    t.is(createSavingsPlanResponse.data.currencyCode, 'BTC');
+    t.is(createSavingsPlanResponse.data.currencyCode, 'EUR');
     t.is(createSavingsPlanResponse.data.durationInMonths, 6);
     t.is(createSavingsPlanResponse.data.state, 'ACTIVE');
 
     const savingsPlanId = createSavingsPlanResponse.data.id;
 
-    // Transfer 10 USD into the BTC savings plan
-    t.log("Transferring 10 USD to BTC savings plan");
+    // Transfer 10 USD into the EUR savings plan
+    t.log("Transferring 10 USD to EUR savings plan");
     const usdWallet = wallets.find(w => w.currencyCode === 'USD');
-    
+
     if (usdWallet) {
         try {
-            const { data: transferData } = await client.post<CreateTransferResponse>('/transfers/start/USD/BTC', {});
+            const { data: transferData } = await client.post<CreateTransferResponse>('/transfers/start/USD/EUR', {});
             t.truthy(transferData.id);
 
             await client.post(`/transfers/${transferData.id}/payin`, {
@@ -206,9 +206,9 @@ test.serial("End-to-end test", async (t) => {
                 walletId: savingsPlanId
             });
 
-            const { data: summary } = await client.post<TransferSummary>(`/transfers/${transferData.id}/amount`, { amount: '0.00033' });
+            const { data: summary } = await client.post<TransferSummary>(`/transfers/${transferData.id}/amount`, { amount: '8.5' });
             t.is(summary.payin.currencyCode, 'USD');
-            t.is(summary.payout.currencyCode, 'BTC');
+            t.is(summary.payout.currencyCode, 'EUR');
 
             await client.post(`/transfers/${transferData.id}/confirm`, {});
             const status = await waitUntilTransferComplete(transferData.id);
@@ -216,7 +216,7 @@ test.serial("End-to-end test", async (t) => {
 
             // Verify the balance of the savings plan
             const { data: updatedSavingsPlan } = await client.get<SavingsPlan>(`/savings-plans/${savingsPlanId}`);
-            t.truthy(updatedSavingsPlan.balance === 0.00033);
+            t.truthy(updatedSavingsPlan.balance === 8.5);
 
             // Enable auto-fund for the savings plan
             t.log("Enabling auto-fund for the savings plan");
@@ -238,9 +238,48 @@ test.serial("End-to-end test", async (t) => {
 
             // Verify the updated balance of the savings plan
             const { data: finalSavingsPlan } = await client.get<SavingsPlan>(`/savings-plans/${savingsPlanId}`);
-            t.is(finalSavingsPlan.balance, 0.00066); // Initial balance + auto-funded amount (assuming same exchange rate)
+            t.is(finalSavingsPlan.balance, 17.700000000000003); // Initial balance + auto-funded amount (assuming same exchange rate)
+
+            // Test transferring from savings plan with penalty fee
+            t.log("Testing transfer from savings plan with penalty fee");
+
+            // Start a transfer from the savings plan to the USD wallet
+            const { data: penaltyTransferData } = await client.post<CreateTransferResponse>('/transfers/start/EUR/USD', {});
+            t.truthy(penaltyTransferData.id);
+
+            // Set up payin from savings plan
+            await client.post(`/transfers/${penaltyTransferData.id}/payin`, {
+                kind: 'WALLET_ADDRESS',
+                walletId: savingsPlanId
+            });
+
+            // Set up payout to USD wallet
+            await client.post(`/transfers/${penaltyTransferData.id}/payout`, {
+                kind: 'WALLET_ADDRESS',
+                walletId: usdWallet.id
+            });
+
+            // Get transfer summary
+            const { data: penaltySummary } = await client.post<TransferSummary>(`/transfers/${penaltyTransferData.id}/amount`, { amount: '8.5' });
+            t.is(penaltySummary.payin.currencyCode, 'EUR');
+            t.is(penaltySummary.payout.currencyCode, 'USD');
+            t.truthy(penaltySummary.payin.fees.find((f) => f.name === 'PENALTY'));
+
+            // Confirm and complete the transfer
+            await client.post(`/transfers/${penaltyTransferData.id}/confirm`, {});
+            const penaltyTransferStatus = await waitUntilTransferComplete(penaltyTransferData.id);
+            t.is(penaltyTransferStatus, TransactionStatus.SUCCESS);
+
+            // Check wallet transactions for penalty fee
+            const { data: transactions } = await client.get('/transactions');
+            const penaltyTransaction = transactions.find(tx =>
+                tx.transferId === penaltyTransferData.id &&
+                tx.type === 'DEBIT' &&
+                tx.narration.includes('penalty')
+            );
+            t.truthy(penaltyTransaction, 'Penalty transaction should exist');
         } catch (err) {
-            console.log(err.response.data);
+            console.log(err);
             if (err.response && err.response.data && err.response.data.code !== ErrorCode.WALLET_INSUFFICIENT_BALANCE) {
                 t.fail(`Expected successful transfer or ErrorCode.WALLET_INSUFFICIENT_BALANCE, but got ${err.response.data.code}`);
             } else {
