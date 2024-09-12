@@ -10,6 +10,8 @@ import { AuthNavigationStack} from "@/navigation/AuthStack";
 import { useMutation } from "@tanstack/react-query";
 import { VERIFY_EMAIL } from "@/api/auth";
 import { BackButton } from "@/_components/Button/BackButton";
+import { Spinner } from "@/_components/loader_utils/Spinner";
+import { displayFlashbar } from "@/_components/Flashbar/displayFlashbar";
 
 interface Props {
     navigation:AuthNavigationStack;
@@ -50,8 +52,17 @@ email:""
    }}
    onSubmit={async(values)=>{
     try {
-        await mutateAsync(values)
-        navigation.navigate("personal-info", values)
+      const res =  await mutateAsync(values);
+      const emailStatus = res.data.status;
+      if(emailStatus === "AVAILABLE"){
+      return  navigation.navigate("personal-info", values)
+      }
+       else{
+        return displayFlashbar({
+            type: "danger",
+            message: "Account already exists"
+        })
+       }
     } catch (error) {
         return;
     }
@@ -81,9 +92,17 @@ touched={touched.email}
     disabled={isDisabled}
     onPress={()=> submitForm()}
     className="w-full bg-secondary">
+        {
+    !isPending ? (
         <NormalText weight={500} className="text-primary/80">
-          Next
-        </NormalText>
+       Next
+    </NormalText>
+    ) : (
+        <Spinner
+        circumfrence={80} strokeWidth={3}
+        />
+    )
+  }
     </ButtonNormal>
             </View>
         </View>

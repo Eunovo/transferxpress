@@ -51,7 +51,7 @@ className="flex-row flex-wrap justify-center items-center max-w-[80%] mx-auto"
 <NormalText
 size={13}
 className="text-white/80 text-center">
-Congratulations! You have successfully set-up your TransferXpress account. Return to the login page to enter your account.
+Congratulations! You have successfully set-up your TransferXpress account. Return to the login screen to enter your account.
    </NormalText>
 </View>
 </View>

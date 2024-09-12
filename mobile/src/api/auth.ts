@@ -10,7 +10,7 @@ export const LOGIN_USER = async(data:{
 export const VERIFY_EMAIL = async(data:{
 email:string
 }) =>{
-    return await transferxpressApi.post("/email-status", data)
+    return await transferxpressApi.post<VerifyEmailDataResponse>("/email-status", data)
 };
 
 export const REGISTER_USER = async(data:{
@@ -25,7 +25,9 @@ phoneNumber: string
 }
 
 
-
+type VerifyEmailDataResponse = {
+    status: "AVAILABLE" | "NOT_AVAILABLE"
+}
 type LoginUSerDataResponse = {
     token: string
 }
