@@ -29,7 +29,7 @@ route
 ){
   const {mutateAsync, isPending} = useMutation({
     mutationFn: REGISTER_USER
-  })
+  });
     return(
         <LayoutWithScroll>
             <View 
@@ -51,7 +51,7 @@ route
    <NormalText 
 size={13}
 className="text-white/80">
-   Create a new password for your Transferxpress account.
+   Create a password for your Transferxpress account.
    </NormalText>
    <Formik
    initialValues={{
@@ -69,8 +69,7 @@ country:  screenParams.country,
 password: values.confirmPassword,
 phoneNumber: screenParams.phoneNumber
   })
-  // TODO add toast
-  navigation.navigate("login")
+  navigation.navigate("create-pin")
 } catch (error) {
   return;
 }
@@ -79,7 +78,7 @@ phoneNumber: screenParams.phoneNumber
    {
     ({values, errors, touched, handleChange, handleBlur, submitForm, dirty})=>{
         const {isPasswordValid, rules} = getPasswordValidationRules(values.password);
-const isDisabled = !dirty;
+const isDisabled = !dirty && !isPasswordValid;
         return(
             <View className="w-full mt-10">
             <View className="w-full mb-4">

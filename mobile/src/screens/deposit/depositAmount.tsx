@@ -143,7 +143,7 @@ export const DepositAmount = ({navigation}: Props) => {
           className="w-full">
           {supportedCurrencies && sender.currency && (
             <CurrencyAmountInput
-              title="Amount to send"
+              title="Send"
               active={sender}
               supportedCurrencies={supportedCurrencies}
               setAmount={value => {

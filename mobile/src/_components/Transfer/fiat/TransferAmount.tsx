@@ -123,7 +123,7 @@ if(supportedReceivingCurrencies?.length){
           }}
           className="w-full">
           <CurrencyAmountInput
-            title="Amount to send"
+            title="Send"
             active={sender}
             supportedCurrencies={supportedSendingCurrencies}
             setAmount={value => {
