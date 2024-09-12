@@ -19,6 +19,9 @@ import {
   PayinUpdateResponse,
   Transfer,
   PaymentDetails,
+  CreateSavingsPlan,
+  EnableAutoFundRequestBody,
+  SavingsPlan,
 } from "../types.js";
 import { TBDexService } from "./tbdex.js";
 import { Beneficiary, PFI, User, UserCredential, Transaction as TransactionModel } from "../models.js";
@@ -27,6 +30,7 @@ import { ErrorCode } from "../error_codes.js";
 import { extractRequiredPaymentDetails, isPaymentKind, softAssert } from "../utils.js";
 import { Cache } from "../cache.js";
 import { logger } from "../logger.js";
+import { mapWalletToSavingsPlan } from "./mappers.js";
 
 const CacheKeys = {
   TRANSFER_QUOTE: (transferId: ID) => `transfer:quote:${transferId}`
@@ -69,16 +73,16 @@ export class Users {
         { ...data, did, createdAt: now, lastUpdatedAt: now },
         [{ key: 'kcc', value: credential }],
         [
-          { currencyCode: 'BTC', balance: 0 },
-          { currencyCode: 'USDC', balance: 0 },
-          { currencyCode: 'NGN', balance: 0 },
-          { currencyCode: 'USD', balance: 0 },
-          { currencyCode: 'KES', balance: 0 },
-          { currencyCode: 'EUR', balance: 0 },
-          { currencyCode: 'GBP', balance: 0 },
-          { currencyCode: 'MXN', balance: 0 },
-          { currencyCode: 'AUD', balance: 0 },
-          { currencyCode: 'GHS', balance: 0 }
+          { currencyCode: 'BTC', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'USDC', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'NGN', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'USD', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'KES', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'EUR', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'GBP', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'MXN', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'AUD', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'GHS', balance: 0, type: 'STANDARD' }
         ]
       ).then(() => { }); // return void
     });
@@ -100,7 +104,7 @@ export class Users {
   }
 
   getWallets(userId: ID): Promise<Wallet[]> {
-    return this.db.findWalletsByUserId(userId);
+    return this.db.findWalletsByUserId(userId, 'STANDARD');
   }
 
   getTransactions(userId: ID): Promise<Transaction[]> {
@@ -216,24 +220,24 @@ export class Users {
   }
 
   getTransfer(id: ID, userId: ID): Promise<Transfer> {
-  return this.db.findTransferByIdAndUserId(id, userId)
-    .then(transfer => {
-      if (transfer === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
-      return {
-        id: transfer.id,
-        payinCurrencyCode: transfer.payinCurrencyCode,
-        payoutCurrencyCode: transfer.payoutCurrencyCode,
-        payinAmount: transfer.payinAmount,
-        payoutAmount: transfer.payoutAmount,
-        fee: transfer.fee,
-        payinKind: transfer.payinKind,
-        payoutKind: transfer.payoutKind,
-        narration: transfer.narration,
-        status: transfer.status,
-        createdAt: transfer.createdAt,
-        lastUpdatedAt: transfer.lastUpdatedAt
-      };
-    });
+    return this.db.findTransferByIdAndUserId(id, userId)
+      .then(transfer => {
+        if (transfer === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
+        return {
+          id: transfer.id,
+          payinCurrencyCode: transfer.payinCurrencyCode,
+          payoutCurrencyCode: transfer.payoutCurrencyCode,
+          payinAmount: transfer.payinAmount,
+          payoutAmount: transfer.payoutAmount,
+          fee: transfer.fee,
+          payinKind: transfer.payinKind,
+          payoutKind: transfer.payoutKind,
+          narration: transfer.narration,
+          status: transfer.status,
+          createdAt: transfer.createdAt,
+          lastUpdatedAt: transfer.lastUpdatedAt
+        };
+      });
   }
 
   saveTransferPayinData(userId: ID, transferId: ID, data: PayinRequestBody): Promise<PayinUpdateResponse> {
@@ -615,7 +619,10 @@ export class Users {
             lastUpdatedAt: new Date()
           });
         }
-
+        usersLogger.info(
+          { transferId, userId, status, amount: `${transfer.payoutCurrencyCode} ${transfer.payoutAmount}`},
+          "[handleTransferComplete]"
+        );
         return this.db.updateTransferById(transferId, { ...transfer, status, lastUpdatedAt: new Date() }, transactions).then(() => { });
       })
       .catch(err => { usersLogger.error(`[handleTransferComplete] ${err.message}`, { transferId, userId, success }) });
@@ -712,6 +719,74 @@ export class Users {
           throw new ServerError({ code: ErrorCode.INVALID_STATE, data: { validStates, currentState: transfer.status } });
         // TODO rate pfi
         return;
+      });
+  }
+
+  getAllSavingsPlans(userId: ID): Promise<Array<SavingsPlan>> {
+    return this.db.findWalletsByUserId(userId, 'SAVINGS')
+      .then((wallets) => wallets.map(mapWalletToSavingsPlan));
+  }
+
+  getSavingsPlanById(userId: ID, savingsPlanId: ID): Promise<SavingsPlan> {
+    return this.db.findWallet(userId, savingsPlanId, 'SAVINGS')
+      .then((wallet) => {
+        if (wallet == null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
+        return mapWalletToSavingsPlan(wallet);
+      });
+  }
+
+  createSavingsPlan(userId: ID, data: CreateSavingsPlan): Promise<SavingsPlan> {
+    const now = new Date();
+    const maturityDate = new Date(now);
+    maturityDate.setMonth(maturityDate.getMonth() + data.durationInMonths);
+    return this.db.createWallet({
+      userId,
+      name: data.name,
+      currencyCode: data.currencyCode,
+      balance: 0,
+      type: 'SAVINGS',
+      planDurationInMonths: data.durationInMonths,
+      maturityDate,
+      createdAt: now,
+      lastUpdatedAt: now
+    }).then((id) => (mapWalletToSavingsPlan({
+      id,
+      userId,
+      balance: 0,
+      name: data.name,
+      currencyCode: data.currencyCode,
+      planDurationInMonths: data.durationInMonths,
+      maturityDate,
+      type: 'SAVINGS',
+      createdAt: now,
+      lastUpdatedAt: now
+    })));
+  }
+
+  enableAutoFund(userId: ID, savingsPlanId: ID, data: EnableAutoFundRequestBody): Promise<void> {
+    const amount = parseFloat(data.amount);
+    return Promise.all([
+      this.getSavingsPlanById(userId, savingsPlanId),
+      this.db.findWallet(userId, data.walletId, 'STANDARD')
+    ]).then(([savingsPlan, wallet]) => {
+      if (wallet == null) throw new ServerError({ code: ErrorCode.WALLET_NOT_FOUND });
+      if (savingsPlan.autoFund) throw new ServerError({ code: ErrorCode.INVALID_STATE, data: { currentState: 'TRUE', validStates: ['FALSE'] } });
+      return this.db.updateWallet(savingsPlan.id, {
+        autoFundAmount: amount,
+        autoFundWalletId: wallet.id
+      });
+    });
+  }
+
+  rolloverSavingsPlan(userId: ID, savingsPlanId: ID): Promise<void> {
+    return this.getSavingsPlanById(userId, savingsPlanId)
+      .then((savingsPlan) => {
+        if (savingsPlan.state !== 'MATURED') throw new ServerError({
+          code: ErrorCode.INVALID_STATE, data: { validStates: ['MATURED'], currentState: savingsPlan.state }
+        });
+        return this.db.updateWallet(savingsPlan.id, {
+          maturityDate: new Date(Date.now() + (savingsPlan.durationInMonths * 30 * 24 * 60 * 60 * 1000)),
+        });
       });
   }
 }

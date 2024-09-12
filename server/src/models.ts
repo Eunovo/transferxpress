@@ -25,6 +25,12 @@ export interface UserCredential extends BaseModel {
 export interface Wallet extends BaseModel {
   currencyCode: string;
   balance: number;
+  type: "STANDARD" | "SAVINGS";
+  name?: string;
+  planDurationInMonths?: number;
+  autoFundWalletId?: ID;
+  autoFundAmount?: number; // In autoFundWallet currency code
+  maturityDate?: Date;
   userId: ID;
 }
 

@@ -1,5 +1,5 @@
 import { Database } from "sqlite3";
-import { UsersDb, TBDexDB } from "../db.js";
+import { UsersDb, TBDexDB, AutoFunderDB } from "../db.js";
 import {
   Beneficiary,
   User,
@@ -70,9 +70,9 @@ export class UsersDbImpl implements UsersDb {
           });
 
           db.run(`
-            INSERT INTO Wallets (userId, currencyCode, balance, createdAt, lastUpdatedAt)
-            VALUES ${wallets.map(() => "(?, ?, ?, ?, ?)").join(", ")}
-          `, wallets.reduce((acc: any, w: any) => acc.concat([userId, w.currencyCode, w.balance, data.createdAt, data.lastUpdatedAt]), []), function (err) {
+            INSERT INTO Wallets (userId, currencyCode, balance, type, createdAt, lastUpdatedAt)
+            VALUES ${wallets.map(() => "(?, ?, ?, ?, ?, ?)").join(", ")}
+          `, wallets.reduce((acc: any, w: any) => acc.concat([userId, w.currencyCode, w.balance, w.type, data.createdAt, data.lastUpdatedAt]), []), function (err) {
             if (err) {
               db.run("ROLLBACK");
               return reject(err);
@@ -80,7 +80,7 @@ export class UsersDbImpl implements UsersDb {
           });
 
           db.run("COMMIT");
-            resolve({ ...data, id: userId });
+          resolve({ ...data, id: userId });
         });
       });
     });
@@ -115,11 +115,94 @@ export class UsersDbImpl implements UsersDb {
     });
   }
 
-  findWalletsByUserId(userId: number): Promise<Wallet[]> {
+  findWalletsByUserId(userId: number, type?: Wallet['type']): Promise<Wallet[]> {
     return new Promise((resolve, reject) => {
-      this.db.all(`SELECT * FROM Wallets WHERE userId = ?`, [userId], (err, rows) => {
+      let query = `SELECT * FROM Wallets WHERE userId = ?`;
+      const params: any[] = [userId];
+
+      if (type) {
+        query += ` AND type = ?`;
+        params.push(type);
+      }
+
+      this.db.all(query, params, (err, rows) => {
         if (err) return reject(err);
         resolve(rows as Wallet[]);
+      });
+    });
+  }
+
+  findWallet(userId: ID, walletId: ID, type: Wallet["type"]): Promise<Wallet | null> {
+    return new Promise((resolve, reject) => {
+      this.db.get(
+        `SELECT * FROM Wallets WHERE id = ? AND userId = ? AND type = ?`,
+        [walletId, userId, type],
+        (err, row) => {
+          if (err) return reject(err);
+          if (!row) return resolve(null);
+          resolve(row as Wallet);
+        }
+      );
+    });
+  }
+
+  createWallet(data: InsertData<Wallet>): Promise<ID> {
+    return new Promise((resolve, reject) => {
+      this.db.run(`
+        INSERT INTO Wallets (userId, type, currencyCode, balance, name, planDurationInMonths, autoFundWalletId, autoFundAmount, maturityDate, createdAt, lastUpdatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        data.userId,
+        data.type,
+        data.currencyCode,
+        data.balance,
+        data.name,
+        data.planDurationInMonths,
+        data.autoFundWalletId,
+        data.autoFundAmount,
+        data.maturityDate,
+        data.createdAt,
+        data.lastUpdatedAt
+      ], function (err) {
+        if (err) return reject(err);
+        resolve(this.lastID);
+      });
+    });
+  }
+
+  updateWallet(walletId: ID, data: Partial<Pick<Wallet, "autoFundWalletId" | "autoFundAmount" | "maturityDate">>): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const updateFields: string[] = [];
+      const updateValues: any[] = [];
+
+      if (data.autoFundWalletId !== undefined) {
+        updateFields.push('autoFundWalletId = ?');
+        updateValues.push(data.autoFundWalletId);
+      }
+
+      if (data.autoFundAmount !== undefined) {
+        updateFields.push('autoFundAmount = ?');
+        updateValues.push(data.autoFundAmount);
+      }
+
+      if (data.maturityDate !== undefined) {
+        updateFields.push('maturityDate = ?');
+        updateValues.push(data.maturityDate);
+      }
+
+      if (updateFields.length === 0) {
+        return resolve();
+      }
+
+      updateFields.push('lastUpdatedAt = ?');
+      updateValues.push(new Date().toISOString());
+
+      const query = `UPDATE Wallets SET ${updateFields.join(', ')} WHERE id = ?`;
+      updateValues.push(walletId);
+
+      this.db.run(query, updateValues, function (err) {
+        if (err) return reject(err);
+        resolve();
       });
     });
   }
@@ -142,7 +225,7 @@ export class UsersDbImpl implements UsersDb {
         data.address,
         data.createdAt,
         data.lastUpdatedAt
-      ], function(err) {
+      ], function (err) {
         if (err) return reject(err);
         resolve();
       });
@@ -481,5 +564,45 @@ export class TBDexDBImpl implements TBDexDB {
         resolve(rows as PFI[]);
       });
     });
+  }
+}
+
+export class AutoFunderDBImpl implements AutoFunderDB {
+  constructor(
+    private db: Database
+  ) { }
+
+  async listWalletsForFunding(): Promise<Iterator<Promise<Wallet[]>, null>> {
+    let nextIndex = 0;
+    let batchSize = 1000;
+    let maxIndex = await new Promise<number>((resolve, reject) => this.db.get(
+      `SELECT MAX(id) AS max_id from wallets
+          WHERE type = 'SAVINGS'
+          AND autoFundWalletId IS NOT NULL
+          AND autoFundAmount IS NOT NULL`, [],
+      (err, row: { max_id: number }) => {
+        if (err) reject(err);
+        resolve(row.max_id);
+      }));
+
+    return {
+      next: () => {
+        if (nextIndex >= maxIndex) return { value: null, done: true };
+
+        let result = new Promise<Wallet[]>((resolve, reject) => this.db.all(`
+          SELECT * FROM wallets
+          WHERE type = 'SAVINGS'
+          AND autoFundWalletId IS NOT NULL
+          AND autoFundAmount IS NOT NULL
+          AND id > ? AND id <= ?`,
+          [nextIndex, nextIndex + batchSize], (err, rows: Wallet[]) => {
+            if (err) return reject(err);
+            resolve(rows);
+          })
+        );
+        nextIndex = nextIndex + batchSize;
+        return { value: result, done: false }
+      }
+    }
   }
 }

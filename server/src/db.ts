@@ -23,7 +23,10 @@ export interface UsersDb {
   ): Promise<User>;
   findCredentialsForUserId(userId: ID): Promise<UserCredential[]>;
   insertCredentials(data: InsertData<UserCredential>[]): Promise<void>;
-  findWalletsByUserId(userId: ID): Promise<Wallet[]>;
+  findWalletsByUserId(userId: ID, type?: Wallet['type']): Promise<Wallet[]>;
+  findWallet(userId: ID, walletId: ID, type: Wallet['type']): Promise<Wallet | null>;
+  createWallet(data: InsertData<Wallet>): Promise<ID>;
+  updateWallet(walletId: ID, data: Partial<Pick<Wallet, 'autoFundWalletId' | 'autoFundAmount' | 'maturityDate'>>): Promise<void>;
   insertWalletPaymentDetails(walletId: ID, data: InsertData<WalletPaymentDetails>): Promise<void>;
   findTransactionById(id: ID): Promise<Transaction | null>;
   findTransactionsByUserId(userId: ID): Promise<Transaction[]>;
@@ -44,4 +47,8 @@ export interface TBDexDB {
    * List non-blacklisted PFIs
    */
   listPFIs(): Promise<PFI[]>;
+}
+
+export interface AutoFunderDB {
+  listWalletsForFunding(): Promise<Iterator<Promise<Wallet[]>, null>>;
 }

@@ -174,3 +174,27 @@ export interface Transfer {
   createdAt: Date;
   lastUpdatedAt: Date;
 }
+
+export interface SavingsPlan extends Wallet {
+  name: string;
+  currencyCode: string;
+  durationInMonths: number;
+  autoFund: boolean;
+  startDate: Date;
+  maturityDate: Date;
+  penalties: { name: string, percentage: number }[]
+  state: 'ACTIVE' | 'MATURED'
+  createdAt: Date;
+  lastUpdatedAt: Date;
+}
+
+export interface CreateSavingsPlan {
+  name: string;
+  currencyCode: string;
+  durationInMonths: number;
+}
+
+export interface EnableAutoFundRequestBody {
+  walletId: ID;
+  amount: string;
+}

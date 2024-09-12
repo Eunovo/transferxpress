@@ -10,19 +10,22 @@ import {
   PayinRequestBody,
   PayoutRequestBody,
   PaymentKind,
-  TransferAmountUpdateRequestBody
+  TransferAmountUpdateRequestBody,
+  CreateSavingsPlan,
+  EnableAutoFundRequestBody
 } from "./types.js";
 import { Users } from "./features/users.js";
 import { TBDexError, TBDexService } from "./features/tbdex.js";
 import { User } from "./models.js";
 import { logger } from "./logger.js";
 import { ServerError } from "./error.js";
+import { AutoFunder } from "./features/autofund.js";
 
 export interface AppConfig {
   port: number
 }
 
-export default function(config: AppConfig, users: Users, tbdex: TBDexService) {
+export default function(config: AppConfig, users: Users, tbdex: TBDexService, autoFunder: AutoFunder) {
   const app: Express = express();
 
   app.use(express.json());
@@ -333,6 +336,74 @@ export default function(config: AppConfig, users: Users, tbdex: TBDexService) {
     users.saveTransferFeedback(req.user.id, transferId, body.speedOfSettlementRating)
       .then(() => res.send('OK'))
       .catch(err => next(err));
+  });
+
+  // @ts-ignore
+  app.get('/savings-plans', authenticate, (req: AuthenticatedRequest, res, next) => {
+    users.getAllSavingsPlans(req.user.id)
+      .then(result => res.json(result))
+      .catch(err => next(err))
+  });
+
+  // @ts-ignore
+  app.get('/savings-plans/:id', authenticate, (req: AuthenticatedRequest, res, next) => {
+    const savingsPlanId = transformId(req.params.id);
+    if (savingsPlanId == null) {
+      res.status(404).send("Invalid savings plan id");
+      return;
+    }
+    users.getSavingsPlanById(req.user.id, savingsPlanId)
+      .then(result => res.json(result))
+      .catch(err => next(err))
+  });
+
+  // @ts-ignore
+  app.post('/savings-plans', authenticate, (req: AuthenticatedRequest, res, next) => {
+    const body = validate<CreateSavingsPlan>(req.body, {
+      name: { type: "string" },
+      currencyCode: { type: "string" },
+      durationInMonths: { type: "number" }
+    }, v(res));
+    if (body == null) return;
+    users.createSavingsPlan(req.user.id, body)
+      .then((result) => res.json(result))
+      .catch(err => next(err));
+  });
+
+  // @ts-ignore
+  app.post('/savings-plans/:id/auto-fund/enable', authenticate, (req: AuthenticatedRequest, res, next) => {
+    const savingsPlanId = transformId(req.params.id);
+    if (savingsPlanId == null) {
+      res.status(404).send("Invalid savings plan id");
+      return;
+    }
+    const body = validate<EnableAutoFundRequestBody>(req.body, {
+      walletId: { type: "string" },
+      amount: { type: "string" }
+    }, v(res));
+    if (body == null) return;
+    users.enableAutoFund(req.user.id, savingsPlanId, body)
+      .then(() => res.send('OK'))
+      .catch(err => next(err));
+  });
+
+  // @ts-ignore
+  app.post('/savings-plans/:id/rollover', authenticate, (req: AuthenticatedRequest, res, next) => {
+    const savingsPlanId = transformId(req.params.id);
+    if (savingsPlanId == null) {
+      res.status(404).send("Invalid savings plan id");
+      return;
+    }
+    users.rolloverSavingsPlan(req.user.id, savingsPlanId)
+      .then(() => res.send('OK'))
+      .catch(err => next(err));
+  });
+
+  //@ts-ignore
+  app.post('/auto-fund', authenticate, (req: AuthenticatedRequest, res, next) => {
+    autoFunder.run()
+      .then(() => res.send('OK'))
+      .catch(err => next(err))
   });
 
   // Log Requests

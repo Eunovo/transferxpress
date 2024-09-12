@@ -33,10 +33,17 @@ export default function(db: Database) {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         currencyCode TEXT NOT NULL,
         balance REAL NOT NULL,
+        type TEXT NOT NULL,
+        name TEXT,
+        planDurationInMonths INTEGER,
+        autoFundWalletId INTEGER,
+        autoFundAmount REAL,
         userId INTEGER NOT NULL,
+        maturityDate TEXT,
         createdAt TEXT NOT NULL,
         lastUpdatedAt TEXT NOT NULL,
         FOREIGN KEY (userId) REFERENCES Users(id)
+        FOREIGN KEY (autoFundWalletId) REFERENCES Wallets(id)
       )
     `);
 
