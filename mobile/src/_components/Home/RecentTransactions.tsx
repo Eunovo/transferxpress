@@ -5,12 +5,12 @@ import { moderateScale } from "react-native-size-matters"
 import { NormalText } from "../Text/NormalText"
 import { TransactionRenderItem,} from "../Transactions/TransactionItem"
 import { useNavigation } from "@react-navigation/native"
-import { DashboardNavigation } from "@/navigation/UserStack/MainBottomTabs"
-import { GET_TRANSACTIONS, Transaction } from "@/api/transactions"
+import { GET_TRANSACTIONS } from "@/api/transactions"
 import { useQuery } from "@tanstack/react-query"
+import { UserNavigationStack } from "@/navigation/UserStack"
 
 export const RecentTransactions = ()=>{
-    const navigation = useNavigation<DashboardNavigation>();
+    const navigation = useNavigation<UserNavigationStack>();
     const transactionsQuery = useQuery({
         queryKey: ["getUserTransactions"],
         queryFn: ()=>GET_TRANSACTIONS()

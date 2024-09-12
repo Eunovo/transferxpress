@@ -1,30 +1,24 @@
-// import { CustomTabBar } from "@/components/BottomTabs/TabBar";
-import { HeaderText } from "@/_components/Text/HeaderText";
 import { NormalText } from "@/_components/Text/NormalText";
 import Home from "@/screens/home";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import type { NavigationProp } from "@react-navigation/native";
 import { moderateScale, moderateVerticalScale, ScaledSheet } from "react-native-size-matters";
 import HomeIcon from "@/assets/icons/home.svg"
-import TransactionsIcon from "@/assets/icons/transactions.svg"
 import TransferIcon from "@/assets/icons/transfer.svg"
 import MoreIcon from "@/assets/icons/more.svg"
 import HomeActiveIcon from "@/assets/icons/home_active.svg"
-import TransactionsActiveIcon from "@/assets/icons/transaction_active.svg"
 import TransferActiveIcon from "@/assets/icons/transfer_active.svg"
 import MoreActiveIcon from "@/assets/icons/more_active.svg"
-import Transactions from "@/screens/Transactions";
 import More from "@/screens/others";
 import TransferOptions from "@/screens/Transfer/options";
-import type { Transaction } from "@/api/transactions";
-
+import Savings from "@/screens/Savings";
+import SavingsIcon from "@/assets/icons/savings_menu.svg"
+import SavingsActiveIcon from "@/assets/icons/savings_menu_active.svg"
 
 export type ScreenNames = ["Home"];
 export type MainBottomTabsParamList = {
   home: undefined;
-  transactions?: {
-    transaction: Transaction
-  };
+  savings: undefined;
   transfer: undefined;
   others: undefined
 };
@@ -81,50 +75,7 @@ export default function MainBottomTabNavigator() {
         }}
         component={Home}
       />
-          <MainBottomTabs.Screen
-        name="transactions"
-        options={{
-          
-          tabBarLabel: ({color}) => (
-            <NormalText
-            style={{
-              color
-            }}
-            size={13}
-          weight={500}
-            >
-          Transactions
-            </NormalText>
-          ),  
-          tabBarIcon: ({focused}) => {
-            return (
-              focused ? 
-              (
-                <TransactionsActiveIcon
-            width={moderateScale(20)}
-            height={moderateVerticalScale(20)}
-            style={{
-              maxWidth: moderateScale(20),
-              maxHeight: moderateVerticalScale(20)
-            }}
-            fill={"#ECB365"}
-               className="shrink-0"
-            />
-              ) : (
-                <TransactionsIcon 
-            width={moderateScale(20)}
-            height={moderateVerticalScale(20)}
-            fill={"#FFF"}
-            fillOpacity={0.8}
-               className="shrink-0"
-            />
-              )
-            );
-        },
-        }}
-        component={Transactions}
-      />
-          <MainBottomTabs.Screen
+        <MainBottomTabs.Screen
         name="transfer"
         options={{
           tabBarLabel: ({color}) => (
@@ -162,6 +113,50 @@ export default function MainBottomTabNavigator() {
         }}
         component={TransferOptions}
       />
+          <MainBottomTabs.Screen
+        name="savings"
+        options={{
+          
+          tabBarLabel: ({color}) => (
+            <NormalText
+            style={{
+              color
+            }}
+            size={13}
+          weight={500}
+            >
+          Savings
+            </NormalText>
+          ),  
+          tabBarIcon: ({focused}) => {
+            return (
+              focused ? 
+              (
+                <SavingsActiveIcon
+            width={moderateScale(20)}
+            height={moderateVerticalScale(20)}
+            style={{
+              maxWidth: moderateScale(20),
+              maxHeight: moderateVerticalScale(20)
+            }}
+            fill={"#ECB365"}
+               className="shrink-0"
+            />
+              ) : (
+                <SavingsIcon
+            width={moderateScale(20)}
+            height={moderateVerticalScale(20)}
+            fill={"#FFF"}
+            fillOpacity={0.8}
+               className="shrink-0"
+            />
+              )
+            );
+        },
+        }}
+        component={Savings}
+      />
+        
           <MainBottomTabs.Screen
         name="others"
         options={{
