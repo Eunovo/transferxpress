@@ -14,6 +14,7 @@ import { ButtonNormal } from "@/_components/Button/NormalButton";
 import { Currencies } from "@/api/rates";
 import { useNavigation } from "@react-navigation/native";
 import { UserNavigationStack } from "@/navigation/UserStack";
+import { ViewSavingsPlanModal } from "@/_components/Savings/ViewSavingsPlan";
 
 export type SavingsPlan = {
     id: string;
@@ -54,7 +55,8 @@ const MOCK_PLANS: SavingsPlan[] = [
     }
 ]
 export default function Savings (){
-    const navigation  = useNavigation<UserNavigationStack>()
+    const navigation  = useNavigation<UserNavigationStack>();
+    const [active, setActive] = useState<SavingsPlan>()
     return(
         <LayoutWithScroll>
             <View className="grow pb-10">
@@ -108,8 +110,11 @@ plans={MOCK_PLANS}
             </HeaderText>
             {
                 MOCK_PLANS.map(item => (
-                    <View
+                    <CustomPressable
                     key={item.id}
+                    onPress={()=>setActive(item)}
+                    >
+                    <View
                     className="bg-dark border border-secondary rounded-xl py-3"
                     >
                         <View
@@ -154,6 +159,7 @@ plans={MOCK_PLANS}
                                 </View>
                                 </View>
                         </View>
+                        </CustomPressable>
                 ))
             }
         </View>
@@ -182,6 +188,15 @@ plans={MOCK_PLANS}
 }
 </View>
             </View>
+            {
+             active && (
+                    <ViewSavingsPlanModal 
+                    showModal={Boolean(active)}
+                    closeModal={()=>setActive(undefined)}
+                    details={active}
+                    />
+                )
+            }
         </LayoutWithScroll>
     )
 }
