@@ -205,12 +205,34 @@ export class Users {
     return this.db.findTransfersByUserIdAndStatus(userId, [TransactionStatus.PROCESSING, TransactionStatus.SUCCESS, TransactionStatus.CANCELLED, TransactionStatus.FAILED])
       .then((transfers) => transfers.map(transfer => ({
         id: transfer.id,
-        payinCurrencyCode: transfer.payinCurrencyCode,
-        payoutCurrencyCode: transfer.payoutCurrencyCode,
-        payinAmount: transfer.payinAmount,
-        payoutAmount: transfer.payoutAmount,
-        payinKind: transfer.payinKind,
-        payoutKind: transfer.payoutKind,
+        payinPaymentDetails: {
+          currencyCode: transfer.payinCurrencyCode,
+          amount: transfer.payinAmount,
+          kind: transfer.payinKind,
+          walletId: transfer.payinWalletId,
+          accountNumber: transfer.payinAccountNumber,
+          routingNumber: transfer.payinRoutingNumber,
+          bankCode: transfer.payinBankCode,
+          sortCode: transfer.payinSortCode,
+          BSB: transfer.payinBSB,
+          IBAN: transfer.payinIBAN,
+          CLABE: transfer.payinCLABE,
+          address: transfer.payinAddress
+        },
+        payoutPaymentDetails: {
+          currencyCode: transfer.payoutCurrencyCode,
+          amount: transfer.payoutAmount,
+          kind: transfer.payoutKind,
+          walletId: transfer.payoutWalletId,
+          accountNumber: transfer.payoutAccountNumber,
+          routingNumber: transfer.payoutRoutingNumber,
+          bankCode: transfer.payoutBankCode,
+          sortCode: transfer.payoutSortCode,
+          BSB: transfer.payoutBSB,
+          IBAN: transfer.payoutIBAN,
+          CLABE: transfer.payoutCLABE,
+          address: transfer.payoutAddress
+        },
         narration: transfer.narration,
         status: transfer.status,
         createdAt: transfer.createdAt,
@@ -224,14 +246,38 @@ export class Users {
         if (transfer === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
         return {
           id: transfer.id,
-          payinCurrencyCode: transfer.payinCurrencyCode,
-          payoutCurrencyCode: transfer.payoutCurrencyCode,
-          payinAmount: transfer.payinAmount,
-          payoutAmount: transfer.payoutAmount,
           fee: transfer.fees.reduce((acc, cur) => {
             console.assert(cur.currencyCode == transfer.payinCurrencyCode);
             return acc + cur.amount;
           }, 0),
+          payinPaymentDetails: {
+            currencyCode: transfer.payinCurrencyCode,
+            amount: transfer.payinAmount,
+            kind: transfer.payinKind,
+            walletId: transfer.payinWalletId,
+            accountNumber: transfer.payinAccountNumber,
+            routingNumber: transfer.payinRoutingNumber,
+            bankCode: transfer.payinBankCode,
+            sortCode: transfer.payinSortCode,
+            BSB: transfer.payinBSB,
+            IBAN: transfer.payinIBAN,
+            CLABE: transfer.payinCLABE,
+            address: transfer.payinAddress
+          },
+          payoutPaymentDetails: {
+            currencyCode: transfer.payoutCurrencyCode,
+            amount: transfer.payoutAmount,
+            kind: transfer.payoutKind,
+            walletId: transfer.payoutWalletId,
+            accountNumber: transfer.payoutAccountNumber,
+            routingNumber: transfer.payoutRoutingNumber,
+            bankCode: transfer.payoutBankCode,
+            sortCode: transfer.payoutSortCode,
+            BSB: transfer.payoutBSB,
+            IBAN: transfer.payoutIBAN,
+            CLABE: transfer.payoutCLABE,
+            address: transfer.payoutAddress
+          },
           payinKind: transfer.payinKind,
           payoutKind: transfer.payoutKind,
           narration: transfer.narration,
