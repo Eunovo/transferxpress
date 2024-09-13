@@ -113,6 +113,7 @@ test.serial("End-to-end test", async (t) => {
             const { data: summary } = await client.post<TransferSummary>(`/transfers/${data.id}/amount`, { amount });
             t.is(summary.payout.currencyCode, toWallet.currencyCode);
             t.is(summary.payout.amount, amount);
+            t.truthy(summary.payin.fees.slice(1).map((f) => parseFloat(f.amount) > 0).reduce((acc, t) => acc && t,true));
 
             await client.post(`/transfers/${data.id}/confirm`, {});
             const status = await waitUntilTransferComplete(data.id);
@@ -279,11 +280,11 @@ test.serial("End-to-end test", async (t) => {
             );
             t.truthy(penaltyTransaction, 'Penalty transaction should exist');
         } catch (err) {
-            console.log(err);
             if (err.response && err.response.data && err.response.data.code !== ErrorCode.WALLET_INSUFFICIENT_BALANCE) {
                 t.fail(`Expected successful transfer or ErrorCode.WALLET_INSUFFICIENT_BALANCE, but got ${err.response.data.code}`);
             } else {
                 t.log('USD Wallet has insufficient balance for transfer to savings plan');
+                console.log(err);
             }
         }
     } else {

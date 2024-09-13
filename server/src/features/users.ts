@@ -522,7 +522,7 @@ export class Users {
         },
         {
           name: "PROCESSING",
-          amount: percentOf(5, transfer.payinAmount),
+          amount: percentOf(5, payinSubTotal),
           currencyCode: transfer.payinCurrencyCode,
           createdAt: now,
           lastUpdatedAt: now
@@ -534,7 +534,7 @@ export class Users {
         if (savingsPlan.state === 'ACTIVE') {
           fees.push({
             name: "PENALTY",
-            amount: percentOf(prematurePenalty.percentage, transfer.payinAmount),
+            amount: percentOf(prematurePenalty.percentage, payinSubTotal),
             currencyCode: transfer.payinCurrencyCode,
             createdAt: now,
             lastUpdatedAt: now
