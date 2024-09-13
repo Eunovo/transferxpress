@@ -162,12 +162,8 @@ export interface TransferSummary {
 
 export interface Transfer {
   id: ID;
-  payinCurrencyCode: string;
-  payoutCurrencyCode: string;
-  payinKind: PaymentKind;
-  payoutKind: PaymentKind;
-  payinAmount: number;
-  payoutAmount: number;
+  payinPaymentDetails: PaymentDetails & { amount: number, currencyCode: string };
+  payoutPaymentDetails: PaymentDetails & { amount: number, currencyCode: string };
   narration: string;
   fee: number;
   status: TransactionStatus;
