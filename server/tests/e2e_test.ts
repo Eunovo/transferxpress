@@ -6,12 +6,13 @@ import MakeApp from '../src/app.js';
 import { loadPfis } from '../src/load_pfis.js';
 import { Users } from '../src/features/users.js';
 import { TBDexService } from '../src/features/tbdex.js';
-import { UsersDbImpl, TBDexDBImpl } from '../src/sqlite/db_impl.js';
+import { UsersDbImpl, TBDexDBImpl, AutoFunderDBImpl } from '../src/sqlite/db_impl.js';
 import { InMemoryCache } from '../src/cache.js';
 import sqlite3 from 'sqlite3';
 import Migrate from '../src/sqlite/schema.js';
-import { CreateTransferResponse, PayinUpdateResponse, TransactionStatus, TransferSummary } from '../src/types.js';
+import { CreateTransferResponse, PayinUpdateResponse, SavingsPlan, TransactionStatus, TransferSummary } from '../src/types.js';
 import { ErrorCode } from '../src/error_codes.js';
+import { AutoFunder } from '../src/features/autofund.js';
 
 test.serial("End-to-end test", async (t) => {
     t.timeout(300000);
@@ -23,6 +24,7 @@ test.serial("End-to-end test", async (t) => {
     const cache = new InMemoryCache();
     const tbdex = new TBDexService(cache, tbdexDb);
     const users = new Users(usersDb, tbdex, cache);
+    const autoFunder = new AutoFunder(new AutoFunderDBImpl(db), usersDb, users, tbdex);
 
     // Load PFIs
     await loadPfis(db);
@@ -32,7 +34,7 @@ test.serial("End-to-end test", async (t) => {
     const password = 'testPassword123!';
 
     // Start the server
-    const { app } = MakeApp({ port: 0 }, users, tbdex);
+    const { app } = MakeApp({ port: 0 }, users, tbdex, autoFunder);
     const server = http.createServer(app);
     const prefixUrl = await listen(server);
     const client = axios.create({ baseURL: prefixUrl });
@@ -169,6 +171,123 @@ test.serial("End-to-end test", async (t) => {
                 t.log(`${from} Wallet has insufficent balance`);
             }
         }
+    }
+
+    // Create a EUR savings plan
+    t.log("Creating a EUR savings plan");
+    const createSavingsPlanResponse = await client.post<SavingsPlan>('/savings-plans', {
+        name: 'EUR Savings',
+        currencyCode: 'EUR',
+        durationInMonths: 6
+    });
+    t.truthy(createSavingsPlanResponse.data.id);
+    t.is(createSavingsPlanResponse.data.currencyCode, 'EUR');
+    t.is(createSavingsPlanResponse.data.durationInMonths, 6);
+    t.is(createSavingsPlanResponse.data.state, 'ACTIVE');
+
+    const savingsPlanId = createSavingsPlanResponse.data.id;
+
+    // Transfer 10 USD into the EUR savings plan
+    t.log("Transferring 10 USD to EUR savings plan");
+    const usdWallet = wallets.find(w => w.currencyCode === 'USD');
+
+    if (usdWallet) {
+        try {
+            const { data: transferData } = await client.post<CreateTransferResponse>('/transfers/start/USD/EUR', {});
+            t.truthy(transferData.id);
+
+            await client.post(`/transfers/${transferData.id}/payin`, {
+                kind: 'WALLET_ADDRESS',
+                walletId: usdWallet.id
+            });
+
+            await client.post(`/transfers/${transferData.id}/payout`, {
+                kind: 'WALLET_ADDRESS',
+                walletId: savingsPlanId
+            });
+
+            const { data: summary } = await client.post<TransferSummary>(`/transfers/${transferData.id}/amount`, { amount: '8.5' });
+            t.is(summary.payin.currencyCode, 'USD');
+            t.is(summary.payout.currencyCode, 'EUR');
+
+            await client.post(`/transfers/${transferData.id}/confirm`, {});
+            const status = await waitUntilTransferComplete(transferData.id);
+            t.is(status, TransactionStatus.SUCCESS);
+
+            // Verify the balance of the savings plan
+            const { data: updatedSavingsPlan } = await client.get<SavingsPlan>(`/savings-plans/${savingsPlanId}`);
+            t.truthy(updatedSavingsPlan.balance === 8.5);
+
+            // Enable auto-fund for the savings plan
+            t.log("Enabling auto-fund for the savings plan");
+            await client.post(`/savings-plans/${savingsPlanId}/auto-fund/enable`, {
+                walletId: `${usdWallet.id}`,
+                amount: '10'
+            });
+
+            // Verify auto-fund is enabled
+            const { data: savingsPlanWithAutoFund } = await client.get<SavingsPlan>(`/savings-plans/${savingsPlanId}`);
+            t.true(savingsPlanWithAutoFund.autoFund);
+
+            // Trigger auto-fund
+            t.log("Triggering auto-fund");
+            await client.post('/auto-fund');
+
+            // Wait for a short period to allow auto-fund to process
+            await new Promise(resolve => setTimeout(resolve, 30000));
+
+            // Verify the updated balance of the savings plan
+            const { data: finalSavingsPlan } = await client.get<SavingsPlan>(`/savings-plans/${savingsPlanId}`);
+            t.is(finalSavingsPlan.balance, 17.700000000000003); // Initial balance + auto-funded amount (assuming same exchange rate)
+
+            // Test transferring from savings plan with penalty fee
+            t.log("Testing transfer from savings plan with penalty fee");
+
+            // Start a transfer from the savings plan to the USD wallet
+            const { data: penaltyTransferData } = await client.post<CreateTransferResponse>('/transfers/start/EUR/USD', {});
+            t.truthy(penaltyTransferData.id);
+
+            // Set up payin from savings plan
+            await client.post(`/transfers/${penaltyTransferData.id}/payin`, {
+                kind: 'WALLET_ADDRESS',
+                walletId: savingsPlanId
+            });
+
+            // Set up payout to USD wallet
+            await client.post(`/transfers/${penaltyTransferData.id}/payout`, {
+                kind: 'WALLET_ADDRESS',
+                walletId: usdWallet.id
+            });
+
+            // Get transfer summary
+            const { data: penaltySummary } = await client.post<TransferSummary>(`/transfers/${penaltyTransferData.id}/amount`, { amount: '8.5' });
+            t.is(penaltySummary.payin.currencyCode, 'EUR');
+            t.is(penaltySummary.payout.currencyCode, 'USD');
+            t.truthy(penaltySummary.payin.fees.find((f) => f.name === 'PENALTY'));
+
+            // Confirm and complete the transfer
+            await client.post(`/transfers/${penaltyTransferData.id}/confirm`, {});
+            const penaltyTransferStatus = await waitUntilTransferComplete(penaltyTransferData.id);
+            t.is(penaltyTransferStatus, TransactionStatus.SUCCESS);
+
+            // Check wallet transactions for penalty fee
+            const { data: transactions } = await client.get('/transactions');
+            const penaltyTransaction = transactions.find(tx =>
+                tx.transferId === penaltyTransferData.id &&
+                tx.type === 'DEBIT' &&
+                tx.narration.includes('penalty')
+            );
+            t.truthy(penaltyTransaction, 'Penalty transaction should exist');
+        } catch (err) {
+            console.log(err);
+            if (err.response && err.response.data && err.response.data.code !== ErrorCode.WALLET_INSUFFICIENT_BALANCE) {
+                t.fail(`Expected successful transfer or ErrorCode.WALLET_INSUFFICIENT_BALANCE, but got ${err.response.data.code}`);
+            } else {
+                t.log('USD Wallet has insufficient balance for transfer to savings plan');
+            }
+        }
+    } else {
+        t.fail('USD wallet not found');
     }
 
     // Clean up

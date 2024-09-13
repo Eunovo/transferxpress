@@ -151,7 +151,7 @@ export interface TransferSummary {
   payin: {
     currencyCode: string;
     amount: string;
-    fee: string;
+    fees: { name: string, amount: string }[];
     paymentInstructions?: string;
   };
   payout: {
@@ -173,4 +173,28 @@ export interface Transfer {
   status: TransactionStatus;
   createdAt: Date;
   lastUpdatedAt: Date;
+}
+
+export interface SavingsPlan extends Wallet {
+  name: string;
+  currencyCode: string;
+  durationInMonths: number;
+  autoFund: boolean;
+  startDate: Date;
+  maturityDate: Date;
+  penalties: { name: string, percentage: number }[]
+  state: 'ACTIVE' | 'MATURED'
+  createdAt: Date;
+  lastUpdatedAt: Date;
+}
+
+export interface CreateSavingsPlan {
+  name: string;
+  currencyCode: string;
+  durationInMonths: number;
+}
+
+export interface EnableAutoFundRequestBody {
+  walletId: ID;
+  amount: string;
 }

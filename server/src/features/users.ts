@@ -19,14 +19,18 @@ import {
   PayinUpdateResponse,
   Transfer,
   PaymentDetails,
+  CreateSavingsPlan,
+  EnableAutoFundRequestBody,
+  SavingsPlan,
 } from "../types.js";
 import { TBDexService } from "./tbdex.js";
-import { Beneficiary, PFI, User, UserCredential, Transaction as TransactionModel } from "../models.js";
+import { Beneficiary, PFI, User, UserCredential, Transaction as TransactionModel, Wallet as WalletModel, TransferFee } from "../models.js";
 import { ServerError } from "../error.js";
 import { ErrorCode } from "../error_codes.js";
 import { extractRequiredPaymentDetails, isPaymentKind, softAssert } from "../utils.js";
 import { Cache } from "../cache.js";
 import { logger } from "../logger.js";
+import { mapWalletToSavingsPlan } from "./mappers.js";
 
 const CacheKeys = {
   TRANSFER_QUOTE: (transferId: ID) => `transfer:quote:${transferId}`
@@ -69,16 +73,16 @@ export class Users {
         { ...data, did, createdAt: now, lastUpdatedAt: now },
         [{ key: 'kcc', value: credential }],
         [
-          { currencyCode: 'BTC', balance: 0 },
-          { currencyCode: 'USDC', balance: 0 },
-          { currencyCode: 'NGN', balance: 0 },
-          { currencyCode: 'USD', balance: 0 },
-          { currencyCode: 'KES', balance: 0 },
-          { currencyCode: 'EUR', balance: 0 },
-          { currencyCode: 'GBP', balance: 0 },
-          { currencyCode: 'MXN', balance: 0 },
-          { currencyCode: 'AUD', balance: 0 },
-          { currencyCode: 'GHS', balance: 0 }
+          { currencyCode: 'BTC', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'USDC', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'NGN', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'USD', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'KES', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'EUR', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'GBP', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'MXN', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'AUD', balance: 0, type: 'STANDARD' },
+          { currencyCode: 'GHS', balance: 0, type: 'STANDARD' }
         ]
       ).then(() => { }); // return void
     });
@@ -100,7 +104,7 @@ export class Users {
   }
 
   getWallets(userId: ID): Promise<Wallet[]> {
-    return this.db.findWalletsByUserId(userId);
+    return this.db.findWalletsByUserId(userId, 'STANDARD');
   }
 
   getTransactions(userId: ID): Promise<Transaction[]> {
@@ -197,7 +201,7 @@ export class Users {
     });
   }
 
-  getTransfers(userId: ID): Promise<Transfer[]> {
+  getTransfers(userId: ID): Promise<Omit<Transfer, 'fee'>[]> {
     return this.db.findTransfersByUserIdAndStatus(userId, [TransactionStatus.PROCESSING, TransactionStatus.SUCCESS, TransactionStatus.CANCELLED, TransactionStatus.FAILED])
       .then((transfers) => transfers.map(transfer => ({
         id: transfer.id,
@@ -205,7 +209,6 @@ export class Users {
         payoutCurrencyCode: transfer.payoutCurrencyCode,
         payinAmount: transfer.payinAmount,
         payoutAmount: transfer.payoutAmount,
-        fee: transfer.fee,
         payinKind: transfer.payinKind,
         payoutKind: transfer.payoutKind,
         narration: transfer.narration,
@@ -216,24 +219,27 @@ export class Users {
   }
 
   getTransfer(id: ID, userId: ID): Promise<Transfer> {
-  return this.db.findTransferByIdAndUserId(id, userId)
-    .then(transfer => {
-      if (transfer === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
-      return {
-        id: transfer.id,
-        payinCurrencyCode: transfer.payinCurrencyCode,
-        payoutCurrencyCode: transfer.payoutCurrencyCode,
-        payinAmount: transfer.payinAmount,
-        payoutAmount: transfer.payoutAmount,
-        fee: transfer.fee,
-        payinKind: transfer.payinKind,
-        payoutKind: transfer.payoutKind,
-        narration: transfer.narration,
-        status: transfer.status,
-        createdAt: transfer.createdAt,
-        lastUpdatedAt: transfer.lastUpdatedAt
-      };
-    });
+    return this.db.findTransferByIdAndUserId(id, userId)
+      .then(transfer => {
+        if (transfer === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
+        return {
+          id: transfer.id,
+          payinCurrencyCode: transfer.payinCurrencyCode,
+          payoutCurrencyCode: transfer.payoutCurrencyCode,
+          payinAmount: transfer.payinAmount,
+          payoutAmount: transfer.payoutAmount,
+          fee: transfer.fees.reduce((acc, cur) => {
+            console.assert(cur.currencyCode == transfer.payinCurrencyCode);
+            return acc + cur.amount;
+          }, 0),
+          payinKind: transfer.payinKind,
+          payoutKind: transfer.payoutKind,
+          narration: transfer.narration,
+          status: transfer.status,
+          createdAt: transfer.createdAt,
+          lastUpdatedAt: transfer.lastUpdatedAt
+        };
+      });
   }
 
   saveTransferPayinData(userId: ID, transferId: ID, data: PayinRequestBody): Promise<PayinUpdateResponse> {
@@ -442,8 +448,8 @@ export class Users {
       this.db.findCredentialsForUserId(user.id)
     ]).then(async ([transfer, wallets, credentials]) => {
       if (transfer === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
-      const payinWallet: Wallet | undefined = wallets.find((wallet: Wallet) => wallet.id == transfer.payinWalletId);
-      const payoutWallet: Wallet | undefined = wallets.find((wallet: Wallet) => wallet.id == transfer.payoutWalletId);
+      const payinWallet: WalletModel | undefined = wallets.find((wallet: Wallet) => wallet.id == transfer.payinWalletId);
+      const payoutWallet: WalletModel | undefined = wallets.find((wallet: Wallet) => wallet.id == transfer.payoutWalletId);
 
       if (transfer.payinKind === PaymentKind.WALLET_ADDRESS && !payinWallet)
         throw new ServerError({ code: ErrorCode.NOT_FOUND, data: `Payin Wallet with id ${transfer.payinWalletId} not found for transfer ${transferId}` });
@@ -501,24 +507,58 @@ export class Users {
       if (payinWallet && payinWallet.balance < payinTotal) throw new ServerError({ code: ErrorCode.WALLET_INSUFFICIENT_BALANCE });
 
       this.cache.set(CacheKeys.TRANSFER_QUOTE(transferId), bestQuote, (new Date(bestQuote.quote.data.expiresAt).getTime() - Date.now())); // Cache quote until it expires
+
+      const percentOf = (percentage: number, value: number) => {
+        return value * (percentage / 100);
+      }
+
+      const fees: Omit<TransferFee, 'id' | 'transferId'>[] = [
+        {
+          name: "PROVIDER",
+          amount: payinFee,
+          currencyCode: transfer.payinCurrencyCode,
+          createdAt: now,
+          lastUpdatedAt: now
+        },
+        {
+          name: "PROCESSING",
+          amount: percentOf(5, transfer.payinAmount),
+          currencyCode: transfer.payinCurrencyCode,
+          createdAt: now,
+          lastUpdatedAt: now
+        },
+      ];
+      if (payinWallet?.type === 'SAVINGS') {
+        const savingsPlan = mapWalletToSavingsPlan(payinWallet);
+        const prematurePenalty = savingsPlan.penalties.find((p) => p.name === 'PREMATURE_WITHDRAWAL');
+        if (savingsPlan.state === 'ACTIVE') {
+          fees.push({
+            name: "PENALTY",
+            amount: percentOf(prematurePenalty.percentage, transfer.payinAmount),
+            currencyCode: transfer.payinCurrencyCode,
+            createdAt: now,
+            lastUpdatedAt: now
+          });
+        }
+      }
+
       await this.db.updateTransferById(
         transferId,
         {
           ...transfer,
           pfiId: bestQuote.pfi.id,
-          fee: payinFee,
           payinAmount: payinSubTotal,
           payoutAmount: parseFloat(data.amount),
           narration: data.narration,
           lastUpdatedAt: now
-        }
+        }, [], fees
       );
 
       return {
         payin: {
           currencyCode: transfer.payinCurrencyCode,
           amount: payinSubTotal.toString(),
-          fee: payinFee.toString(),
+          fees: fees.map((fee) => ({ name: fee.name, amount: fee.amount.toString() })),
           paymentInstructions: "Demo Instructions"
         },
         payout: {
@@ -557,6 +597,7 @@ export class Users {
       });
       const reference = quote.quote.exchangeId;
       const transactions: Omit<TransactionModel, 'id' | 'transferId'>[] = [];
+      const providerFee = transfer.fees.find((fee) => fee.name === 'PROVIDER')?.amount ?? 0;
       if (transfer.payinWalletId) {
         transactions.push({
           narration: transfer.narration,
@@ -564,13 +605,28 @@ export class Users {
           walletId: transfer.payinWalletId,
           reference,
           currencyCode: transfer.payinCurrencyCode,
-          amount: transfer.payinAmount + transfer.fee,
+          amount: transfer.payinAmount + providerFee,
           userId: user.id,
           createdAt: now,
           lastUpdatedAt: now
-        })
+        });
+
+        for (let fee of transfer.fees) {
+          if (fee.name === 'PROVIDER') continue;
+          transactions.push({
+            narration: `${fee.name.toLowerCase()} fee`,
+            type: 'DEBIT',
+            walletId: transfer.payinWalletId,
+            reference,
+            currencyCode: fee.currencyCode,
+            amount: fee.amount,
+            userId: user.id,
+            createdAt: now,
+            lastUpdatedAt: now
+          });
+        }
       }
-      // TODO Add processing fee
+
       await this.db.updateTransferById(
         transferId,
         { ...transfer, reference, status: TransactionStatus.PROCESSING, lastUpdatedAt: now },
@@ -582,41 +638,50 @@ export class Users {
   private handleTransferComplete(transferId: ID, userId: ID, success: boolean = false): Promise<void> {
     usersLogger.info({ transferId, userId, success }, "[handleTransferComplete]");
     const status = success ? TransactionStatus.SUCCESS : TransactionStatus.FAILED;
-    return this.db.findTransferByIdAndUserId(transferId, userId)
-      .then(transfer => {
-        if (transfer.status === TransactionStatus.CANCELLED) return;
-        const transactions: Omit<TransactionModel, 'id' | 'transferId'>[] = [];
-        if (transfer.payoutWalletId && success) {
-          transactions.push({
-            narration: transfer.narration,
-            walletId: transfer.payoutWalletId,
-            reference: transfer.reference,
-            currencyCode: transfer.payoutCurrencyCode,
-            amount: transfer.payoutAmount,
-            userId: userId,
-            type: 'CREDIT',
-            createdAt: new Date(),
-            lastUpdatedAt: new Date()
-          });
-        }
-        if (transfer.payinWalletId && !success) {
-          // Refund user
-          transactions.push({
-            narration: "Reversal",
-            walletId: transfer.payinWalletId,
-            reference: transfer.reference,
-            currencyCode: transfer.payinCurrencyCode,
-            amount: transfer.payinAmount + transfer.fee,
-            userId: userId,
-            type: 'CREDIT',
-            createdAt: new Date(),
-            lastUpdatedAt: new Date()
-          });
-        }
+    return Promise.all([
+      this.db.findTransferByIdAndUserId(transferId, userId),
+      this.db.findTransactionsByTransferId(transferId)
+    ]).then(([transfer, existingTranxs]) => {
+      if (transfer.status === TransactionStatus.CANCELLED) return;
+      const transactions: Omit<TransactionModel, 'id' | 'transferId'>[] = [];
+      if (success && transfer.payoutWalletId) {
+        transactions.push({
+          narration: transfer.narration,
+          walletId: transfer.payoutWalletId,
+          reference: transfer.reference,
+          currencyCode: transfer.payoutCurrencyCode,
+          amount: transfer.payoutAmount,
+          userId: userId,
+          type: 'CREDIT',
+          createdAt: new Date(),
+          lastUpdatedAt: new Date()
+        });
+      }
+      if (!success && existingTranxs) {
+        this.reverseTransactions(existingTranxs).forEach((t) => transactions.push(t));
+      }
 
-        return this.db.updateTransferById(transferId, { ...transfer, status, lastUpdatedAt: new Date() }, transactions).then(() => { });
-      })
+      usersLogger.info(
+        { transferId, userId, status, amount: `${transfer.payoutCurrencyCode} ${transfer.payoutAmount}` },
+        "[handleTransferComplete]"
+      );
+      return this.db.updateTransferById(transferId, { ...transfer, status, lastUpdatedAt: new Date() }, transactions).then(() => { });
+    })
       .catch(err => { usersLogger.error(`[handleTransferComplete] ${err.message}`, { transferId, userId, success }) });
+  }
+
+  reverseTransactions(transactions: TransactionModel[]): Omit<TransactionModel, 'id' | 'transferId'>[] {
+    return transactions.map((tranx) => ({
+      narration: `Reversal ${tranx.narration}`,
+      walletId: tranx.walletId,
+      reference: tranx.reference,
+      currencyCode: tranx.currencyCode,
+      amount: tranx.amount,
+      userId: tranx.userId,
+      type: tranx.type == 'CREDIT' ? 'DEBIT' : 'CREDIT',
+      createdAt: new Date(),
+      lastUpdatedAt: new Date()
+    }))
   }
 
   cancelTransfer(userId: ID, transferId: ID): Promise<void> {
@@ -710,6 +775,74 @@ export class Users {
           throw new ServerError({ code: ErrorCode.INVALID_STATE, data: { validStates, currentState: transfer.status } });
         // TODO rate pfi
         return;
+      });
+  }
+
+  getAllSavingsPlans(userId: ID): Promise<Array<SavingsPlan>> {
+    return this.db.findWalletsByUserId(userId, 'SAVINGS')
+      .then((wallets) => wallets.map(mapWalletToSavingsPlan));
+  }
+
+  getSavingsPlanById(userId: ID, savingsPlanId: ID): Promise<SavingsPlan> {
+    return this.db.findWallet(userId, savingsPlanId, 'SAVINGS')
+      .then((wallet) => {
+        if (wallet == null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
+        return mapWalletToSavingsPlan(wallet);
+      });
+  }
+
+  createSavingsPlan(userId: ID, data: CreateSavingsPlan): Promise<SavingsPlan> {
+    const now = new Date();
+    const maturityDate = new Date(now);
+    maturityDate.setMonth(maturityDate.getMonth() + data.durationInMonths);
+    return this.db.createWallet({
+      userId,
+      name: data.name,
+      currencyCode: data.currencyCode,
+      balance: 0,
+      type: 'SAVINGS',
+      planDurationInMonths: data.durationInMonths,
+      maturityDate,
+      createdAt: now,
+      lastUpdatedAt: now
+    }).then((id) => (mapWalletToSavingsPlan({
+      id,
+      userId,
+      balance: 0,
+      name: data.name,
+      currencyCode: data.currencyCode,
+      planDurationInMonths: data.durationInMonths,
+      maturityDate,
+      type: 'SAVINGS',
+      createdAt: now,
+      lastUpdatedAt: now
+    })));
+  }
+
+  enableAutoFund(userId: ID, savingsPlanId: ID, data: EnableAutoFundRequestBody): Promise<void> {
+    const amount = parseFloat(data.amount);
+    return Promise.all([
+      this.getSavingsPlanById(userId, savingsPlanId),
+      this.db.findWallet(userId, data.walletId, 'STANDARD')
+    ]).then(([savingsPlan, wallet]) => {
+      if (wallet == null) throw new ServerError({ code: ErrorCode.WALLET_NOT_FOUND });
+      if (savingsPlan.autoFund) throw new ServerError({ code: ErrorCode.INVALID_STATE, data: { currentState: 'TRUE', validStates: ['FALSE'] } });
+      return this.db.updateWallet(savingsPlan.id, {
+        autoFundAmount: amount,
+        autoFundWalletId: wallet.id
+      });
+    });
+  }
+
+  rolloverSavingsPlan(userId: ID, savingsPlanId: ID): Promise<void> {
+    return this.getSavingsPlanById(userId, savingsPlanId)
+      .then((savingsPlan) => {
+        if (savingsPlan.state !== 'MATURED') throw new ServerError({
+          code: ErrorCode.INVALID_STATE, data: { validStates: ['MATURED'], currentState: savingsPlan.state }
+        });
+        return this.db.updateWallet(savingsPlan.id, {
+          maturityDate: new Date(Date.now() + (savingsPlan.durationInMonths * 30 * 24 * 60 * 60 * 1000)),
+        });
       });
   }
 }

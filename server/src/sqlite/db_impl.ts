@@ -1,5 +1,5 @@
 import { Database } from "sqlite3";
-import { UsersDb, TBDexDB } from "../db.js";
+import { UsersDb, TBDexDB, AutoFunderDB } from "../db.js";
 import {
   Beneficiary,
   User,
@@ -10,7 +10,8 @@ import {
   Transfer,
   SavedCard,
   PFI,
-  WalletPaymentDetails
+  WalletPaymentDetails,
+  TransferFee
 } from "../models.js";
 import { InsertData } from "../utils.js";
 import { ID, TransactionStatus } from "../types.js";
@@ -70,9 +71,9 @@ export class UsersDbImpl implements UsersDb {
           });
 
           db.run(`
-            INSERT INTO Wallets (userId, currencyCode, balance, createdAt, lastUpdatedAt)
-            VALUES ${wallets.map(() => "(?, ?, ?, ?, ?)").join(", ")}
-          `, wallets.reduce((acc: any, w: any) => acc.concat([userId, w.currencyCode, w.balance, data.createdAt, data.lastUpdatedAt]), []), function (err) {
+            INSERT INTO Wallets (userId, currencyCode, balance, type, createdAt, lastUpdatedAt)
+            VALUES ${wallets.map(() => "(?, ?, ?, ?, ?, ?)").join(", ")}
+          `, wallets.reduce((acc: any, w: any) => acc.concat([userId, w.currencyCode, w.balance, w.type, data.createdAt, data.lastUpdatedAt]), []), function (err) {
             if (err) {
               db.run("ROLLBACK");
               return reject(err);
@@ -80,7 +81,7 @@ export class UsersDbImpl implements UsersDb {
           });
 
           db.run("COMMIT");
-            resolve({ ...data, id: userId });
+          resolve({ ...data, id: userId });
         });
       });
     });
@@ -115,11 +116,94 @@ export class UsersDbImpl implements UsersDb {
     });
   }
 
-  findWalletsByUserId(userId: number): Promise<Wallet[]> {
+  findWalletsByUserId(userId: number, type?: Wallet['type']): Promise<Wallet[]> {
     return new Promise((resolve, reject) => {
-      this.db.all(`SELECT * FROM Wallets WHERE userId = ?`, [userId], (err, rows) => {
+      let query = `SELECT * FROM Wallets WHERE userId = ?`;
+      const params: any[] = [userId];
+
+      if (type) {
+        query += ` AND type = ?`;
+        params.push(type);
+      }
+
+      this.db.all(query, params, (err, rows) => {
         if (err) return reject(err);
         resolve(rows as Wallet[]);
+      });
+    });
+  }
+
+  findWallet(userId: ID, walletId: ID, type: Wallet["type"]): Promise<Wallet | null> {
+    return new Promise((resolve, reject) => {
+      this.db.get(
+        `SELECT * FROM Wallets WHERE id = ? AND userId = ? AND type = ?`,
+        [walletId, userId, type],
+        (err, row) => {
+          if (err) return reject(err);
+          if (!row) return resolve(null);
+          resolve(row as Wallet);
+        }
+      );
+    });
+  }
+
+  createWallet(data: InsertData<Wallet>): Promise<ID> {
+    return new Promise((resolve, reject) => {
+      this.db.run(`
+        INSERT INTO Wallets (userId, type, currencyCode, balance, name, planDurationInMonths, autoFundWalletId, autoFundAmount, maturityDate, createdAt, lastUpdatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        data.userId,
+        data.type,
+        data.currencyCode,
+        data.balance,
+        data.name,
+        data.planDurationInMonths,
+        data.autoFundWalletId,
+        data.autoFundAmount,
+        data.maturityDate,
+        data.createdAt,
+        data.lastUpdatedAt
+      ], function (err) {
+        if (err) return reject(err);
+        resolve(this.lastID);
+      });
+    });
+  }
+
+  updateWallet(walletId: ID, data: Partial<Pick<Wallet, "autoFundWalletId" | "autoFundAmount" | "maturityDate">>): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const updateFields: string[] = [];
+      const updateValues: any[] = [];
+
+      if (data.autoFundWalletId !== undefined) {
+        updateFields.push('autoFundWalletId = ?');
+        updateValues.push(data.autoFundWalletId);
+      }
+
+      if (data.autoFundAmount !== undefined) {
+        updateFields.push('autoFundAmount = ?');
+        updateValues.push(data.autoFundAmount);
+      }
+
+      if (data.maturityDate !== undefined) {
+        updateFields.push('maturityDate = ?');
+        updateValues.push(data.maturityDate);
+      }
+
+      if (updateFields.length === 0) {
+        return resolve();
+      }
+
+      updateFields.push('lastUpdatedAt = ?');
+      updateValues.push(new Date().toISOString());
+
+      const query = `UPDATE Wallets SET ${updateFields.join(', ')} WHERE id = ?`;
+      updateValues.push(walletId);
+
+      this.db.run(query, updateValues, function (err) {
+        if (err) return reject(err);
+        resolve();
       });
     });
   }
@@ -142,7 +226,7 @@ export class UsersDbImpl implements UsersDb {
         data.address,
         data.createdAt,
         data.lastUpdatedAt
-      ], function(err) {
+      ], function (err) {
         if (err) return reject(err);
         resolve();
       });
@@ -168,12 +252,11 @@ export class UsersDbImpl implements UsersDb {
     });
   }
 
-  findTransactionByTransferId(transferId: number): Promise<Transaction | null> {
+  findTransactionsByTransferId(transferId: number): Promise<Transaction[]> {
     return new Promise((resolve, reject) => {
-      this.db.get(`SELECT * FROM Transactions WHERE transferId = ?`, [transferId], (err, row) => {
+      this.db.all(`SELECT * FROM Transactions WHERE transferId = ?`, [transferId], (err, rows) => {
         if (err) return reject(err);
-        if (!row) return resolve(null);
-        resolve(row as Transaction);
+        resolve(rows as Transaction[]);
       });
     });
   }
@@ -273,7 +356,6 @@ export class UsersDbImpl implements UsersDb {
         payinAmount,
         payoutAmount,
         narration,
-        fee,
         payinWalletId,
         payoutWalletId,
         payinCardId,
@@ -297,7 +379,7 @@ export class UsersDbImpl implements UsersDb {
         reference,
         createdAt,
         lastUpdatedAt)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
         [
           data.userId,
@@ -309,7 +391,6 @@ export class UsersDbImpl implements UsersDb {
           data.payinAmount,
           data.payoutAmount,
           data.narration,
-          data.fee,
           data.payinWalletId,
           data.payoutWalletId,
           data.payinCardId,
@@ -363,23 +444,34 @@ export class UsersDbImpl implements UsersDb {
         WHERE Transfers.id = ? AND Transfers.userId = ?
       `, [id, userId], (err, row) => {
         if (err) return reject(err);
-        const transfer = row as Transfer;
-        transfer.pfi = {
-          // @ts-ignore
-          id: row.pfiId,
-          // @ts-ignore
-          did: row.did,
-          // @ts-ignore
-          name: row.name,
-          createdAt: null,
-          lastUpdatedAt: null
-        };
-        resolve(transfer);
+
+        this.db.all(`SELECT * FROM TransferFees WHERE transferId = ?`, [id], (err, rows: TransferFee[]) => {
+          if (err) return reject(err);
+
+          const transfer = row as Transfer;
+          transfer.pfi = {
+            // @ts-ignore
+            id: row.pfiId,
+            // @ts-ignore
+            did: row.did,
+            // @ts-ignore
+            name: row.name,
+            createdAt: null,
+            lastUpdatedAt: null
+          };
+          transfer.fees = rows;
+          resolve(transfer);
+        });
       });
     });
   }
 
-  updateTransferById(id: number, data: InsertData<Transfer>, transactions: Omit<Transaction, 'id' | 'transferId'>[] = []): Promise<void> {
+  updateTransferById(
+    id: number,
+    data: InsertData<Transfer>,
+    transactions: Omit<Transaction, 'id' | 'transferId'>[] = [],
+    fees: Omit<TransferFee, 'id' | 'transferId'>[] = []
+  ): Promise<void> {
     const walletUpdates: Map<ID, number> = transactions.reduce((acc, transaction) => {
       if (!transaction.walletId) return acc;
       const current = acc.get(transaction.walletId) || 0;
@@ -397,7 +489,7 @@ export class UsersDbImpl implements UsersDb {
         this.db.run("BEGIN TRANSACTION");
         this.db.run(`
         UPDATE Transfers
-        SET payinCurrencyCode = ?, payoutCurrencyCode = ?, pfiId = ?, payinKind = ?, payoutKind = ?, payinAmount = ?, payoutAmount = ?, narration = ?, fee = ?, payinWalletId = ?, payoutWalletId = ?, payinCardId = ?,
+        SET payinCurrencyCode = ?, payoutCurrencyCode = ?, pfiId = ?, payinKind = ?, payoutKind = ?, payinAmount = ?, payoutAmount = ?, narration = ?, payinWalletId = ?, payoutWalletId = ?, payinCardId = ?,
         payinAccountNumber = ?, payinRoutingNumber = ?, payinBankCode = ?, payinSortCode = ?, payinBSB = ?, payinIBAN = ?, payinCLABE = ?, payinAddress = ?,
         payoutAccountNumber = ?, payoutRoutingNumber = ?, payoutBankCode = ?, payoutSortCode = ?, payoutBSB = ?, payoutIBAN = ?, payoutCLABE = ?, payoutAddress = ?,
         status = ?, reference = ?, lastUpdatedAt = ?
@@ -412,7 +504,6 @@ export class UsersDbImpl implements UsersDb {
             data.payinAmount,
             data.payoutAmount,
             data.narration,
-            data.fee,
             data.payinWalletId,
             data.payoutWalletId,
             data.payinCardId,
@@ -439,7 +530,7 @@ export class UsersDbImpl implements UsersDb {
           ],
           function (err) {
             if (err) return db.run("ROLLBACK", () => reject(err));
-            if (transactions.length === 0) return db.run("COMMIT", () => resolve());
+            if (transactions.length === 0 && fees.length === 0) return db.run("COMMIT", () => resolve());
           });
 
         if (transactions.length > 0) {
@@ -458,10 +549,24 @@ export class UsersDbImpl implements UsersDb {
             nextEntry = iter.next();
             db.run(`UPDATE Wallets SET balance = balance + ? WHERE id = ?`, [entry.value[1], entry.value[0]], function (err) {
               if (err) db.run("ROLLBACK", () => reject(err));
-              if (nextEntry.done) db.run("COMMIT", () => resolve());
+              if (nextEntry.done && fees.length === 0) db.run("COMMIT", () => resolve());
             });
             entry = nextEntry;
           }
+        }
+
+        if (fees.length > 0) {
+          db.run(
+            `
+              INSERT INTO TransferFees (transferId, name, amount, currencyCode, createdAt, lastUpdatedAt)
+              VALUES ${fees.map(() => "(?, ?, ?, ?, ?, ?)")}
+            `,
+            fees.reduce((acc: any, f: any) => acc.concat([id, f.name, f.amount, f.currencyCode, f.createdAt, f.lastUpdatedAt]), []),
+            function (err) {
+              if (err) return db.run("ROLLBACK", () => reject(err));
+              db.run("COMMIT", () => resolve());
+            }
+          );
         }
       });
     });
@@ -481,5 +586,45 @@ export class TBDexDBImpl implements TBDexDB {
         resolve(rows as PFI[]);
       });
     });
+  }
+}
+
+export class AutoFunderDBImpl implements AutoFunderDB {
+  constructor(
+    private db: Database
+  ) { }
+
+  async listWalletsForFunding(): Promise<Iterator<Promise<Wallet[]>, null>> {
+    let nextIndex = 0;
+    let batchSize = 1000;
+    let maxIndex = await new Promise<number>((resolve, reject) => this.db.get(
+      `SELECT MAX(id) AS max_id from wallets
+          WHERE type = 'SAVINGS'
+          AND autoFundWalletId IS NOT NULL
+          AND autoFundAmount IS NOT NULL`, [],
+      (err, row: { max_id: number }) => {
+        if (err) reject(err);
+        resolve(row.max_id);
+      }));
+
+    return {
+      next: () => {
+        if (nextIndex >= maxIndex) return { value: null, done: true };
+
+        let result = new Promise<Wallet[]>((resolve, reject) => this.db.all(`
+          SELECT * FROM wallets
+          WHERE type = 'SAVINGS'
+          AND autoFundWalletId IS NOT NULL
+          AND autoFundAmount IS NOT NULL
+          AND id > ? AND id <= ?`,
+          [nextIndex, nextIndex + batchSize], (err, rows: Wallet[]) => {
+            if (err) return reject(err);
+            resolve(rows);
+          })
+        );
+        nextIndex = nextIndex + batchSize;
+        return { value: result, done: false }
+      }
+    }
   }
 }

@@ -6,11 +6,12 @@ import axios, { Axios, AxiosError, AxiosResponse } from 'axios';
 import MakeApp from '../src/app.js';
 import Migrate from '../src/sqlite/schema.js';
 import { Users } from '../src/features/users.js';
-import { TBDexDBImpl, UsersDbImpl } from '../src/sqlite/db_impl.js';
+import { AutoFunderDBImpl, TBDexDBImpl, UsersDbImpl } from '../src/sqlite/db_impl.js';
 import { CacheKeys as TBDCacheKeys, TBDexService } from '../src/features/tbdex.js';
 import { CreateTransferResponse, EmailAvailabilityStatus, MarketData, PayinUpdateResponse, PaymentKind, TransactionStatus, TransferSummary, Wallet } from '../src/types.js';
 import { Cache, InMemoryCache } from '../src/cache.js';
-import { DIDs, CREDENTIALS, PARSED_DIDs, PFIs, OFFERINGs, PFI_OFFERINGs, TRANSFERs, CLOSEs } from './data.js';
+import { DIDs, CREDENTIALS, PARSED_DIDs, PFIs, OFFERINGs, PFI_OFFERINGs, TRANSFERs, TRANSACTIONS, CLOSEs } from './data.js';
+import { AutoFunder } from '../src/features/autofund.js';
 
 test.before(async (t: any) => {
 	const now = new Date();
@@ -37,7 +38,8 @@ test.before(async (t: any) => {
 	const cache: Cache = new InMemoryCache();
 	const tbdex = new TBDexService(cache, tbddb);
 	const users = new Users(usersdb, tbdex, cache);
-	const { app } = MakeApp({ port: 0 }, users, tbdex);
+	const autoFunder = new AutoFunder(new AutoFunderDBImpl(db), usersdb, users, tbdex);
+	const { app } = MakeApp({ port: 0 }, users, tbdex, autoFunder);
 
 	t.context.db = db;
 	t.context.cache = cache;
@@ -66,18 +68,29 @@ test.before(async (t: any) => {
 					if (err) return reject(err);
 				});
 			db.run(
-				`INSERT INTO Wallets (currencyCode, balance, userId, createdAt, lastUpdatedAt) VALUES (?, ?, ?, ?, ?)`,
-				["BTC", 0, 1, now.toISOString(), now.toISOString()], function (err) {
+				`INSERT INTO Wallets (currencyCode, balance, userId, type, createdAt, lastUpdatedAt) VALUES (?, ?, ?, ?, ?, ?)`,
+				["BTC", 0, 1, 'STANDARD', now.toISOString(), now.toISOString()], function (err) {
 					if (err) return reject(err);
 				}
 			);
 			db.run(
-				`INSERT INTO Transfers (id, userId, pfiId, payinCurrencyCode, payoutCurrencyCode, payinKind, payoutKind, payinAmount, payoutAmount, narration, fee, payinWalletId, payoutWalletId, payoutAccountNumber, status, reference, createdAt, lastUpdatedAt)
-				VALUES ${TRANSFERs.map(_ => "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").join(", ")}
+				`INSERT INTO Transfers (id, userId, pfiId, payinCurrencyCode, payoutCurrencyCode, payinKind, payoutKind, payinAmount, payoutAmount, narration, payinWalletId, payoutWalletId, payoutAccountNumber, status, reference, createdAt, lastUpdatedAt)
+				VALUES ${TRANSFERs.map(_ => "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").join(", ")}
 				`, TRANSFERs.reduce((acc, value) => acc.concat([
 					value.id, value.userId, value.pfiId, value.payinCurrencyCode, value.payoutCurrencyCode, value.payinKind, value.payoutKind,
-					value.payinAmount, value.payoutAmount, value.narration, value.fee, value.payinWalletId, value.payoutWalletId, value.payoutAccountNumber,
+					value.payinAmount, value.payoutAmount, value.narration, value.payinWalletId, value.payoutWalletId, value.payoutAccountNumber,
 					value.status, value.reference, user.createdAt.toISOString(), user.lastUpdatedAt.toISOString()]), []),
+				function (err) {
+					if (err) return reject(err);
+				}
+			);
+			db.run(
+				`INSERT INTO Transactions (id, transferId, narration, type, walletId, reference, currencyCode, amount, userId, createdAt, lastUpdatedAt)
+				VALUES ${TRANSACTIONS.map(_ => "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").join(", ")}
+				`, TRANSACTIONS.reduce((acc, value) => acc.concat([
+					value.id, value.transferId, value.narration, value.type, value.walletId, value.reference,
+					value.currencyCode, value.amount, value.userId, value.createdAt.toISOString(), value.lastUpdatedAt.toISOString()
+				]), []),
 				function (err) {
 					if (err) return reject(err);
 					resolve({ id: 1, ...user, walletIds: [1] });
@@ -315,7 +328,7 @@ test.serial("Transfer from wallet completed successfully", (t: any) => {
 });
 
 test.serial("Transfer from wallet completed unsuccessfully", (t: any) => {
-	const { prefixUrl, auth, cache } = t.context;
+	const { prefixUrl, auth, cache, db } = t.context;
 	cache.set(TBDCacheKeys.WATCH_EXCHANGE("reference"), CLOSEs[1]);
 	return axios.get(`${prefixUrl}/transfers/4/status`, { headers: { Authorization: auth } })
 		.then(({ data }) => {
@@ -328,3 +341,94 @@ test.serial("Transfer from wallet completed unsuccessfully", (t: any) => {
 		})
 		.catch(err => t.fail(err.message));
 });
+
+test.serial("Create a savings plan", async (t: any) => {
+	const { prefixUrl, auth } = t.context;
+	
+	// Create a new savings plan
+	const createPlanResponse = await axios.post(`${prefixUrl}/savings-plans`, {
+		name: "Test Savings Plan",
+		currencyCode: "USD",
+		durationInMonths: 12
+	}, { headers: { Authorization: auth } });
+	
+	t.is(createPlanResponse.status, 200);
+
+	// Get all savings plans to find the ID of the newly created plan
+	const getPlansResponse = await axios.get(`${prefixUrl}/savings-plans`, { headers: { Authorization: auth } });
+	t.is(getPlansResponse.status, 200);
+	
+	const newPlan = getPlansResponse.data.find((plan: any) => plan.name === "Test Savings Plan");
+	t.truthy(newPlan);
+	// Check that the maturity date of the plan is correct
+	const expectedMaturityDate = new Date();
+	expectedMaturityDate.setMonth(expectedMaturityDate.getMonth() + 12); // Add 12 months
+	
+	const maturityDateDiff = Math.abs(new Date(newPlan.maturityDate).getTime() - expectedMaturityDate.getTime());
+	const oneDay = 24 * 60 * 60 * 1000; // milliseconds in a day
+	
+	// Allow for a difference of up to one day to account for time zone differences
+	t.true(maturityDateDiff < oneDay, `Maturity date should be approximately ${expectedMaturityDate.toISOString()}, but was ${newPlan.maturityDate}`);
+
+	// Enable auto-fund for the new savings plan
+	const enableAutoFundResponse = await axios.post(`${prefixUrl}/savings-plans/${newPlan.id}/auto-fund/enable`, {
+		walletId: "1", // Assuming wallet with ID 1 exists
+		amount: "100.00"
+	}, { headers: { Authorization: auth } });
+
+	t.is(enableAutoFundResponse.status, 200);
+	t.is(enableAutoFundResponse.data, 'OK');
+});
+
+test.serial("Savings plan rollover", async (t: any) => {
+	const { prefixUrl, auth, db } = t.context;
+	
+	// Create a new savings plan
+	const createPlanResponse = await axios.post(`${prefixUrl}/savings-plans`, {
+		name: "Rollover Test Plan",
+		currencyCode: "USD",
+		durationInMonths: 1
+	}, { headers: { Authorization: auth } });
+	
+	t.is(createPlanResponse.status, 200);
+
+	// Get all savings plans to find the ID of the newly created plan
+	const getPlansResponse = await axios.get(`${prefixUrl}/savings-plans`, { headers: { Authorization: auth } });
+	t.is(getPlansResponse.status, 200);
+	
+	const newPlan = getPlansResponse.data.find((plan: any) => plan.name === "Rollover Test Plan");
+	t.truthy(newPlan);
+
+	// Check that the plan's status is 'ACTIVE'
+	t.is(newPlan.state, 'ACTIVE');
+
+	// Update the maturityDate in the database to make the plan mature
+	await new Promise<void>((resolve, reject) => {
+		const pastDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(); // Yesterday
+		db.run(
+			`UPDATE Wallets SET maturityDate = ? WHERE id = ?`,
+			[pastDate, newPlan.id],
+			(err) => {
+				if (err) reject(err);
+				else resolve();
+			}
+		);
+	});
+
+	// Fetch the plan again and check that its status is now 'MATURED'
+	const getUpdatedPlanResponse = await axios.get(`${prefixUrl}/savings-plans/${newPlan.id}`, { headers: { Authorization: auth } });
+	t.is(getUpdatedPlanResponse.status, 200);
+	t.is(getUpdatedPlanResponse.data.state, 'MATURED');
+
+	// Use the rollover API to rollover the savings plan
+	const rolloverResponse = await axios.post(`${prefixUrl}/savings-plans/${newPlan.id}/rollover`, {}, { headers: { Authorization: auth } });
+	t.is(rolloverResponse.status, 200);
+	t.is(rolloverResponse.data, 'OK');
+
+	// Fetch the plan one last time and check that its status is back to 'ACTIVE'
+	const getFinalPlanResponse = await axios.get(`${prefixUrl}/savings-plans/${newPlan.id}`, { headers: { Authorization: auth } });
+	t.is(getFinalPlanResponse.status, 200);
+	t.is(getFinalPlanResponse.data.state, 'ACTIVE');
+});
+
+

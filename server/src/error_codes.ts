@@ -30,4 +30,7 @@ export enum ErrorCode {
 
   /** The transfer beneficiary already exists */
   DUPLICATE_BENEFICIARY = "DUPLICATE_BENEFICIARY",
+
+  /** The specified wallet was not found */
+  WALLET_NOT_FOUND = "WALLET_NOT_FOUND",
 }
