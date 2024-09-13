@@ -11,9 +11,10 @@ import TransferActiveIcon from "@/assets/icons/transfer_active.svg"
 import MoreActiveIcon from "@/assets/icons/more_active.svg"
 import More from "@/screens/others";
 import TransferOptions from "@/screens/Transfer/options";
-import Savings from "@/screens/Savings";
+import Savings from "@/screens/savings";
 import SavingsIcon from "@/assets/icons/savings_menu.svg"
 import SavingsActiveIcon from "@/assets/icons/savings_menu_active.svg"
+import { View } from "react-native";
 
 export type ScreenNames = ["Home"];
 export type MainBottomTabsParamList = {
@@ -55,12 +56,13 @@ export default function MainBottomTabNavigator() {
           return (
             focused ? 
             (
-              <HomeActiveIcon
+                <HomeActiveIcon
           width={moderateScale(20)}
           height={moderateVerticalScale(20)}
           fill={"#ECB365"}
              className="shrink-0"
           />
+
             ) : (
               <HomeIcon 
           width={moderateScale(20)}

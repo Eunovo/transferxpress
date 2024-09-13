@@ -1,6 +1,6 @@
 import { HeaderText } from "@/_components/Text/HeaderText";
 import { NormalText } from "@/_components/Text/NormalText";
-import { dollarSymbol, flagsAndSymbol } from "@/utils/constants";
+import { flagsAndSymbol } from "@/utils/constants";
 import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
 import { useState } from "react";
 import { FlatList, Image, View } from "react-native";
@@ -9,7 +9,7 @@ import EyeOpenIcon from "@/assets/icons/eye.svg";
 import EyeClosedIcon from "@/assets/icons/eye_closed.svg";
 import { CustomPressable } from "@/_components/Button/CustomPressable";
 import { Currencies } from "@/api/rates";
-import { SavingsPlan } from "@/screens/Savings";
+import { SavingsPlan } from "@/screens/savings";
 
 interface Props {
     plans: SavingsPlan[]
@@ -23,19 +23,19 @@ plans
     const balances = [
         {
             currency: "USD",
-            amount: "2000"
+            amount: plans.filter(item => item.currencyCode === "USD").reduce((previous, current)=>( previous + Number(current.balance)), 0)
         },
         {
             currency: "NGN",
-            amount: "200000"
+            amount: plans.filter(item => item.currencyCode === "NGN").reduce((previous, current)=>( previous + Number(current.balance)), 0)
         },
         {
             currency: "GBP",
-            amount: "20"
+            amount: plans.filter(item => item.currencyCode === "GBP").reduce((previous, current)=>( previous + Number(current.balance)), 0)
         },
         {
             currency: "AUD",
-            amount: "200"
+            amount: plans.filter(item => item.currencyCode === "AUD").reduce((previous, current)=>( previous + Number(current.balance)), 0)
         }
     ]
     return(
@@ -43,9 +43,8 @@ plans
 <FlatList 
 data={balances}
 contentContainerStyle={{
-    gap: 16
+    gap: 16,
 }}
-className="border"
 renderItem={({item})=>(
     <View
     style={{
@@ -81,7 +80,7 @@ className="flex-row items-center"
 weight={700}
 className="text-primary mb-1 mt-6"
 >
-{flagsAndSymbol[item.currency as Currencies].symbol } {formatToCurrencyString(item.amount, 2)}
+{showBalance ? `${flagsAndSymbol[item.currency as Currencies].symbol} ${formatToCurrencyString(item.amount, 2)}` : "******.**"}
 </HeaderText>
 <NormalText
 size={13}

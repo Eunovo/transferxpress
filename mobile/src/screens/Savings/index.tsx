@@ -12,6 +12,8 @@ import { CustomPressable } from "@/_components/Button/CustomPressable";
 import { BalanceList } from "@/_components/Savings/BalanceList";
 import { ButtonNormal } from "@/_components/Button/NormalButton";
 import { Currencies } from "@/api/rates";
+import { useNavigation } from "@react-navigation/native";
+import { UserNavigationStack } from "@/navigation/UserStack";
 
 export type SavingsPlan = {
     id: string;
@@ -52,6 +54,7 @@ const MOCK_PLANS: SavingsPlan[] = [
     }
 ]
 export default function Savings (){
+    const navigation  = useNavigation<UserNavigationStack>()
     return(
         <LayoutWithScroll>
             <View className="grow pb-10">
@@ -74,6 +77,7 @@ plans={MOCK_PLANS}
 {
     Boolean(MOCK_PLANS.length) && (
         <ButtonNormal
+        onPress={()=>navigation.navigate("savings-stack")}
         style={{
             width: moderateScale(110, 0.3)
         }}

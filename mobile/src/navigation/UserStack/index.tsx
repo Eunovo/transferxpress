@@ -7,9 +7,10 @@ import DepositNavigationStack from "./DepositStack";
 import SwapNavigationStack from "./SwapStack";
 import { Transaction } from "@/api/transactions";
 import Transactions from "@/screens/Transactions";
+import SavingsNavigationStack from "./SavingsStack";
 
 
-type UserStackParam = {
+export type UserStackParam = {
 "main-bottom-tab": undefined;
 "transfer-stack":undefined;
 "deposit-stack": undefined;
@@ -17,10 +18,11 @@ type UserStackParam = {
   transactions?: {
     transaction: Transaction
   };
+  "savings-stack": undefined
 };
 export type UserNavigationStack = NavigationProp<UserStackParam>;
 export const UserNavigationStack = ()=>{
-    const Stack = createNativeStackNavigator();
+    const Stack = createNativeStackNavigator<UserStackParam>();
     return(
 <Stack.Navigator
       screenOptions={{
@@ -33,6 +35,7 @@ export const UserNavigationStack = ()=>{
 <Stack.Screen name="deposit-stack" component={DepositNavigationStack} />
 <Stack.Screen name="swap-stack" component={SwapNavigationStack} />
 <Stack.Screen name="transactions" component={Transactions} />
+<Stack.Screen name="savings-stack" component={SavingsNavigationStack} />
 </Stack.Navigator>
     );
 }

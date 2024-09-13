@@ -61,7 +61,7 @@ export const RecentTransactions = ()=>{
             )}
 
             {Boolean(!transactions.length) && (
-              <View className="my-auto items-center justify-center">
+              <View className="my-auto items-center justify-center pt-10">
                 <NormalText className="text-white/80 text-center">
                   You have no transactions yet.
                 </NormalText>

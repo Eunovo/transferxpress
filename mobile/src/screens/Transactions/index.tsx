@@ -7,18 +7,18 @@ import { NormalText } from "@/_components/Text/NormalText";
 import { TransactionRenderItem } from "@/_components/Transactions/TransactionItem";
 import { useEffect, useState } from "react";
 import { ViewTransactionModal } from "@/_components/Transactions/ViewTransactionModal";
-import type { DashboardNavigation, MainBottomTabsParamList } from "@/navigation/UserStack/MainBottomTabs";
 import type { RouteProp } from "@react-navigation/native";
 import FilterIcon from "@/assets/icons/transaction_filter.svg"
 import { useQuery } from "@tanstack/react-query";
 import { GET_TRANSACTIONS, type Transaction } from "@/api/transactions";
 import { ScreenLoader } from "@/_components/loader_utils/ScreenLoader";
 import { moderateScale } from "react-native-size-matters";
+import { type UserNavigationStack, UserStackParam } from "@/navigation/UserStack";
 
 
 interface Props {
-    navigation: DashboardNavigation;
-    route: RouteProp<MainBottomTabsParamList, "transactions">
+    navigation: UserNavigationStack;
+    route: RouteProp<UserStackParam, "transactions">
 }
 export default function Transactions (
     {
@@ -101,7 +101,11 @@ className="w-full items-end"
             )}
 
             {Boolean(!transactions.length) && (
-              <View className="pt-[100px] items-center justify-center">
+              <View 
+              style={{
+                paddingTop: moderateScale(100)
+              }}
+              className="items-center justify-center">
                 <NormalText className="text-white/80 text-center">
                   You have no transactions yet.
                 </NormalText>

@@ -13,13 +13,14 @@ import {
 import transferReducer from "./transfer/slice"
 import userReducer from "./user/slice"
 import appReducer from "./app/slice"
-
+import savingsPlanReducer from "./savingsPlan/slice"
 const persistConfig = {
   key: "TRANSFERXPRESS_APP_STATE",
   storage: AsyncStorage,
   blacklist: [
     "transferReducer",
-    "depositReducer"
+    "depositReducer",
+    "savingsPlanReducer"
   ],
 };
 
@@ -27,6 +28,7 @@ const rootReducer = combineReducers({
   appReducer,
   userReducer,
 transferReducer,
+savingsPlanReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

@@ -142,7 +142,7 @@ if(supportedReceivingCurrencies?.length){
             }}
           />
           <HeaderText weight={700} size={20} className="text-primary">
-            Currency exchange
+           Convert Money
           </HeaderText>
           <NormalText size={13} className="text-white/80 mb-10">
            Swap funds accross wallets

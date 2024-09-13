@@ -28,6 +28,7 @@ interface ListBottomSheetProps {
   errorMessage?:string;
   hasBeenTouched?:boolean;
   isIconBase64?:boolean
+  hideSearchBar?:boolean
 }
 
 export const ListBottomSheet = ({
@@ -43,7 +44,8 @@ export const ListBottomSheet = ({
   errorMessage,
   hasBeenTouched,
   fieldValue,
-  isIconBase64
+  isIconBase64,
+  hideSearchBar = false
 }: ListBottomSheetProps) => {
     const [showModal, setShowModal] = useState(false);
   const ViewHeight = useSharedValue(SCREEN_HEIGHT * 0.6);
@@ -158,7 +160,9 @@ setFilteredOptions(options)
               </CustomPressable>
       </View>
              
-              <View className="w-full">
+              {
+                !hideSearchBar && (
+                  <View className="w-full">
                 <CustomTextInput
                   value={searchText}
                   onFocus={() => {
@@ -172,6 +176,8 @@ setFilteredOptions(options)
                   isSearch
                 />
               </View>
+                )
+              }
             </View>
             <FlatList
               keyboardShouldPersistTaps="handled"
@@ -188,7 +194,7 @@ setFilteredOptions(options)
                     Keyboard.dismiss();
                   setShowModal(false)
                   }}
-                  className="w-full  py-4 px-4 border-b border-b-primary/50"
+                  className="w-full  py-4 px-4 border-b border-b-primary/20"
                 >
                   <View
                     style={{ flex: 1, gap: 8 }}
