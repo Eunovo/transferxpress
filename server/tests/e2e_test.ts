@@ -275,7 +275,7 @@ test.serial("End-to-end test", async (t) => {
             const penaltyTransaction = transactions.find(tx =>
                 tx.transferId === penaltyTransferData.id &&
                 tx.type === 'DEBIT' &&
-                tx.narration.includes('penalty')
+                tx.narration?.includes('penalty')
             );
             t.truthy(penaltyTransaction, 'Penalty transaction should exist');
         } catch (err) {
