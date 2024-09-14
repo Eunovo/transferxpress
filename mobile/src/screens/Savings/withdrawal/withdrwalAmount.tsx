@@ -14,6 +14,7 @@ import {
 } from '@/api/transfer';
 import {UserNavigationStack} from '@/navigation/UserStack';
 import {DepositNavigationStackType} from '@/navigation/UserStack/DepositStack';
+import { SavingsStackParamList } from '@/navigation/UserStack/SavingsStack';
 import {useFetchRates} from '@/services/queries/useFetchRates';
 import {useAppDispatch} from '@/store/hooks';
 import {setTransferState} from '@/store/transfer/slice';
@@ -21,7 +22,7 @@ import {useTransferState} from '@/store/transfer/useTransferState';
 import {useUserState} from '@/store/user/useUserState';
 import {DEPOSIT_MOCK_FIELDS, flagsAndSymbol, secondaryUniqueIdentifierTitlesAndKeys} from '@/utils/constants';
 import {formatToCurrencyString} from '@/utils/formatToCurrencyString';
-import {useNavigation} from '@react-navigation/native';
+import {RouteProp, useNavigation} from '@react-navigation/native';
 import {useMutation} from '@tanstack/react-query';
 import {useEffect, useState} from 'react';
 import {View} from 'react-native';
@@ -29,84 +30,31 @@ import {moderateScale} from 'react-native-size-matters';
 
 interface Props {
   navigation: DepositNavigationStackType;
+  route: RouteProp<SavingsStackParamList, "withdraw-amount">
 }
-export const DepositAmount = ({navigation}: Props) => {
+export const WithdrawalAmount = ({navigation, route}: Props) => {
   const dispatch = useAppDispatch();
   const userStackNavigation = useNavigation<UserNavigationStack>();
-  const {activeWallet} = useUserState();
+  const {wallets} = useUserState()
   const {
     amount: amountToSend,
     currency,
     exchangeRate: exchangeRateFromTransferState,
   } = useTransferState();
-  const [sender, setSender] = useState({
+  const [sender] = useState({
     currency: currency.sender,
     amount: amountToSend,
   });
 
-  const editSender = (field: 'amount' | 'currency', value: string) => {
-    setSender(prev => {
-      return {
-        ...prev,
-        [field]: value,
-      };
-    });
-  };
-  const [amountToReceive, setAmountToReceive] = useState(
-    amountToSend
-      ? (Number(amountToSend) * Number(exchangeRateFromTransferState)).toFixed(
-          2,
-        )
-      : '',
+
+  const [receiverCurrency, setReceiverCurrency] = useState(currency.reciever)
+  const receiverAmount = (Number(amountToSend) * Number(exchangeRateFromTransferState)).toFixed(
+    2,
   );
-  const ratesQuery = useFetchRates();
-  const supportedCurrenciesAndPairs =
-    ratesQuery.rates && activeWallet?.ticker
-      ? Object.entries(ratesQuery.rates).filter(item =>
-          Object.keys(item[1]).includes(activeWallet.ticker),
-        )
-      : undefined;
-  const supportedCurrencies = supportedCurrenciesAndPairs
-    ? supportedCurrenciesAndPairs.map(item => item[0])
-    : undefined;
+
   const initiateTransferutation = useMutation({
     mutationFn: INITIATE_TRANSFER_PROCESS,
   });
-  const exchangeRate =
-    supportedCurrenciesAndPairs?.length &&
-    activeWallet?.ticker &&
-    sender.currency
-      ? supportedCurrenciesAndPairs.find(item =>
-          item.includes(sender.currency),
-        )?.[1][activeWallet.ticker as 'NGN'].exchangeRate
-      : null;
-
-  useEffect(() => {
-    if (supportedCurrencies) {
-      editSender('currency', supportedCurrencies[0]);
-    }
-  }, [supportedCurrencies?.length]);
-  useEffect(() => {
-    editSender('amount', '');
-  }, [exchangeRate, sender.currency, activeWallet?.ticker]);
-  const transferExchangeRate =
-    exchangeRate && Number(exchangeRate) < 1
-      ? `${
-          flagsAndSymbol[sender.currency as keyof typeof flagsAndSymbol]?.symbol
-        } ${formatToCurrencyString(1 / Number(exchangeRate), 2)} = ${
-          flagsAndSymbol[activeWallet?.ticker as keyof typeof flagsAndSymbol]
-            ?.symbol
-        } 1`
-      : exchangeRate && Number(exchangeRate) > 1
-      ? `${
-          flagsAndSymbol[sender.currency as keyof typeof flagsAndSymbol]?.symbol
-        } 1 = ${
-          flagsAndSymbol[activeWallet?.ticker as keyof typeof flagsAndSymbol]
-            ?.symbol
-        } ${formatToCurrencyString(exchangeRate, 2)}`
-      : 'N/A';
-  const isButtonDisabled =
-    !sender.amount || !amountToReceive || transferExchangeRate === 'N/A';
   const submitPayinInformationMutation = useMutation({
     mutationFn: SUBMIT_PAYIN_INFORMATION,
   });
@@ -116,6 +64,27 @@ export const DepositAmount = ({navigation}: Props) => {
   const createQuoteMutation = useMutation({
     mutationFn: CREATE_QUOTE,
   });
+  const ratesQuery = useFetchRates();
+  const supportedCurrencyPair = sender.currency && ratesQuery.rates ? ratesQuery.rates[sender.currency as Currencies] : undefined;
+  const supportedReceivingCurrencies = supportedCurrencyPair ?  Object.keys(supportedCurrencyPair) : undefined;
+  const exchangeRate =  supportedCurrencyPair && receiverCurrency ?  supportedCurrencyPair[receiverCurrency as Currencies]?.exchangeRate  : null;
+  const transferExchangeRate =
+    exchangeRate && Number(exchangeRate) < 1
+      ? `${
+          flagsAndSymbol[sender.currency as keyof typeof flagsAndSymbol]?.symbol
+        } ${formatToCurrencyString(1 / Number(exchangeRate), 2)} = ${
+          flagsAndSymbol[receiverCurrency as keyof typeof flagsAndSymbol]
+            ?.symbol
+        } 1`
+      : exchangeRate && Number(exchangeRate) > 1
+      ? `${
+          flagsAndSymbol[sender.currency as keyof typeof flagsAndSymbol]?.symbol
+        } 1 = ${
+          flagsAndSymbol[receiverCurrency as keyof typeof flagsAndSymbol]
+            ?.symbol
+        } ${formatToCurrencyString(exchangeRate, 2)}`
+      
+      :  'N/A';
   const isLoading =
     ratesQuery.isPending ||
     initiateTransferutation.isPending ||
@@ -131,57 +100,42 @@ export const DepositAmount = ({navigation}: Props) => {
           }}
         />
         <HeaderText weight={700} size={20} className="text-primary">
-          Receive money
+          Withdraw money
         </HeaderText>
         <NormalText size={13} className="text-white/80 mb-10">
-          How much do you want to deposit?
+         Withdraw funds from savings plan
         </NormalText>
         <View
           style={{
             gap: 24,
           }}
           className="w-full">
-          {supportedCurrencies && sender.currency && (
+       
             <CurrencyAmountInput
               title="Send"
               active={sender}
-              supportedCurrencies={supportedCurrencies}
-              setAmount={value => {
-                editSender('amount', value);
-                if (value) {
-                  const recieveAmount = exchangeRate
-                    ? (Number(value) * exchangeRate).toFixed(2)
-                    : 0;
-                  setAmountToReceive(`${recieveAmount}`);
-                } else {
-                  setAmountToReceive('');
-                }
+              isReadOnly={{
+                currency: true,
+                amount: true
               }}
-              setCurrency={value => editSender('currency', value)}
+              setAmount={() => {}}
+              setCurrency={() => {}}
             />
-          )}
           <CurrencyAmountInput
             isReadOnly={{
-              amount: false,
-              currency: true
+              amount: true,
+              currency: false
             }}
-            title="Wallet to receive"
+            title="Wallet to receive"   
             active={{
-              currency: activeWallet?.ticker || '',
-              amount: amountToReceive,
+              currency: receiverCurrency,
+              amount: receiverAmount
             }}
-            setAmount={value => {
-              setAmountToReceive(value);
-              if (value) {
-                const sendAmount = exchangeRate
-                  ? (Number(value) / exchangeRate).toFixed(2)
-                  : 0;
-                editSender('amount', `${sendAmount}`);
-              } else {
-                editSender('amount', '');
-              }
+            supportedCurrencies={supportedReceivingCurrencies}
+            setAmount={() => {}}
+            setCurrency={(value) => {
+              setReceiverCurrency(value)
             }}
-            setCurrency={() => {}}
             showBalance
           />
         </View>
@@ -205,29 +159,24 @@ export const DepositAmount = ({navigation}: Props) => {
           style={{gap: 16, maxWidth: moderateScale(400, 0.3)}}
           className="pt-[64px] mt-auto w-full mx-auto justify-start">
           <ButtonNormal
-            disabled={isButtonDisabled}
             onPress={async () => {
               try {
-                if (activeWallet?.ticker) {
+                if (receiverCurrency) {
                   const initiateTransferResponse =
                     await initiateTransferutation.mutateAsync({
                       from: sender.currency,
-                      to: activeWallet.ticker,
+                      to: receiverCurrency
                     });
                   const transferId = initiateTransferResponse.data.id;
                   const payinMethod =
                     initiateTransferResponse.data.payinMethods.find(item =>
-                      item.kind.includes('BANK_TRANSFER'),
+                      item.kind.includes("WALLET"),
                     );
-                  console.log(payinMethod, "payin method");
-                  const payinData = DEPOSIT_MOCK_FIELDS[sender.currency as Currencies];
-                  const secondaryUniqueIdentifierTitle = secondaryUniqueIdentifierTitlesAndKeys[sender.currency as keyof typeof secondaryUniqueIdentifierTitlesAndKeys].key || "";
-                  const submitPayinResponse =
-                    await submitPayinInformationMutation.mutateAsync({
+               
+                 const submitPayinResponse =  await submitPayinInformationMutation.mutateAsync({
                       body: {
                         kind: payinMethod?.kind!,
-                        accountNumber: payinData['Account Number'],
-                        [secondaryUniqueIdentifierTitle]: payinData.secondaryUniqueIdentifier
+                        walletId: route.params.walletd
                       },
                       transferId,
                     });
@@ -237,7 +186,7 @@ export const DepositAmount = ({navigation}: Props) => {
                   await submitPayoutInformationMutation.mutateAsync({
                     body: {
                       kind: payoutMethod?.kind!,
-                      walletId: activeWallet.id,
+                      walletId: wallets.find(item => item.ticker === receiverCurrency)?.id
                     },
                     transferId,
                   });
@@ -254,7 +203,7 @@ export const DepositAmount = ({navigation}: Props) => {
                     setTransferState({
                       currency: {
                         sender: sender.currency,
-                        reciever: activeWallet.ticker,
+                        reciever: currency.reciever,
                       },
                       amount: sender.amount,
                       exchangeRate: exchangeRate ? exchangeRate.toString() : '',

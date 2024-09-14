@@ -41,7 +41,9 @@ export const CustomTextInput = ({
     :
      "";
   return (
-    <View className="w-full">
+    <View 
+    pointerEvents={isDisabled ? "none" : "auto"}
+    className="w-full">
       {Boolean(title) && (
         <NormalText
           weight={500}

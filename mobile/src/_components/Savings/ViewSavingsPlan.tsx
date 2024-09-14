@@ -9,6 +9,13 @@ import { CustomPressable } from "../Button/CustomPressable";
 import XmarkIcon from "@/assets/icons/x_mark.svg";
 import { SavingsPlan } from "@/screens/savings";
 import { ButtonNormal } from "../Button/NormalButton";
+import { useNavigation } from "@react-navigation/native";
+import { UserNavigationStack } from "@/navigation/UserStack";
+import { useAppDispatch } from "@/store/hooks";
+import { setTransferState } from "@/store/transfer/slice";
+import { useFetchRates } from "@/services/queries/useFetchRates";
+import { Spinner } from "../loader_utils/Spinner";
+import { Currencies } from "@/api/rates";
 
 
 interface Props {
@@ -23,7 +30,13 @@ closeModal,
 details
     }:Props
 )=>{
+    const navigation = useNavigation<any>();
+    const dispatch = useAppDispatch();
     const fundingCurrencySymbol = flagsAndSymbol[details.currencyCode].symbol;
+    const ratesQuery = useFetchRates();
+    const supportedCurrencyPair = ratesQuery.rates ? ratesQuery.rates[details.currencyCode] : undefined;
+    const supportedReceivingCurrencies = supportedCurrencyPair ?  Object.keys(supportedCurrencyPair) : undefined;
+    const exchangeRate =  supportedCurrencyPair && supportedReceivingCurrencies ?  supportedCurrencyPair[ supportedReceivingCurrencies[0] as Currencies ]?.exchangeRate  : null;
     return(
         <RNModal
         style={{
@@ -63,6 +76,17 @@ details
               </CustomPressable>
       </View>
 
+{
+    ratesQuery.isPending && (
+        <View className="absolute grow items-center justify-center">
+        <Spinner
+          circumfrence={80}
+          strokeWidth={3}
+          strokeColor="#ECB365"
+        />
+      </View>
+    )
+}
             <HeaderText
 size={20}
 className="text-primary text-center mb-3 capitalize"
@@ -167,6 +191,21 @@ weight={600}
                         className="pt-[64px] mt-auto w-full mx-auto justify-start"
                       >
  <ButtonNormal
+ onPress={()=>{
+    dispatch(setTransferState({
+        currency:{
+            sender: details.currencyCode,
+            reciever: supportedReceivingCurrencies?.[0] || ""  /* TODO display a flshbar here */
+        },
+        amount: details.balance,
+        exchangeRate: exchangeRate?.toString()
+    }))
+    navigation.navigate("savings-stack", {
+        screen: "withdraw-amount",
+        params: Number(details.id)
+     })
+     closeModal()
+ }}
        className="bg-secondary" 
         >
             <NormalText 

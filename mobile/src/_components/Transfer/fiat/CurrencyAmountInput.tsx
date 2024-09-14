@@ -2,7 +2,7 @@ import { CustomPressable } from "@/_components/Button/CustomPressable"
 import { HeaderText, HeaderTextStyles } from "@/_components/Text/HeaderText"
 import { NormalText } from "@/_components/Text/NormalText"
 import { Image, TextInput, View } from "react-native"
-import { moderateScale } from "react-native-size-matters"
+import { moderateScale, moderateVerticalScale } from "react-native-size-matters"
 import { CurrencyOptionsModal } from "./CurrencyModal"
 import { useState } from "react"
 import { flagsAndSymbol } from "@/utils/constants"
@@ -20,7 +20,10 @@ active: {
 title: string;
 setAmount: (value:string)=>void;
 setCurrency: (value:string)=>void;
-isReadOnly?:boolean;
+isReadOnly?: {
+  currency: boolean;
+  amount: boolean
+};
 supportedCurrencies?:string[];
 showBalance?:boolean
 }
@@ -55,12 +58,19 @@ className="w-full bg-dark py-3 px-2 rounded-xl"
     }}
     className="flex-row w-full justify-between"
     >
-    <TextInput
+<View
+pointerEvents={isReadOnly?.amount ? "none" : "auto"}
+style={{
+  height: moderateVerticalScale(40, 0.1),
+}}
+>
+<TextInput
     style={{
         flex: 1,
         fontSize: moderateScale(18, 0.1),
         fontWeight: HeaderTextStyles.fontSemiBold.fontWeight,
-        fontFamily: HeaderTextStyles.fontSemiBold.fontFamily
+        fontFamily: HeaderTextStyles.fontSemiBold.fontFamily,
+      
     }}
     placeholder="0.00"
     placeholderTextColor={"rgba(255, 255, 255, 0.6)"}
@@ -73,9 +83,10 @@ className="w-full bg-dark py-3 px-2 rounded-xl"
    className="text-primary" 
         keyboardType="number-pad"
     />
+</View>
 
     <CustomPressable
-    disabled={isReadOnly}
+    disabled={isReadOnly?.currency}
     onPress={()=>{
         setShowCurrencyModal(true)
     }}
@@ -93,7 +104,7 @@ className="w-full bg-dark py-3 px-2 rounded-xl"
           {active.currency}
         </HeaderText>
       {
-        !isReadOnly && (
+        !isReadOnly?.currency && (
             <View className="w-[10px] h-[10px]">
             <CaretIcon fill={"#ECB365"} fillOpacity={0.8} width={"100%"} height={"100%"} />
           </View>
