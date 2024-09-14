@@ -1044,6 +1044,42 @@ export const TRANSFERs = [
     payoutAccountNumber: "1234567890",
     status: TransactionStatus.PROCESSING,
     reference: "reference"
+  },
+  {
+    id: 6,
+    userId: 1,
+    payinCurrencyCode: "BTC",
+    payoutCurrencyCode: "GHS",
+    pfiId: 2,
+    payinKind: PaymentKind.WALLET_ADDRESS,
+    payoutKind: PaymentKind.GHS_BANK_TRANSFER,
+    payinAmount: 0.000033,
+    payoutAmount: 100,
+    narration: "Exchange BTC for GHS",
+    fee: 0,
+    payinWalletId: 1,
+    payoutAccountNumber: "1234567890",
+    status: TransactionStatus.PROCESSING,
+    reference: "reference",
+    expectedSettledAt: new Date()
+  },
+  {
+    id: 7,
+    userId: 1,
+    payinCurrencyCode: "BTC",
+    payoutCurrencyCode: "GHS",
+    pfiId: 2,
+    payinKind: PaymentKind.WALLET_ADDRESS,
+    payoutKind: PaymentKind.GHS_BANK_TRANSFER,
+    payinAmount: 0.000033,
+    payoutAmount: 100,
+    narration: "Exchange BTC for GHS",
+    fee: 0,
+    payinWalletId: 1,
+    payoutAccountNumber: "1234567890",
+    status: TransactionStatus.PROCESSING,
+    reference: "reference",
+    expectedSettledAt: new Date()
   }
 ]
 

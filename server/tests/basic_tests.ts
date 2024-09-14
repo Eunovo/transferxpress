@@ -75,12 +75,12 @@ test.before(async (t: any) => {
 				}
 			);
 			db.run(
-				`INSERT INTO Transfers (id, userId, pfiId, payinCurrencyCode, payoutCurrencyCode, payinKind, payoutKind, payinAmount, payoutAmount, narration, payinWalletId, payoutWalletId, payoutAccountNumber, status, reference, createdAt, lastUpdatedAt)
-				VALUES ${TRANSFERs.map(_ => "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").join(", ")}
+				`INSERT INTO Transfers (id, userId, pfiId, payinCurrencyCode, payoutCurrencyCode, payinKind, payoutKind, payinAmount, payoutAmount, narration, payinWalletId, payoutWalletId, payoutAccountNumber, status, reference, expectedSettledAt, createdAt, lastUpdatedAt)
+				VALUES ${TRANSFERs.map(_ => "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").join(", ")}
 				`, TRANSFERs.reduce((acc, value) => acc.concat([
 					value.id, value.userId, value.pfiId, value.payinCurrencyCode, value.payoutCurrencyCode, value.payinKind, value.payoutKind,
 					value.payinAmount, value.payoutAmount, value.narration, value.payinWalletId, value.payoutWalletId, value.payoutAccountNumber,
-					value.status, value.reference, user.createdAt.toISOString(), user.lastUpdatedAt.toISOString()]), []),
+					value.status, value.reference, value.expectedSettledAt, user.createdAt.toISOString(), user.lastUpdatedAt.toISOString()]), []),
 				function (err) {
 					if (err) return reject(err);
 				}
@@ -432,7 +432,7 @@ test.serial("Savings plan rollover", async (t: any) => {
 	t.is(getFinalPlanResponse.data.state, 'ACTIVE');
 });
 
-test.serial("Report transaction", async (t: any) => {
+test.serial("Report transaction correctly blacklists a PFI", async (t: any) => {
 	const { prefixUrl, auth, cache, tbdex } = t.context;
 	const doReport = (id: number) => axios.post(
 		`${prefixUrl}/transactions/${id}/report`,
@@ -457,4 +457,14 @@ test.serial("Report transaction", async (t: any) => {
 	offenceTally = await (cache as Cache).get<number>(key);
 	t.is(offenceTally, null); // offence count for PFI is reset
 	t.is(await tbdex.isBlacklistedPFI(PFIs[0].did), true); // PFI is temporarily blacklisted
+});
+
+test.serial("Repeated slow transfers temporarily blacklists a PFI", async (t: any) => {
+	const { prefixUrl, auth, cache, tbdex } = t.context;
+
+	t.is(await tbdex.isBlacklistedPFI(PFIs[1].did), false); // Not temporarily blacklisted yet
+	cache.set(TBDCacheKeys.WATCH_EXCHANGE("reference"), CLOSEs[0]);
+	await axios.get(`${prefixUrl}/transfers/6/status`, { headers: { Authorization: auth } });
+	await axios.get(`${prefixUrl}/transfers/7/status`, { headers: { Authorization: auth } });
+	t.is(await tbdex.isBlacklistedPFI(PFIs[1].did), true);
 });

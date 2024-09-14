@@ -768,7 +768,10 @@ export class Users {
       const expectedSettledAt = typeof transfer.expectedSettledAt === 'string' ? new Date(parseFloat(transfer.expectedSettledAt)) : null
       if (expectedSettledAt && settledAt != null && settledAt.getTime() <= expectedSettledAt.getTime()) {
         let offenceTally = await this.incrementPFIOffenceTally(transfer.pfiId);
-        if (offenceTally >= PFI_OFFENCE_THRESHOLD) this.tbdex.blacklistPFI(transfer.pfi.did);
+        if (offenceTally >= PFI_OFFENCE_THRESHOLD) {
+          this.tbdex.blacklistPFI(transfer.pfi.did);
+          this.resetPFIOffenceTally(transfer.pfiId);
+        }
       }
       await this.db.updateTransferById(
         transferId,
