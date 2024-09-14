@@ -58,11 +58,6 @@ export const CREATE_QUOTE = async(data:{
 export const CONFIRM_QUOTE = async(transferId:number)=>{
     return await transferxpressApi.post("/transfers/" + transferId + "/confirm", {})
 }
-
-export const CANCEL_QUOTE = async(transferId:number)=>{
-    return await transferxpressApi.post("/transfers/" + transferId + "/cancel", {})
-}
-
 export const GET_TRANSFER_STATUS = async(transferId:number)=>{
     return await transferxpressApi.get<GetTransferStatusDataResponse>("/transfers/" + transferId + "/status")
 }

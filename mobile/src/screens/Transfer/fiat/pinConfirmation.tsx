@@ -9,7 +9,7 @@ import {TransferNavigationStackType} from '@/navigation/UserStack/TransferStack'
 import {PinWithKeyPad} from '@/_components/FormComponents/PinwithKeyPad';
 import {useEffect, useState} from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { CANCEL_QUOTE, CONFIRM_QUOTE, GET_TRANSFER_STATUS } from '@/api/transfer';
+import { CONFIRM_QUOTE, GET_TRANSFER_STATUS } from '@/api/transfer';
 import { useTransferState } from '@/store/transfer/useTransferState';
 import { ScreenLoader } from '@/_components/loader_utils/ScreenLoader';
 
@@ -23,9 +23,6 @@ export default function TransferPinConfirmation({navigation}: Props) {
   const {transferId} = useTransferState()
   const confirQuoteMutation = useMutation({
     mutationFn: CONFIRM_QUOTE
-   });
-   const cancelQuoteMutation = useMutation({
-    mutationFn: CANCEL_QUOTE
    });
    const [refetchInterval, setRefetchIntervall] = useState(10000)
    const transferStatusQuery = useQuery({
@@ -64,15 +61,8 @@ clearTimeout(refetchTimeout)
     <LayoutNormal>
       <View className="w-full grow pb-10">
         <BackButton 
-            onPress={ async()=>{
-              try {
-               if(confirQuoteMutation.isSuccess && transferId){
-                  await cancelQuoteMutation.mutateAsync(transferId)
-               }
+            onPress={()=>{
                navigation.goBack()
-              } catch (error) {
-               
-              }
                }}
         />
         <HeaderText weight={700} size={20} className="text-primary">
