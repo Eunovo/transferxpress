@@ -14,7 +14,7 @@ import {
 } from '@/api/transfer';
 import {UserNavigationStack} from '@/navigation/UserStack';
 import {DepositNavigationStackType} from '@/navigation/UserStack/DepositStack';
-import { SavingsStackParamList } from '@/navigation/UserStack/SavingsStack';
+import { SavingsNavigationStackType, SavingsStackParamList } from '@/navigation/UserStack/SavingsStack';
 import {useFetchRates} from '@/services/queries/useFetchRates';
 import {useAppDispatch} from '@/store/hooks';
 import {setTransferState} from '@/store/transfer/slice';
@@ -29,7 +29,7 @@ import {View} from 'react-native';
 import {moderateScale} from 'react-native-size-matters';
 
 interface Props {
-  navigation: DepositNavigationStackType;
+  navigation: SavingsNavigationStackType;
   route: RouteProp<SavingsStackParamList, "withdraw-amount">
 }
 export const WithdrawalAmount = ({navigation, route}: Props) => {
@@ -198,7 +198,7 @@ export const WithdrawalAmount = ({navigation, route}: Props) => {
                       },
                       transferId,
                     });
-                  const transferFee = createQuoteResponse.data.payin.fee;
+                  const transferFee = createQuoteResponse.data.payin.fees;
                   dispatch(
                     setTransferState({
                       currency: {
@@ -209,10 +209,10 @@ export const WithdrawalAmount = ({navigation, route}: Props) => {
                       exchangeRate: exchangeRate ? exchangeRate.toString() : '',
                       transferId,
                       payinMethod,
-                      transferFee,
+                      // transferFee,
                     }),
                   );
-                  navigation.navigate('deposit-summary');
+                  navigation.navigate("withdraw-summary");
                 }
               } catch (error) {}
             }}

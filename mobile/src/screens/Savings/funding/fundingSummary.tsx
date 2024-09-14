@@ -8,24 +8,29 @@ import { flagsAndSymbol } from "@/utils/constants";
 import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
 import { BackButton } from "@/_components/Button/BackButton";
 import { useTransferState } from "@/store/transfer/useTransferState";
-import { SavingsNavigationStackType } from "@/navigation/UserStack/SavingsStack";
+import { SwapNavigationStackType } from "@/navigation/UserStack/SwapStack";
+import { SavingsNavigationStackType, SavingsStackParamList } from "@/navigation/UserStack/SavingsStack";
+import { RouteProp } from "@react-navigation/native";
 
 interface Props {
-    navigation: SavingsNavigationStackType
+    navigation: SavingsNavigationStackType;
+    route: RouteProp<SavingsStackParamList, "funding-summary">
 }
-export default function SavingsWithdrawalSummary (
+export default function SavingsFundingSummary (
     {
-navigation
+navigation,
+route
     }:Props
 ){
+    const isFromPlanCreation = route.params?.isFromPlanCreation;
     const {amount, currency, exchangeRate, transferFee} = useTransferState();
     const sendingCurrencySymbol = flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol].symbol;
     const receivingCurrencySymbol = flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol].symbol;
        const totalAmountSent = parseFloat(amount) + parseFloat(`${transferFee}`);
-       const amountToReceive = (Number(amount) * Number(exchangeRate)).toFixed(
+       const amountToReceive = isFromPlanCreation ? amount : (Number(amount) * Number(exchangeRate)).toFixed(
         2,
       );
-       const transferExchangeRate =    exchangeRate && Number(exchangeRate) < 1
+       const transferExchangeRate =  exchangeRate && Number(exchangeRate) < 1
        ? `${
            flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol]?.symbol
          } ${formatToCurrencyString(1 / Number(exchangeRate), 2)} = ${
@@ -89,9 +94,9 @@ Transaction Information
         >
             <NormalText
             size={14}
-            className="text-white/80"
+            className="text-white/80 w-[50%]"
             >
-              Your {currency.reciever} wallet will receive
+              Your {currency.reciever} savings wallet will receive
             </NormalText>
 
         <NormalText
@@ -148,7 +153,7 @@ Transaction Information
                     className="pt-[64px] mt-auto w-full mx-auto justify-start"
                   >
 <ButtonNormal
-onPress={()=>navigation.navigate("withdraw-pin")}
+onPress={()=>navigation.navigate("funding-pin", route.params)}
    className="bg-secondary" 
     >
         <NormalText 

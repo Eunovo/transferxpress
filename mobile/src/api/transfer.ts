@@ -76,7 +76,10 @@ type CreateQuoteDataResponse = {
     payin: {
         currencyCode: string;
         amount: string;
-        fee: string;
+        fees: Array<{
+            name: "PROCESSING" | "PROVIDER";
+            amount: string;
+        }>
         paymentInstructions: string;
     },
     payout: {

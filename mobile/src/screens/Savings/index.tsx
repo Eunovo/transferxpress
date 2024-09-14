@@ -1,64 +1,45 @@
 import { LayoutWithScroll } from "@/_components/layouts/LayoutWithScroll";
 import { HeaderText } from "@/_components/Text/HeaderText";
 import { NormalText } from "@/_components/Text/NormalText";
-import { dollarSymbol, flagsAndSymbol } from "@/utils/constants";
+import { flagsAndSymbol } from "@/utils/constants";
 import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
 import { useState } from "react";
-import { Image, View } from "react-native";
+import { RefreshControl, View } from "react-native";
 import { moderateScale } from "react-native-size-matters";
-import EyeOpenIcon from "@/assets/icons/eye.svg";
-import EyeClosedIcon from "@/assets/icons/eye_closed.svg";
 import { CustomPressable } from "@/_components/Button/CustomPressable";
 import { BalanceList } from "@/_components/Savings/BalanceList";
-import { ButtonNormal } from "@/_components/Button/NormalButton";
-import { Currencies } from "@/api/rates";
 import { useNavigation } from "@react-navigation/native";
 import { UserNavigationStack } from "@/navigation/UserStack";
 import { ViewSavingsPlanModal } from "@/_components/Savings/ViewSavingsPlan";
+import { useQuery } from "@tanstack/react-query";
+import { GET_SAVINGS_PLANS, SavingsPlan } from "@/api/savings";
+import { ScreenLoader } from "@/_components/loader_utils/ScreenLoader";
+import PlusWithCircleIcon from "@/assets/icons/plus_with_circle.svg"
 
-export type SavingsPlan = {
-    id: string;
-    name: string;
-    currencyCode: Currencies;
-    balance: string;
-    autoFund: boolean;
-    durationInMonths: number;
-    startDate: string;
-    maturityDate: string;
-    state: "ACTIVE" | "MATURED";
-    penalties: any
-    };
-const MOCK_PLANS: SavingsPlan[] = [
-    {
-        id: "1",
-        name: "Test Plan 1",
-        currencyCode: "USD",
-        balance: "4000",
-        autoFund: true,
-        durationInMonths: 6,
-        startDate: "",
-        maturityDate: "",
-        state: "ACTIVE",
-        penalties: []
-    },
-    {
-        id: "2",
-        name: "Test Plan 2",
-        currencyCode: "NGN",
-        balance: "400000",
-        autoFund: false,
-        durationInMonths: 1,
-        startDate: "",
-        maturityDate: "",
-        state: "ACTIVE",
-        penalties: []
-    }
-]
+
 export default function Savings (){
     const navigation  = useNavigation<UserNavigationStack>();
-    const [active, setActive] = useState<SavingsPlan>()
+    const [active, setActive] = useState<SavingsPlan>();
+    const savingsPlanQuery = useQuery({
+        queryKey: ["getSavingsPlans"],
+        queryFn: ()=>GET_SAVINGS_PLANS(),
+        refetchOnMount: "always"
+    });
+    const savingsPlans = savingsPlanQuery.data?.data ||  []
     return(
-        <LayoutWithScroll>
+        <LayoutWithScroll
+        refreshControl={
+            <RefreshControl
+              refreshing={savingsPlanQuery.isRefetching}
+              onRefresh={() => {
+              savingsPlanQuery.refetch()
+              }}
+              colors={["#ECB365"]}
+              tintColor={"#ECB365"}
+              style={{ marginTop: 20 }}
+            />
+          }
+        >
             <View className="grow pb-10">
             <HeaderText
 weight={600}
@@ -74,29 +55,32 @@ className="text-white/80 mb-2"
    Total Balances
 </NormalText>
 <BalanceList
-plans={MOCK_PLANS}
+plans={savingsPlans}
 />
 {
-    Boolean(MOCK_PLANS.length) && (
-        <ButtonNormal
-        onPress={()=>navigation.navigate("savings-stack")}
-        style={{
-            width: moderateScale(110, 0.3)
-        }}
-        className="bg-secondary mt-4"
-        >
-            <NormalText
-            weight={500}
-            className="text-primary/80"
-            >
-                Add plan
-            </NormalText>
-        </ButtonNormal>
+    Boolean(savingsPlans.length) && (
+               <CustomPressable
+               onPress={()=>navigation.navigate("savings-stack")}
+               style={{
+                 gap: 8,
+                 width: moderateScale(110, 0.3)
+               }}
+               className="flex-row items-center justify-center px-3 py-3 bg-secondary rounded-xl mt-10">
+             <PlusWithCircleIcon
+             fill={"#ECB365"}
+            width={moderateScale(20, 0.3)}
+            height={moderateScale(20, 0.3)}
+            opacity={0.8}
+            />
+               <NormalText size={15} weight={500} className="text-primary/80">
+               Add plan
+               </NormalText>
+             </CustomPressable>
     )
 }
 <View className="mt-10 flex-1">
 {
-    Boolean(MOCK_PLANS.length) ? (
+    Boolean(savingsPlans.length) ? (
         <View
         style={{
             gap: 16
@@ -109,7 +93,7 @@ plans={MOCK_PLANS}
                 Your Plans
             </HeaderText>
             {
-                MOCK_PLANS.map(item => (
+                savingsPlans.map(item => (
                     <CustomPressable
                     key={item.id}
                     onPress={()=>setActive(item)}
@@ -173,16 +157,22 @@ plans={MOCK_PLANS}
      >
             You have no active savings plan
             </NormalText>
-            <ButtonNormal
-            className="bg-secondary"
-            >
-                <NormalText
-                weight={500}
-                className="text-primary/80"
-                >
-                    Create savings plan
-                </NormalText>
-            </ButtonNormal>
+            <CustomPressable
+               onPress={()=>navigation.navigate("savings-stack")}
+               style={{
+                 gap: 8
+               }}
+               className="w-[80%] flex-row items-center justify-center px-3 py-3 bg-secondary rounded-xl mt-10">
+             <PlusWithCircleIcon
+             fill={"#ECB365"}
+            width={moderateScale(20, 0.3)}
+            height={moderateScale(20, 0.3)}
+            opacity={0.8}
+            />
+               <NormalText size={15} weight={500} className="text-primary/80">
+               Create savings plan
+               </NormalText>
+             </CustomPressable>
      </View>
     )
 }
@@ -196,6 +186,9 @@ plans={MOCK_PLANS}
                     details={active}
                     />
                 )
+            }
+            {
+                savingsPlanQuery.isPending && <ScreenLoader opacity={0.6} />
             }
         </LayoutWithScroll>
     )

@@ -10,6 +10,11 @@ import { WithdrawalAmount } from "@/screens/savings/withdrawal/withdrwalAmount";
 import SavingsWithdrawalSummary from "@/screens/savings/withdrawal/summary";
 import WithdrwalinConfirmation from "@/screens/savings/withdrawal/pinConfirmation";
 import SavingsWithdrawaluccess from "@/screens/savings/withdrawal/success";
+import FundingPinConfirmation from "@/screens/savings/funding/pinConfirmation";
+import { Currencies } from "@/api/rates";
+import { FundingAmount } from "@/screens/savings/funding/fundingAmount";
+import SavingsFundingSummary from "@/screens/savings/funding/fundingSummary";
+import FundingSuccess from "@/screens/savings/funding/success";
 
 
 
@@ -24,7 +29,21 @@ export type SavingsStackParamList = {
     };
     "withdraw-summary": undefined;
     "withdraw-pin": undefined;
-    "withdraw-success": undefined
+    "withdraw-success": undefined;
+    "funding-amount": {
+      planId: string;
+      planCurrency: Currencies;
+      amount?:string
+    };
+    "funding-summary"?: {
+      isFromPlanCreation: boolean
+    };
+    "funding-pin"?: {
+      isFromPlanCreation: boolean
+    };
+    "funding-success"?: {
+      isFromPlanCreation: boolean
+    };
 };
 export type SavingsNavigationStackType = NavigationProp<SavingsStackParamList>;
 const SavingsNavigationStack = ()=>{
@@ -48,6 +67,12 @@ const SavingsNavigationStack = ()=>{
 <Stack.Screen name="withdraw-summary" component={SavingsWithdrawalSummary} />
 <Stack.Screen name="withdraw-pin" component={WithdrwalinConfirmation} />
 <Stack.Screen name="withdraw-success" component={SavingsWithdrawaluccess} />
+</Stack.Group>
+<Stack.Group>
+  <Stack.Screen name="funding-amount" component={FundingAmount} />
+  <Stack.Screen name="funding-summary" component={SavingsFundingSummary} />
+  <Stack.Screen name="funding-pin" component={FundingPinConfirmation} />
+  <Stack.Screen name="funding-success" component={FundingSuccess} />
 </Stack.Group>
 </Stack.Navigator>
     );

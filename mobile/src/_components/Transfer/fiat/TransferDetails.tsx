@@ -67,7 +67,7 @@ export const TransferDetails = () => {
                });
             dispatch(setTransferState({
                 ...values,
-                transferFee: transferQuoteDataResponse.data.payin.fee
+                // transferFee: transferQuoteDataResponse.data.payin.fee TODO
             }));
             navigation.navigate('transfer-fiat-summary');
           } catch (error) {}

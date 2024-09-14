@@ -7,20 +7,13 @@ import { moderateScale, moderateVerticalScale } from "react-native-size-matters"
 import CheckmarkIcon from "@/assets/icons/check_mark.svg"
 import { ButtonNormal } from "@/_components/Button/NormalButton";
 import { useNavigation } from "@react-navigation/native";
-import { UserNavigationStack } from "@/navigation/UserStack";
-import { useAppDispatch } from "@/store/hooks";
-import { clearSavingsPlanState } from "@/store/savingsPlan/slice";
 import { useSavingsPlanState } from "@/store/savingsPlan/useSavingsPlanState";
+import { SavingsNavigationStackType } from "@/navigation/UserStack/SavingsStack";
 
 
 export default function PlanSuccess () {
-    const navigation = useNavigation<UserNavigationStack>();
-    const dispatch = useAppDispatch();
-    const {name, fundingCurrency} = useSavingsPlanState()
-    const goBackToHome = ()=>{
-        dispatch(clearSavingsPlanState())
-        navigation.navigate("main-bottom-tab")
-    }
+    const navigation = useNavigation<SavingsNavigationStackType>();
+    const {name, fundingCurrency, savingsAmount, planId} = useSavingsPlanState()
     return(
 <LayoutNormal>
 <View className="w-full grow pb-10">
@@ -59,7 +52,7 @@ className="flex-row flex-wrap justify-center items-center max-w-[80%] mx-auto"
 <NormalText
 size={13}
 className="text-white/80 text-center">
-Congratulations! You have successfully set-up your {fundingCurrency} savings plan, 
+Congratulations! You have successfully created your {fundingCurrency} savings plan, 
 <NormalText 
 size={13}
 weight={500}
@@ -76,7 +69,13 @@ className="text-primary capitalize"
                         className="pt-[64px] w-full my-auto  mx-auto justify-start"
                       >
  <ButtonNormal
- onPress={goBackToHome}
+ onPress={()=>{
+    navigation.navigate("funding-amount", {
+        planId: planId || "",
+        planCurrency: fundingCurrency,
+        amount: savingsAmount
+    })
+ }}
        className="bg-secondary" 
         >
             <NormalText 

@@ -265,7 +265,7 @@ if(supportedReceivingCurrencies?.length){
                         },
                         transferId,
                       });
-                    const transferFee = createQuoteResponse.data.payin.fee;
+                      const transferFee = createQuoteResponse.data.payin.fees?.reduce((previous, current) => (previous + parseFloat(current.amount)), 0 );
                     dispatch(
                       setTransferState({
                         currency: {
@@ -275,7 +275,7 @@ if(supportedReceivingCurrencies?.length){
                         amount: sender.amount,
                         exchangeRate: exchangeRate ? exchangeRate.toString() : '',
                         transferId,
-                        transferFee,
+                        transferFee: `${transferFee}`,
                       }),
                     );
                    navigation.navigate("swap-summary")

@@ -7,7 +7,6 @@ import { NormalText } from "../Text/NormalText";
 import { moderateScale } from "react-native-size-matters";
 import { CustomPressable } from "../Button/CustomPressable";
 import XmarkIcon from "@/assets/icons/x_mark.svg";
-import { SavingsPlan } from "@/screens/savings";
 import { ButtonNormal } from "../Button/NormalButton";
 import { useNavigation } from "@react-navigation/native";
 import { UserNavigationStack } from "@/navigation/UserStack";
@@ -16,6 +15,8 @@ import { setTransferState } from "@/store/transfer/slice";
 import { useFetchRates } from "@/services/queries/useFetchRates";
 import { Spinner } from "../loader_utils/Spinner";
 import { Currencies } from "@/api/rates";
+import { SavingsPlan } from "@/api/savings";
+import { formatDate } from "@/utils/formatDate";
 
 
 interface Props {
@@ -182,7 +183,7 @@ weight={600}
                 size={14}
                 className="text-white"
                 >
-{details.maturityDate}
+{formatDate(details.maturityDate)}
 </NormalText>
 </View>
 

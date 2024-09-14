@@ -1,11 +1,11 @@
 import {BackButton} from '@/_components/Button/BackButton';
 import {ButtonNormal} from '@/_components/Button/NormalButton';
+import { displayFlashbar } from '@/_components/Flashbar/displayFlashbar';
 import {LayoutNormal} from '@/_components/layouts/LayoutNormal';
 import {ScreenLoader} from '@/_components/loader_utils/ScreenLoader';
 import {HeaderText} from '@/_components/Text/HeaderText';
 import {NormalText} from '@/_components/Text/NormalText';
 import {CurrencyAmountInput} from '@/_components/Transfer/fiat/CurrencyAmountInput';
-import { Currencies } from '@/api/rates';
 import {
   CREATE_QUOTE,
   INITIATE_TRANSFER_PROCESS,
@@ -13,27 +13,28 @@ import {
   SUBMIT_PAYOUT_INFORMATION,
 } from '@/api/transfer';
 import {UserNavigationStack} from '@/navigation/UserStack';
-import {DepositNavigationStackType} from '@/navigation/UserStack/DepositStack';
+import { SavingsNavigationStackType, SavingsStackParamList } from '@/navigation/UserStack/SavingsStack';
 import {useFetchRates} from '@/services/queries/useFetchRates';
 import {useAppDispatch} from '@/store/hooks';
 import {setTransferState} from '@/store/transfer/slice';
 import {useTransferState} from '@/store/transfer/useTransferState';
 import {useUserState} from '@/store/user/useUserState';
-import {DEPOSIT_MOCK_FIELDS, flagsAndSymbol, secondaryUniqueIdentifierTitlesAndKeys} from '@/utils/constants';
+import { flagsAndSymbol } from '@/utils/constants';
 import {formatToCurrencyString} from '@/utils/formatToCurrencyString';
-import {useNavigation} from '@react-navigation/native';
+import {RouteProp, useNavigation} from '@react-navigation/native';
 import {useMutation} from '@tanstack/react-query';
 import {useEffect, useState} from 'react';
 import {View} from 'react-native';
 import {moderateScale} from 'react-native-size-matters';
 
 interface Props {
-  navigation: DepositNavigationStackType;
+  navigation: SavingsNavigationStackType;
+  route: RouteProp<SavingsStackParamList, "funding-amount">
 }
-export const DepositAmount = ({navigation}: Props) => {
+export const FundingAmount = ({navigation, route}: Props) => {
   const dispatch = useAppDispatch();
   const userStackNavigation = useNavigation<UserNavigationStack>();
-  const {activeWallet} = useUserState();
+  const {wallets} = useUserState();
   const {
     amount: amountToSend,
     currency,
@@ -41,8 +42,8 @@ export const DepositAmount = ({navigation}: Props) => {
   } = useTransferState();
   const [sender, setSender] = useState({
     currency: currency.sender,
-    amount: amountToSend,
-  });
+    amount: route.params.amount && typeof exchangeRateFromTransferState === "number" ? (Number(route.params.amount) / exchangeRateFromTransferState).toFixed(2)  : amountToSend,
+  }); 
 
   const editSender = (field: 'amount' | 'currency', value: string) => {
     setSender(prev => {
@@ -53,7 +54,7 @@ export const DepositAmount = ({navigation}: Props) => {
     });
   };
   const [amountToReceive, setAmountToReceive] = useState(
-    amountToSend
+   route.params.amount ? route.params.amount : amountToSend
       ? (Number(amountToSend) * Number(exchangeRateFromTransferState)).toFixed(
           2,
         )
@@ -61,9 +62,9 @@ export const DepositAmount = ({navigation}: Props) => {
   );
   const ratesQuery = useFetchRates();
   const supportedCurrenciesAndPairs =
-    ratesQuery.rates && activeWallet?.ticker
+    ratesQuery.rates 
       ? Object.entries(ratesQuery.rates).filter(item =>
-          Object.keys(item[1]).includes(activeWallet.ticker),
+          Object.keys(item[1]).includes(route.params.planCurrency),
         )
       : undefined;
   const supportedCurrencies = supportedCurrenciesAndPairs
@@ -74,11 +75,10 @@ export const DepositAmount = ({navigation}: Props) => {
   });
   const exchangeRate =
     supportedCurrenciesAndPairs?.length &&
-    activeWallet?.ticker &&
     sender.currency
       ? supportedCurrenciesAndPairs.find(item =>
           item.includes(sender.currency),
-        )?.[1][activeWallet.ticker as 'NGN'].exchangeRate
+        )?.[1][route.params.planCurrency].exchangeRate
       : null;
 
   useEffect(() => {
@@ -87,21 +87,26 @@ export const DepositAmount = ({navigation}: Props) => {
     }
   }, [supportedCurrencies?.length]);
   useEffect(() => {
-    editSender('amount', '');
-  }, [exchangeRate, sender.currency, activeWallet?.ticker]);
+    if(!route.params.amount){
+      editSender('amount', '');
+    }
+    if(route.params.amount && typeof exchangeRate === "number"){
+      editSender("amount", (Number(route.params.amount) / exchangeRate).toFixed(2) )
+    }
+  }, [exchangeRate, sender.currency, route.params.planCurrency, route.params.amount]);
   const transferExchangeRate =
     exchangeRate && Number(exchangeRate) < 1
       ? `${
           flagsAndSymbol[sender.currency as keyof typeof flagsAndSymbol]?.symbol
         } ${formatToCurrencyString(1 / Number(exchangeRate), 2)} = ${
-          flagsAndSymbol[activeWallet?.ticker as keyof typeof flagsAndSymbol]
+          flagsAndSymbol[route.params.planCurrency]
             ?.symbol
         } 1`
       : exchangeRate && Number(exchangeRate) > 1
       ? `${
           flagsAndSymbol[sender.currency as keyof typeof flagsAndSymbol]?.symbol
         } 1 = ${
-          flagsAndSymbol[activeWallet?.ticker as keyof typeof flagsAndSymbol]
+          flagsAndSymbol[route.params.planCurrency]
             ?.symbol
         } ${formatToCurrencyString(exchangeRate, 2)}`
       : 'N/A';
@@ -131,10 +136,10 @@ export const DepositAmount = ({navigation}: Props) => {
           }}
         />
         <HeaderText weight={700} size={20} className="text-primary">
-          Receive money
+         Fund Plan
         </HeaderText>
         <NormalText size={13} className="text-white/80 mb-10">
-          How much do you want to deposit?
+          Fund your savings plan
         </NormalText>
         <View
           style={{
@@ -145,6 +150,10 @@ export const DepositAmount = ({navigation}: Props) => {
             <CurrencyAmountInput
               title="Send"
               active={sender}
+              isReadOnly={{
+                amount: route.params.amount ? true : false,
+                currency: false
+              }}
               supportedCurrencies={supportedCurrencies}
               setAmount={value => {
                 editSender('amount', value);
@@ -158,16 +167,17 @@ export const DepositAmount = ({navigation}: Props) => {
                 }
               }}
               setCurrency={value => editSender('currency', value)}
+              showBalance
             />
           )}
           <CurrencyAmountInput
             isReadOnly={{
-              amount: false,
+              amount: route.params?.amount ? true : false,
               currency: true
             }}
-            title="Wallet to receive"
+            title="Savings plan to receive"
             active={{
-              currency: activeWallet?.ticker || '',
+              currency: route.params.planCurrency,
               amount: amountToReceive,
             }}
             setAmount={value => {
@@ -182,7 +192,6 @@ export const DepositAmount = ({navigation}: Props) => {
               }
             }}
             setCurrency={() => {}}
-            showBalance
           />
         </View>
 
@@ -208,26 +217,29 @@ export const DepositAmount = ({navigation}: Props) => {
             disabled={isButtonDisabled}
             onPress={async () => {
               try {
-                if (activeWallet?.ticker) {
+                const sendingWallet = wallets.find(item => item.ticker === sender.currency);
+                const isInsufficientFunds = sender.amount && sendingWallet?.amount ? Number(sender.amount) >= Number(sendingWallet?.amount) : false;
+                if(isInsufficientFunds){
+                  return displayFlashbar({
+                    type: "danger",
+                    message: "Insufficient funds"
+                  })
+                }
                   const initiateTransferResponse =
                     await initiateTransferutation.mutateAsync({
                       from: sender.currency,
-                      to: activeWallet.ticker,
+                      to: route.params.planCurrency
                     });
                   const transferId = initiateTransferResponse.data.id;
                   const payinMethod =
                     initiateTransferResponse.data.payinMethods.find(item =>
-                      item.kind.includes('BANK_TRANSFER'),
+                      item.kind.includes("WALLET"),
                     );
-                  console.log(payinMethod, "payin method");
-                  const payinData = DEPOSIT_MOCK_FIELDS[sender.currency as Currencies];
-                  const secondaryUniqueIdentifierTitle = secondaryUniqueIdentifierTitlesAndKeys[sender.currency as keyof typeof secondaryUniqueIdentifierTitlesAndKeys].key || "";
                   const submitPayinResponse =
                     await submitPayinInformationMutation.mutateAsync({
                       body: {
                         kind: payinMethod?.kind!,
-                        accountNumber: payinData['Account Number'],
-                        [secondaryUniqueIdentifierTitle]: payinData.secondaryUniqueIdentifier
+                        walletId: sendingWallet?.id
                       },
                       transferId,
                     });
@@ -237,7 +249,7 @@ export const DepositAmount = ({navigation}: Props) => {
                   await submitPayoutInformationMutation.mutateAsync({
                     body: {
                       kind: payoutMethod?.kind!,
-                      walletId: activeWallet.id,
+                      walletId: Number(route.params.planId)
                     },
                     transferId,
                   });
@@ -245,26 +257,29 @@ export const DepositAmount = ({navigation}: Props) => {
                     await createQuoteMutation.mutateAsync({
                       body: {
                         amount: `${Number(sender.amount) * Number(exchangeRate)}`,
-                        narration: `DEPOSIT-${transferId}`,
+                        narration: `FUNDING-${transferId}`,
                       },
                       transferId,
                     });
-                    const transferFee = createQuoteResponse.data.payin.fees?.reduce((previous, current) => (previous + parseFloat(current.amount)), 0 );
+                  const transferFee = createQuoteResponse.data.payin.fees?.reduce((previous, current) => (previous + parseFloat(current.amount)), 0 );
+                 
                   dispatch(
                     setTransferState({
                       currency: {
                         sender: sender.currency,
-                        reciever: activeWallet.ticker,
+                        reciever: route.params.planCurrency
                       },
-                      amount: sender.amount,
+                      amount: route.params.amount ? route.params.amount : sender.amount,
                       exchangeRate: exchangeRate ? exchangeRate.toString() : '',
                       transferId,
                       payinMethod,
                       transferFee: `${transferFee}`,
                     }),
                   );
-                  navigation.navigate('deposit-summary');
-                }
+                  navigation.navigate("funding-summary", {
+                    isFromPlanCreation: true
+                  });
+            
               } catch (error) {}
             }}
             className="bg-secondary">

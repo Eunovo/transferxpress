@@ -14,13 +14,16 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { CONFIRM_QUOTE, GET_TRANSFER_STATUS } from '@/api/transfer';
 import { useTransferState } from '@/store/transfer/useTransferState';
 import { ScreenLoader } from '@/_components/loader_utils/ScreenLoader';
-import { SavingsNavigationStackType } from '@/navigation/UserStack/SavingsStack';
+import { SwapNavigationStackType } from '@/navigation/UserStack/SwapStack';
+import { RouteProp } from '@react-navigation/native';
+import { SavingsNavigationStackType, SavingsStackParamList } from '@/navigation/UserStack/SavingsStack';
 
 interface Props {
   navigation: SavingsNavigationStackType;
+  route: RouteProp<SavingsStackParamList, "funding-pin">
 };
 const REFETCH_TIMEOUT_TIME = 30 * 1000;
-export default function WithdrwalinConfirmation({navigation}: Props) {
+export default function FundingPinConfirmation({navigation, route}: Props) {
   const [pin, setPin] = useState<string[]>([]);
   const isDisabled = pin.length < 4;
   const {transferId} = useTransferState()
@@ -38,7 +41,7 @@ export default function WithdrwalinConfirmation({navigation}: Props) {
    useEffect(
     ()=>{
 if(transferStatusQuery.isSuccess && transferStatus === "SUCCESS" && !isDisabled){
-navigation.navigate("withdraw-success")
+navigation.navigate("funding-success", route.params)
 }
     }, [transferStatusQuery.isSuccess, transferStatusQuery.isRefetching]
    )
@@ -48,7 +51,7 @@ if(transferStatusQuery.isSuccess){
 const refetchTimeout = setTimeout(
 ()=>{
 setRefetchIntervall(0)
-navigation.navigate("withdraw-success")
+navigation.navigate("funding-success", route.params)
 }, REFETCH_TIMEOUT_TIME
 )
 return ()=>{
@@ -64,16 +67,17 @@ clearTimeout(refetchTimeout)
     <LayoutNormal>
       <View className="w-full grow pb-10">
         <BackButton 
-            onPress={()=>{
-               navigation.goBack()
-    
-               }}
-        />
+        onPress={()=>{
+           navigation.goBack()
+
+           }}
+    />
+
         <HeaderText weight={700} size={20} className="text-primary">
           Enter PIN
         </HeaderText>
         <NormalText size={13} className="text-white/80 mb-10">
-          Enter your 4 digit PIN to authorize the transfer
+          Enter your 4 digit PIN to authorize funding
         </NormalText>
 
         <PinWithKeyPad pin={pin} setPin={setPin} />

@@ -6,6 +6,7 @@ name: string;
 fundingCurrency: Currencies,
 lockPeriod: string;
 savingsAmount: string;
+planId?:string
 }
 
 const initialState:SavingsPlanState = {

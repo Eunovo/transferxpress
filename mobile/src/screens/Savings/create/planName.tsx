@@ -19,7 +19,8 @@ export default function PlanName (
 navigation
     }:Props
 ) {
-    const dispatch = useAppDispatch()
+    const dispatch = useAppDispatch();
+
     return(
         <LayoutNormal>
             <View 

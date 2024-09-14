@@ -1,14 +1,16 @@
 import { BackButton } from "@/_components/Button/BackButton";
 import { ButtonNormal } from "@/_components/Button/NormalButton";
 import { LayoutNormal } from "@/_components/layouts/LayoutNormal";
+import { ScreenLoader } from "@/_components/loader_utils/ScreenLoader";
 import { HeaderText } from "@/_components/Text/HeaderText";
 import { NormalText } from "@/_components/Text/NormalText";
 import { CurrencyAmountInput } from "@/_components/Transfer/fiat/CurrencyAmountInput";
 import { Currencies } from "@/api/rates";
 import { SavingsNavigationStackType } from "@/navigation/UserStack/SavingsStack";
+import { useFetchRates } from "@/services/queries/useFetchRates";
 import { useAppDispatch } from "@/store/hooks";
 import { setSavingsPlanState } from "@/store/savingsPlan/slice";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { moderateScale } from "react-native-size-matters";
 
@@ -23,7 +25,9 @@ navigation
     }:Props
 
 ) {
-    const dispatch = useAppDispatch()
+    const dispatch = useAppDispatch();
+    const ratesQuery = useFetchRates();
+    const supportedSendingCurrencies = ratesQuery.rates ? Object.keys(ratesQuery.rates) : undefined;
     const [paymentDetails, setPaymentDetails] = useState({
         currency: "USD",
         amount: ""
@@ -36,6 +40,11 @@ navigation
           };
         });
       };
+      useEffect(()=>{
+if(supportedSendingCurrencies){
+  editPaymentDetails("currency", supportedSendingCurrencies[0])
+}
+      }, [supportedSendingCurrencies?.length]);
       const isButtonDisabled = !paymentDetails.amount;
     return (
         <LayoutNormal>
@@ -56,6 +65,7 @@ navigation
         <View>
             <CurrencyAmountInput 
             active={paymentDetails}
+            supportedCurrencies={supportedSendingCurrencies}
             title="Amount"
             setAmount={(value)=>editPaymentDetails("amount", value)}
             setCurrency={value => editPaymentDetails("currency", value)}
@@ -78,6 +88,9 @@ navigation
             </ButtonNormal>
           </View>
             </View>
+            {
+              ratesQuery.isPending && <ScreenLoader opacity={0.6} />
+            }
         </LayoutNormal>
     )
 }

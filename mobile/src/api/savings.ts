@@ -1,7 +1,8 @@
 import { transferxpressApi } from "./base"
+import { Currencies } from "./rates"
 
 export const GET_SAVINGS_PLANS = async()=>{
-    return await transferxpressApi.get("/savings-plans")
+    return await transferxpressApi.get<GetSavingsPlansDataResponse>("/savings-plans")
 }
 
 export const GET_SAVINGS_PLAN_DETAILS = async(savingsPlanId: number)=>{
@@ -13,13 +14,13 @@ export const CREATE_SAVINGS_PLAN = async(body:{
     currencyCode: string;
     durationInMonths: number;
 })=>{
-    return await transferxpressApi.post("/savings-plans", body)
+    return await transferxpressApi.post<SavingsPlan>("/savings-plans", body)
 };
 
 export const ACTIVATE_PLAN = async(data:{
     planId:number;
     body:{
-        walletId: number,
+        walletId: string;
         amount: string
     }
 })=>{
@@ -29,3 +30,18 @@ export const ACTIVATE_PLAN = async(data:{
 export const ROLL_OVER_PLAN = async(planId:number)=>{
     return await transferxpressApi.post("/savings-plans/" + planId + "/rollover")
 }
+
+export type SavingsPlan = {
+    id: number;
+    name: string;
+    currencyCode: Currencies;
+    balance: string;
+    autoFund: boolean;
+    durationInMonths: number;
+    startDate: string;
+    maturityDate: string;
+    state: "ACTIVE" | "MATURED";
+    penalties: [{name: "PREMATURE_WITHDRAWAL", percentage: number}]
+    };
+
+type GetSavingsPlansDataResponse = Array<SavingsPlan>
