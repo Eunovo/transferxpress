@@ -5,10 +5,10 @@ import sqlite3 from 'sqlite3';
 import axios, { Axios, AxiosError, AxiosResponse } from 'axios';
 import MakeApp from '../src/app.js';
 import Migrate from '../src/sqlite/schema.js';
-import { Users } from '../src/features/users.js';
+import { CacheKeys as UsersCacheKeys, Users } from '../src/features/users.js';
 import { AutoFunderDBImpl, TBDexDBImpl, UsersDbImpl } from '../src/sqlite/db_impl.js';
 import { CacheKeys as TBDCacheKeys, TBDexService } from '../src/features/tbdex.js';
-import { CreateTransferResponse, EmailAvailabilityStatus, MarketData, PayinUpdateResponse, PaymentKind, TransactionStatus, TransferSummary, Wallet } from '../src/types.js';
+import { CreateTransferResponse, PayinUpdateResponse, PaymentKind, ReportReason, TransactionStatus } from '../src/types.js';
 import { Cache, InMemoryCache } from '../src/cache.js';
 import { DIDs, CREDENTIALS, PARSED_DIDs, PFIs, OFFERINGs, PFI_OFFERINGs, TRANSFERs, TRANSACTIONS, CLOSEs } from './data.js';
 import { AutoFunder } from '../src/features/autofund.js';
@@ -43,6 +43,7 @@ test.before(async (t: any) => {
 
 	t.context.db = db;
 	t.context.cache = cache;
+	t.context.tbdex = tbdex;
 	t.context.server = http.createServer(app);
 	t.context.prefixUrl = await listen(t.context.server);
 	t.context.user = await new Promise((resolve, reject) => {
@@ -74,12 +75,12 @@ test.before(async (t: any) => {
 				}
 			);
 			db.run(
-				`INSERT INTO Transfers (id, userId, pfiId, payinCurrencyCode, payoutCurrencyCode, payinKind, payoutKind, payinAmount, payoutAmount, narration, payinWalletId, payoutWalletId, payoutAccountNumber, status, reference, createdAt, lastUpdatedAt)
-				VALUES ${TRANSFERs.map(_ => "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").join(", ")}
+				`INSERT INTO Transfers (id, userId, pfiId, payinCurrencyCode, payoutCurrencyCode, payinKind, payoutKind, payinAmount, payoutAmount, narration, payinWalletId, payoutWalletId, payoutAccountNumber, status, reference, expectedSettledAt, createdAt, lastUpdatedAt)
+				VALUES ${TRANSFERs.map(_ => "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").join(", ")}
 				`, TRANSFERs.reduce((acc, value) => acc.concat([
 					value.id, value.userId, value.pfiId, value.payinCurrencyCode, value.payoutCurrencyCode, value.payinKind, value.payoutKind,
 					value.payinAmount, value.payoutAmount, value.narration, value.payinWalletId, value.payoutWalletId, value.payoutAccountNumber,
-					value.status, value.reference, user.createdAt.toISOString(), user.lastUpdatedAt.toISOString()]), []),
+					value.status, value.reference, value.expectedSettledAt, user.createdAt.toISOString(), user.lastUpdatedAt.toISOString()]), []),
 				function (err) {
 					if (err) return reject(err);
 				}
@@ -431,4 +432,43 @@ test.serial("Savings plan rollover", async (t: any) => {
 	t.is(getFinalPlanResponse.data.state, 'ACTIVE');
 });
 
+test.serial("Report transaction correctly blacklists a PFI", async (t: any) => {
+	const { prefixUrl, auth, cache, tbdex } = t.context;
+	const doReport = (id: number) => axios.post(
+		`${prefixUrl}/transactions/${id}/report`,
+		{ reason: ReportReason.COMPLETED_WITHOUT_SETTLEMENT },
+		{ headers: { Authorization: auth } }
+	);
+	const key = UsersCacheKeys.PFI_METRICS(1);
+	let offenceTally = await (cache as Cache).get<number>(key);
+	t.truthy(!offenceTally);
+	// Report the same tranx twice
+	const transaction = TRANSACTIONS[0];
+	await doReport(transaction.id);
+	await doReport(transaction.id);
+	offenceTally = await (cache as Cache).get<number>(key);
+	t.is(offenceTally, 1); // offence is counted once per transfer
+	t.is(await tbdex.isBlacklistedPFI(PFIs[0].did), false); // Not temporarily blacklisted yet
 
+	cache.set(TBDCacheKeys.WATCH_EXCHANGE("reference"), CLOSEs[0]);
+	await axios.get(`${prefixUrl}/transfers/5/status`, { headers: { Authorization: auth } });
+
+	await doReport(TRANSACTIONS[2].id);
+	offenceTally = await (cache as Cache).get<number>(key);
+	t.is(offenceTally, null); // offence count for PFI is reset
+	t.is(await tbdex.isBlacklistedPFI(PFIs[0].did), true); // PFI is temporarily blacklisted
+});
+
+test.serial("Repeated slow transfers temporarily blacklists a PFI", async (t: any) => {
+	const { prefixUrl, auth, cache, tbdex } = t.context;
+	cache.set(TBDCacheKeys.OFFERINGS, [PFI_OFFERINGs[1]]);
+
+	t.is(await tbdex.isBlacklistedPFI(PFIs[1].did), false); // Not temporarily blacklisted yet
+	t.deepEqual(await tbdex.fetchOfferings(), [PFI_OFFERINGs[1]]); // Because not temporarily blacklisted yet
+
+	cache.set(TBDCacheKeys.WATCH_EXCHANGE("reference"), CLOSEs[0]);
+	await axios.get(`${prefixUrl}/transfers/6/status`, { headers: { Authorization: auth } });
+	await axios.get(`${prefixUrl}/transfers/7/status`, { headers: { Authorization: auth } });
+	t.is(await tbdex.isBlacklistedPFI(PFIs[1].did), true);
+	t.deepEqual(await tbdex.fetchOfferings(), []); // Available offering is banned
+});

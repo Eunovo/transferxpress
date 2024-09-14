@@ -32,11 +32,39 @@ import { Cache } from "../cache.js";
 import { logger } from "../logger.js";
 import { mapWalletToSavingsPlan } from "./mappers.js";
 
-const CacheKeys = {
-  TRANSFER_QUOTE: (transferId: ID) => `transfer:quote:${transferId}`
+export const CacheKeys = {
+  TRANSFER_QUOTE: (transferId: ID) => `transfer:quote:${transferId}`,
+  PFI_METRICS: (pfiId) => `pfi:metrics:${pfiId}`
 }
 
+/**
+ * Number of transfers that must occur before we ban PFI based on rating
+ */
+const TOTAL_TRANSFERS_BLACKLIST_THRESHOLD = 100;
+/**
+ * Number of offences allowed before we temporarily disable a PFI
+ */
+const PFI_OFFENCE_THRESHOLD = 2;
+/**
+ * Lowest rating allowed for PFI before we ban it
+ * NB: `TOTAL_TRANSFERS_BLACKLIST_THRESHOLD` needs to be passed before we permanently ban any PFI
+ */
+const PFI_RATING_THRESHOLD = 2.5;
+
 const usersLogger = logger.child({ module: 'users' });
+
+const SUPPORTED_CURRENCIES = [
+  { currencyCode: "BTC", kind: PaymentKind.BTC_WALLET_ADDRESS },
+  { currencyCode: "USDC", kind: PaymentKind.USDC_WALLET_ADDRESS },
+  { currencyCode: "NGN", kind: PaymentKind.NGN_BANK_TRANSFER },
+  { currencyCode: "USD", kind: PaymentKind.USD_BANK_TRANSFER },
+  { currencyCode: "KES", kind: PaymentKind.KES_BANK_TRANSFER },
+  { currencyCode: "EUR", kind: PaymentKind.EUR_BANK_TRANSFER },
+  { currencyCode: "GBP", kind: PaymentKind.GBP_BANK_TRANSFER },
+  { currencyCode: "MXN", kind: PaymentKind.MXN_BANK_TRANSFER },
+  { currencyCode: "AUD", kind: PaymentKind.AUD_BANK_TRANSFER },
+  { currencyCode: "GHS", kind: PaymentKind.GHS_BANK_TRANSFER }
+];
 
 export class Users {
   constructor(
@@ -72,18 +100,7 @@ export class Users {
       return this.db.insert(
         { ...data, did, createdAt: now, lastUpdatedAt: now },
         [{ key: 'kcc', value: credential }],
-        [
-          { currencyCode: 'BTC', balance: 0, type: 'STANDARD' },
-          { currencyCode: 'USDC', balance: 0, type: 'STANDARD' },
-          { currencyCode: 'NGN', balance: 0, type: 'STANDARD' },
-          { currencyCode: 'USD', balance: 0, type: 'STANDARD' },
-          { currencyCode: 'KES', balance: 0, type: 'STANDARD' },
-          { currencyCode: 'EUR', balance: 0, type: 'STANDARD' },
-          { currencyCode: 'GBP', balance: 0, type: 'STANDARD' },
-          { currencyCode: 'MXN', balance: 0, type: 'STANDARD' },
-          { currencyCode: 'AUD', balance: 0, type: 'STANDARD' },
-          { currencyCode: 'GHS', balance: 0, type: 'STANDARD' }
-        ]
+        SUPPORTED_CURRENCIES.map(({ currencyCode }) => ({ currencyCode, balance: 0, type: 'STANDARD' })),
       ).then(() => { }); // return void
     });
   }
@@ -111,24 +128,59 @@ export class Users {
     return this.db.findTransactionsByUserId(userId);
   }
 
+  incrementPFIOffenceTally(pfiId: ID): Promise<number> {
+    return this.cache.get<number>(CacheKeys.PFI_METRICS(pfiId))
+      .then((value) => {
+        if (value == undefined || value == null) value = 1;
+        else value += 1;
+        this.cache.set<number>(CacheKeys.PFI_METRICS(pfiId), value, (5 * 60 * 60 * 1000));
+        return value;
+      });
+  }
+
+  resetPFIOffenceTally(pfiId: ID) {
+    return this.cache.del(CacheKeys.PFI_METRICS(pfiId));
+  }
+
   reportTransaction(userId: ID, transactionId: ID, data: ReportTransactionRequestBody): Promise<void> {
+    const now = Date.now();
     return this.db.findTransactionById(transactionId)
       .then((transaction) => {
         if (transaction === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
         if (transaction.userId !== userId) throw new ServerError({ code: ErrorCode.FORBIDDEN });
-        return this.db.findTransferByIdAndUserId(transaction.transferId, userId);
-      }).then((transfer) => {
+        return Promise.all([this.db.findTransferByIdAndUserId(transaction.transferId, userId), this.db.fetchPFIRatingInfoForTransfer(transaction.transferId)]);
+      }).then(async ([transfer, ratingInfo]) => {
         if (transfer === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
         let pfi = transfer.pfi;
-        if (data.reason === ReportReason.COMPLETED_WITHOUT_SETTLEMENT || data.reason === ReportReason.AMOUNT_MISMATCH) {
-          // permanently blacklist pfi
-          pfi.blacklisted = true;
-        } else if (data.reason === ReportReason.TRANSACTION_DELAYED) {
-          // temporarily blacklist pfi
-          this.tbdex.blacklistPFI(pfi.did);
-          // adjust pfi overall rating
-          pfi.rating -= 1;
+        let expSettledAt = typeof transfer.expectedSettledAt === 'string' ? new Date(parseFloat(transfer.expectedSettledAt)) : null;
+        let settledAt = typeof transfer.settledAt === 'string' ? new Date(parseFloat(transfer.settledAt)) : null;
+        let offenceTally: number | null = null;
+        let total_successes = ratingInfo.total_transfers - ratingInfo.total_disputed;
+        let rating_decrement_value = (5 * total_successes) / (ratingInfo.total_transfers * (ratingInfo.total_transfers + 1)); // formular to decrease rating
+        let possible_new_rating = isNaN(rating_decrement_value) ? 0 : Math.max(pfi.rating - rating_decrement_value, 0);
+
+        if (!transfer.disputed) {
+          if ((data.reason === ReportReason.COMPLETED_WITHOUT_SETTLEMENT || data.reason === ReportReason.AMOUNT_MISMATCH) && settledAt) {
+            offenceTally = await this.incrementPFIOffenceTally(pfi.id);
+            // adjust pfi overall rating
+            pfi.rating = possible_new_rating;
+          } else if (data.reason === ReportReason.TRANSACTION_DELAYED && expSettledAt && now < expSettledAt.getTime()) {
+            offenceTally = await this.incrementPFIOffenceTally(pfi.id);
+            // adjust pfi overall rating
+            pfi.rating = possible_new_rating;
+          }
+
+          if (offenceTally >= PFI_OFFENCE_THRESHOLD) {
+            // temporarily blacklist pfi
+            this.tbdex.blacklistPFI(pfi.did);
+            this.resetPFIOffenceTally(pfi.id);
+          }
+          if (pfi.rating <= PFI_RATING_THRESHOLD && ratingInfo.total_transfers > TOTAL_TRANSFERS_BLACKLIST_THRESHOLD) {
+            // permanently blacklist pfi when rating is too low and enough transfers have be made with this PFI
+            pfi.blacklisted = true;
+          }
         }
+
         return this.db.insertTransactionReport({
           ...data,
           transactionId,
@@ -149,6 +201,26 @@ export class Users {
   startTransfer(userId: ID, payinCurrencyCode: string, payoutCurrencyCode: string): Promise<CreateTransferResponse> {
     const now = new Date();
     const wallets = this.db.findWalletsByUserId(userId);
+
+    if (payinCurrencyCode === payoutCurrencyCode) {
+      return Promise.all([
+        this.db.insertTransfer({
+          userId,
+          payinCurrencyCode,
+          payoutCurrencyCode,
+          status: TransactionStatus.CREATED,
+          createdAt: now,
+          lastUpdatedAt: now
+        }),
+        wallets
+      ]).then(([transfer, wallets]) => ({
+        id: transfer.id,
+        payinMethods: wallets.filter(wallet => wallet.currencyCode === payinCurrencyCode)
+          .map((v) => ({ kind: PaymentKind.WALLET_ADDRESS, fields: ['walletId' as keyof PaymentDetails] }))
+          .slice(0, 1) // to remove duplicate methods
+          .concat(SUPPORTED_CURRENCIES.filter(v => v.currencyCode === payinCurrencyCode).map((v) => ({ kind: v.kind, fields: [] })))
+      }));
+    }
 
     return this.tbdex.fetchOfferings()
       .then(offerings => {
@@ -317,10 +389,6 @@ export class Users {
               }
             });
           });
-
-          // If no payout methods was found, the payin method was not returned from create transfer request
-          // There's a chance that the payin method was among returned list but no payout methods were found but we don't care about that
-          if (payoutMethods.size === 0) throw new ServerError({ code: ErrorCode.UNSUPPORTED_METHOD });
 
           return wallets.then(wallets => {
             const selectedWallet = wallets.find((wallet) => wallet.id == data.walletId);
@@ -535,24 +603,32 @@ export class Users {
         credentials.map((cred: UserCredential) => cred.value)
       );
 
-      // Select the Best Quote
-      // The best quote is the quote where the user pays the least
-      // @ts-ignore
-      const bestQuote: { totalPayIn: number, pfi: PFI, quote: Quote } = quotes.reduce((best: { totalPayIn: number, pfi: PFI, quote: Quote }, { pfi, quote }) => {
-        const totalPayIn = quote.data.payin.amount;
-        if (best.totalPayIn > parseFloat(totalPayIn)) return { totalPayIn: parseFloat(totalPayIn), quote, pfi };
-        return best;
-      }, { totalPayIn: Infinity, quote: null, pfi: null });
+      let payinTotal = parseFloat(data.amount);
+      let payinSubTotal = parseFloat(data.amount);
+      let payinFee = 0;
+      let bestQuote: { totalPayIn: number, pfi: PFI, quote: Quote, estimatedSettlementTimeInSecs } | undefined | null;
 
-      if (bestQuote.quote === null || bestQuote.pfi === null) throw new ServerError({ code: ErrorCode.UNEXPECTED_ERROR, data: `Could not get quote for ${transferId}` });
+      if (transfer.payinCurrencyCode !== transfer.payoutCurrencyCode) {
+        // Select the Best Quote
+        // The best quote is the quote where the user pays the least
+        // @ts-ignore
+        bestQuote = quotes.reduce(
+          (best: { totalPayIn: number, pfi: PFI, quote: Quote }, { pfi, quote, estimatedSettlementTimeInSecs }) => {
+            const totalPayIn = quote.data.payin.amount;
+            if (best.totalPayIn > parseFloat(totalPayIn)) return { totalPayIn: parseFloat(totalPayIn), quote, pfi, estimatedSettlementTimeInSecs };
+            return best;
+          }, { totalPayIn: Infinity, quote: null, pfi: null, estimatedSettlementTimeInSecs: 0 });
 
-      const payinTotal = bestQuote.totalPayIn;
-      const payinSubTotal = parseFloat(bestQuote.quote.data.payin.amount);
-      const payinFee = parseFloat(bestQuote.quote.data.payin.fee ?? "0");
+        if (bestQuote.quote === null || bestQuote.pfi === null) throw new ServerError({ code: ErrorCode.UNEXPECTED_ERROR, data: `Could not get quote for ${transferId}` });
+
+        payinTotal = bestQuote.totalPayIn;
+        payinSubTotal = parseFloat(bestQuote.quote.data.payin.amount);
+        payinFee = parseFloat(bestQuote.quote.data.payin.fee ?? "0");
+
+        this.cache.set(CacheKeys.TRANSFER_QUOTE(transferId), bestQuote, (new Date(bestQuote.quote.data.expiresAt).getTime() - Date.now())); // Cache quote until it expires
+      }
 
       if (payinWallet && payinWallet.balance < payinTotal) throw new ServerError({ code: ErrorCode.WALLET_INSUFFICIENT_BALANCE });
-
-      this.cache.set(CacheKeys.TRANSFER_QUOTE(transferId), bestQuote, (new Date(bestQuote.quote.data.expiresAt).getTime() - Date.now())); // Cache quote until it expires
 
       const percentOf = (percentage: number, value: number) => {
         return value * (percentage / 100);
@@ -592,7 +668,7 @@ export class Users {
         transferId,
         {
           ...transfer,
-          pfiId: bestQuote.pfi.id,
+          pfiId: bestQuote?.pfi.id,
           payinAmount: payinSubTotal,
           payoutAmount: parseFloat(data.amount),
           narration: data.narration,
@@ -628,20 +704,24 @@ export class Users {
     const now = new Date();
     return Promise.all([
       this.db.findTransferByIdAndUserId(transferId, user.id),
-      this.cache.get<{ pfi: PFI, quote: Quote }>(CacheKeys.TRANSFER_QUOTE(transferId))
+      this.cache.get<{ pfi: PFI, quote: Quote, estimatedSettlementTimeInSecs }>(CacheKeys.TRANSFER_QUOTE(transferId))
     ]).then(async ([transfer, quote]) => {
       if (transfer === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
-      if (quote === null) throw new ServerError({ code: ErrorCode.OFFER_EXPIRED });
-      softAssert(usersLogger, !user.did, `[confirmTransfer] User ${user.id} has no DID`);
-      await this.tbdex.sendOrder(user.did ?? "", quote.quote, (msg, err) => {
-        if (err) {
-          usersLogger.error(`[confirmTransfer] ${err.message}`, { transferId, userId: user.id });
-          return;
-        }
-        if (msg === null) return;
-        this.handleTransferComplete(transferId, user.id, msg.data.success);
-      });
-      const reference = quote.quote.exchangeId;
+      const isSameCurrency = transfer.payinCurrencyCode === transfer.payoutCurrencyCode;
+      if (!isSameCurrency) {
+        if (quote === null) throw new ServerError({ code: ErrorCode.OFFER_EXPIRED });
+        softAssert(usersLogger, !user.did, `[confirmTransfer] User ${user.id} has no DID`);
+
+        await this.tbdex.sendOrder(user.did ?? "", quote.quote, (msg, err) => {
+          if (err) {
+            usersLogger.error(`[confirmTransfer] ${err.message}`, { transferId, userId: user.id });
+            return;
+          }
+          if (msg === null) return;
+          this.handleTransferComplete(transferId, user.id, msg.data.success ? new Date(msg.createdAt) : null, msg.data.success);
+        });
+      }
+      const reference = quote?.quote?.exchangeId ?? `same-currency-${transfer.id}`;
       const transactions: Omit<TransactionModel, 'id' | 'transferId'>[] = [];
       const providerFee = transfer.fees.find((fee) => fee.name === 'PROVIDER')?.amount ?? 0;
       if (transfer.payinWalletId) {
@@ -672,22 +752,28 @@ export class Users {
           });
         }
       }
-
+      const expectedSettledAt = typeof quote?.estimatedSettlementTimeInSecs === 'number' && !isNaN(quote.estimatedSettlementTimeInSecs)
+        ? new Date(now.getTime() + (quote.estimatedSettlementTimeInSecs * 1000))
+        : null;
+      softAssert(usersLogger, expectedSettledAt === null, `[confirmTransfer] Expected 'expectedSettledAt' to not be null. Transfer id: ${transferId}`);
       await this.db.updateTransferById(
         transferId,
-        { ...transfer, reference, status: TransactionStatus.PROCESSING, lastUpdatedAt: now },
+        { ...transfer, reference, status: TransactionStatus.PROCESSING, expectedSettledAt, lastUpdatedAt: now },
         transactions
       );
+      if (isSameCurrency) {
+        this.handleTransferComplete(transferId, user.id, now, true);
+      }
     });
   }
 
-  private handleTransferComplete(transferId: ID, userId: ID, success: boolean = false): Promise<void> {
+  private handleTransferComplete(transferId: ID, userId: ID, settledAt: Date, success: boolean = false): Promise<void> {
     usersLogger.info({ transferId, userId, success }, "[handleTransferComplete]");
     const status = success ? TransactionStatus.SUCCESS : TransactionStatus.FAILED;
     return Promise.all([
       this.db.findTransferByIdAndUserId(transferId, userId),
       this.db.findTransactionsByTransferId(transferId)
-    ]).then(([transfer, existingTranxs]) => {
+    ]).then(async ([transfer, existingTranxs]) => {
       if (transfer.status === TransactionStatus.CANCELLED) return;
       const transactions: Omit<TransactionModel, 'id' | 'transferId'>[] = [];
       if (success && transfer.payoutWalletId) {
@@ -711,7 +797,21 @@ export class Users {
         { transferId, userId, status, amount: `${transfer.payoutCurrencyCode} ${transfer.payoutAmount}` },
         "[handleTransferComplete]"
       );
-      return this.db.updateTransferById(transferId, { ...transfer, status, lastUpdatedAt: new Date() }, transactions).then(() => { });
+      const expectedSettledAt = typeof transfer.expectedSettledAt === 'string' ? new Date(parseFloat(transfer.expectedSettledAt)) : null
+      if (expectedSettledAt && settledAt != null && settledAt.getTime() <= expectedSettledAt.getTime()) {
+        let offenceTally = await this.incrementPFIOffenceTally(transfer.pfiId);
+        if (offenceTally >= PFI_OFFENCE_THRESHOLD) {
+          this.tbdex.blacklistPFI(transfer.pfi.did);
+          this.resetPFIOffenceTally(transfer.pfiId);
+        }
+      }
+      await this.db.updateTransferById(
+        transferId,
+        { ...transfer, status, settledAt, lastUpdatedAt: new Date() },
+        transactions
+      );
+
+      return;
     })
       .catch(err => { usersLogger.error(`[handleTransferComplete] ${err.message}`, { transferId, userId, success }) });
   }
@@ -759,7 +859,7 @@ export class Users {
                 return;
               }
               if (msg === null) return;
-              this.handleTransferComplete(transferId, user.id, msg.data.success)
+              this.handleTransferComplete(transferId, user.id, msg.data.success ? new Date(msg.createdAt) : null, msg.data.success)
                 .then(() => this.db.findTransferByIdAndUserId(transferId, user.id))
                 .then((transfer) => resolve({ status: transfer.status }))
                 .catch(err => reject(err));
@@ -809,18 +909,6 @@ export class Users {
           createdAt: now,
           lastUpdatedAt: now
         }).then(() => { });
-      });
-  }
-
-  saveTransferFeedback(userId: ID, transferId: ID, speedOfSettlementRating: number): Promise<void> {
-    return this.db.findTransferByIdAndUserId(transferId, userId)
-      .then((transfer) => {
-        if (transfer === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
-        const validStates = [TransactionStatus.FAILED, TransactionStatus.SUCCESS];
-        if (!validStates.includes(transfer.status))
-          throw new ServerError({ code: ErrorCode.INVALID_STATE, data: { validStates, currentState: transfer.status } });
-        // TODO rate pfi
-        return;
       });
   }
 

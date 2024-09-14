@@ -31,7 +31,7 @@ export const CacheKeys = {
 
 const tbdexLogger = logger.child({ module: 'tbdex' });
 
-type QuoteResult = { pfi: PFI, quote: Quote };
+type QuoteResult = { pfi: PFI, quote: Quote, estimatedSettlementTimeInSecs: number };
 
 export class TBDexError extends Error { }
 
@@ -104,10 +104,10 @@ export class TBDexService {
       .then(blacklisted => !!blacklisted);
   }
 
-  filterOutBlacklistedPFIs(pfis: PFI[]): Promise<PFI[]> {
-    return Promise.all(pfis.map(pfi => this.cache.get(CacheKeys.BLACKLIST(pfi.did))))
+  filterOutBlacklistedPFIs(offerings: { pfi: PFI, offerings: Offering[] }[]): Promise<{ pfi: PFI, offerings: Offering[] }[]> {
+    return Promise.all(offerings.map(({ pfi }) => this.cache.get(CacheKeys.BLACKLIST(pfi.did))))
       .then(result => {
-        return result.map((blacklisted, i) => blacklisted ? null : pfis[i]).filter((pfi => pfi !== null));
+        return result.map((blacklisted, i) => blacklisted ? null : offerings[i]).filter((value => value !== null));
       });
   }
 
@@ -138,15 +138,14 @@ export class TBDexService {
   fetchOfferings(): Promise<{ pfi: PFI, offerings: Offering[] }[]> {
     return this.cache.get<{ pfi: PFI, offerings: Offering[] }[]>(CacheKeys.OFFERINGS)
       .then(offerings => {
-        if (offerings) return offerings;
+        if (offerings) return this.filterOutBlacklistedPFIs(offerings);
         return this.db.listPFIs()
-          .then(pfis => this.filterOutBlacklistedPFIs(pfis))
           .then(pfis =>
             Promise.all(
               pfis.map(pfi => TbdexHttpClient.getOfferings({ pfiDid: pfi.did }).then(offerings => ({ pfi, offerings })))
             ).then(offerings => {
               this.cache.set(CacheKeys.OFFERINGS, offerings, (5 * 60 * 1000)); // Cache for 5 mins
-              return offerings;
+              return this.filterOutBlacklistedPFIs(offerings);
             }).catch(err => Promise.reject(new TBDexError(`Failed to fetch offerings: ${err.message}`)))
           );
       });
@@ -218,7 +217,7 @@ export class TBDexService {
                   const quote = exchange.find(msg => msg instanceof Quote);
                   if (quote) {
                     clearInterval(interval);
-                    resolve({ pfi, quote });
+                    resolve({ pfi, quote, estimatedSettlementTimeInSecs: payoutMethod.estimatedSettlementTime });
                   }
                 }).catch(err => {
                   tbdexLogger.warn({ exchangeId: rfq.exchangeId, transferId: transfer.id, userDid: userBearerDid.uri, errors: err.details?.errors }, `[getQuotes] ${err.message}`);

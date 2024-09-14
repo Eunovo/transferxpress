@@ -323,22 +323,6 @@ export default function(config: AppConfig, users: Users, tbdex: TBDexService, au
   });
 
   // @ts-ignore
-  app.post('/transfers/:id/feedback', authenticate, (req: AuthenticatedRequest, res, next) => {
-    const transferId = transformId(req.params.id);
-    if (transferId == null) {
-      res.status(404).send("Invalid transfer id");
-      return;
-    }
-    const body = validate<{ speedOfSettlementRating: number }>(req.body, {
-      speedOfSettlementRating: { type: "number", positive: true, max: 5, min: 1 },
-    }, v(res));
-    if (body == null) return;
-    users.saveTransferFeedback(req.user.id, transferId, body.speedOfSettlementRating)
-      .then(() => res.send('OK'))
-      .catch(err => next(err));
-  });
-
-  // @ts-ignore
   app.get('/savings-plans', authenticate, (req: AuthenticatedRequest, res, next) => {
     users.getAllSavingsPlans(req.user.id)
       .then(result => res.json(result))

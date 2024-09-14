@@ -63,6 +63,7 @@ test.serial("End-to-end test", async (t) => {
 
     // Define supported currency pairs
     const currencyPairs = [
+        { from: 'USDC', to: 'USDC' },
         { from: 'GHS', to: 'USDC' },
         { from: 'NGN', to: 'KES' },
         { from: 'KES', to: 'USD' },
@@ -284,7 +285,6 @@ test.serial("End-to-end test", async (t) => {
                 t.fail(`Expected successful transfer or ErrorCode.WALLET_INSUFFICIENT_BALANCE, but got ${err.response.data.code}`);
             } else {
                 t.log('USD Wallet has insufficient balance for transfer to savings plan');
-                console.log(err);
             }
         }
     } else {

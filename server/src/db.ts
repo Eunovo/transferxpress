@@ -41,6 +41,7 @@ export interface UsersDb {
   findTransfersByUserIdAndStatus(userId: ID, statuses?: TransactionStatus[]): Promise<Transfer[]>;
   findTransferByIdAndUserId(id: ID, userId: ID): Promise<Transfer>;
   updateTransferById(id: ID, data: InsertData<Transfer>, transactions?: Omit<Transaction, 'id' | 'transferId'>[], fees?: Omit<TransferFee, 'id' | 'transferId'>[]): Promise<void>;
+  fetchPFIRatingInfoForTransfer(transferId: ID): Promise<{ total_transfers: number, total_disputed: number }>;
 }
 
 export interface TBDexDB {
