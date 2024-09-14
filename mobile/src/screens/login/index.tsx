@@ -126,6 +126,7 @@ className="w-full bg-secondary">
 onPress={()=>{
     navigation.navigate("email-verification")
 }}
+className="py-3"
 >
 <View 
 className="flex-wrap flex-row justify-center mt-2"

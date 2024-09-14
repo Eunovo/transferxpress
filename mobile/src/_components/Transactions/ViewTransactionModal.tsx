@@ -12,6 +12,7 @@ import { GET_TRANSFER_DETAILS, Transaction } from "@/api/transactions";
 import { formatDate } from "@/utils/formatDate";
 import { useQuery } from "@tanstack/react-query";
 import { Spinner } from "../loader_utils/Spinner";
+import { getTime } from "@/utils/getTime";
 
 
 interface Props {
@@ -101,7 +102,7 @@ height={moderateScale(14)}
 <NormalText
 size={13}
 className="text-white/80">
-12:00AM . {formatDate(date)}
+{getTime(date)} . {formatDate(date)}
    </NormalText>
 </View>
 <View className="w-full bg-dark p-3 border border-secondary rounded-xl mb-6">
@@ -120,26 +121,7 @@ weight={600}
                 size={14}
                 className="text-white"
                 >
-    George Munbdy
-</NormalText>
-    </View>
-
-    <View
-    className="w-full flex-row justify-between border-b border-b-white/20 pb-4 mb-4"
-    >
-        <NormalText
-                size={14}
-                className="text-white/80"
-                >
-Account no.
-</NormalText>
-
-<NormalText
-weight={600}
-                size={14}
-                className="text-white"
-                >
-1234567890
+   {transferDetails?.payoutPaymentDetails.accountNumber}
 </NormalText>
     </View>
 

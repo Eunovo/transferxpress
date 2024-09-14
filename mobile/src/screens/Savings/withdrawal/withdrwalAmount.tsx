@@ -193,7 +193,7 @@ export const WithdrawalAmount = ({navigation, route}: Props) => {
                   const createQuoteResponse =
                     await createQuoteMutation.mutateAsync({
                       body: {
-                        amount: `${Number(sender.amount) * Number(exchangeRate)}`,
+                        amount: receiverAmount,
                         narration: `DEPOSIT-${transferId}`,
                       },
                       transferId,

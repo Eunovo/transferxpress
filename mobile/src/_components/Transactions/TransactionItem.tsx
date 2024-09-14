@@ -69,7 +69,7 @@ className={
               numberOfLines={1}
               ellipsizeMode="tail"
               className="text-primary mb-1 capitalize shrink-0">
-             Oluwabukumi Anifowosetobiloba
+           {item.narration}
             </NormalText>
             <NormalText size={12} className="text-white/80">
             {formatDate(date)}

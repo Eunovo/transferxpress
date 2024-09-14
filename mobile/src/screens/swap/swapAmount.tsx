@@ -261,7 +261,7 @@ if(supportedReceivingCurrencies?.length){
                       await createQuoteMutation.mutateAsync({
                         body: {
                           amount: `${Number(sender.amount) * Number(exchangeRate)}`,
-                          narration: `SWAP-${transferId}`,
+                          narration: `SWAP-${sender.currency}-to-${receiver.currency}-${transferId}`,
                         },
                         transferId,
                       });

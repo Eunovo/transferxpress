@@ -245,7 +245,7 @@ export const DepositAmount = ({navigation}: Props) => {
                     await createQuoteMutation.mutateAsync({
                       body: {
                         amount: `${Number(sender.amount) * Number(exchangeRate)}`,
-                        narration: `DEPOSIT-${transferId}`,
+                        narration: `DEPOSIT-${activeWallet.ticker}-WALLET-${transferId}`,
                       },
                       transferId,
                     });

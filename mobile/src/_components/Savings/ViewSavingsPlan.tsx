@@ -17,6 +17,7 @@ import { Spinner } from "../loader_utils/Spinner";
 import { Currencies } from "@/api/rates";
 import { SavingsPlan } from "@/api/savings";
 import { formatDate } from "@/utils/formatDate";
+import { displayFlashbar } from "../Flashbar/displayFlashbar";
 
 
 interface Props {
@@ -193,10 +194,35 @@ weight={600}
                       >
  <ButtonNormal
  onPress={()=>{
+    navigation.navigate("savings-stack", {
+        screen: "funding-amount",
+        params: {
+            planId: details.id.toString(),
+            planCurrency: details.currencyCode
+        }
+     })
+    closeModal()
+ }}
+       className="bg-secondary" 
+        >
+            <NormalText 
+            className="text-primary/80"
+            >
+            Top up
+            </NormalText>
+        </ButtonNormal>
+        <CustomPressable
+ onPress={()=>{
+    if(!supportedReceivingCurrencies){
+    return displayFlashbar({
+        type: "danger",
+        message: "Sorry unable to withdraw right now"
+    })
+    }
     dispatch(setTransferState({
         currency:{
             sender: details.currencyCode,
-            reciever: supportedReceivingCurrencies?.[0] || ""  /* TODO display a flshbar here */
+            reciever: supportedReceivingCurrencies[0]
         },
         amount: details.balance,
         exchangeRate: exchangeRate?.toString()
@@ -205,16 +231,16 @@ weight={600}
         screen: "withdraw-amount",
         params: Number(details.id)
      })
-     closeModal()
- }}
-       className="bg-secondary" 
-        >
-            <NormalText 
-            className="text-primary/80"
-            >
-             Withdraw funds
-            </NormalText>
-        </ButtonNormal>
+         closeModal()
+     }}
+     className="py-3"
+>
+<NormalText 
+className="text-white/80 text-center">
+Withdraw funds
+</NormalText>
+
+</CustomPressable>
  </View>
             </View>
             </RNModal>

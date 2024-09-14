@@ -257,7 +257,7 @@ export const FundingAmount = ({navigation, route}: Props) => {
                     await createQuoteMutation.mutateAsync({
                       body: {
                         amount: `${Number(sender.amount) * Number(exchangeRate)}`,
-                        narration: `FUNDING-${transferId}`,
+                        narration: `FUNDING-${route.params.planCurrency}-SAVINGS-PLAN-${transferId}`,
                       },
                       transferId,
                     });
@@ -276,9 +276,9 @@ export const FundingAmount = ({navigation, route}: Props) => {
                       transferFee: `${transferFee}`,
                     }),
                   );
-                  navigation.navigate("funding-summary", {
+                  navigation.navigate("funding-summary", route.params.amount ?  {
                     isFromPlanCreation: true
-                  });
+                  } : undefined);
             
               } catch (error) {}
             }}

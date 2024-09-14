@@ -34,4 +34,28 @@ type GetTransferDetailsDataResponse = {
     narration: string;
     status: TransferStatus;
     createdAt: string;
+    payinPaymentDetails:{
+        BSB: string | null;
+        CLABE: string | null;
+        IBAN: string | null;
+        accountNumber: string | null;
+        address: string | null;
+        amount: number;
+        bankCode: string | null;
+        currencyCode: Currencies;
+        routingNumber: string | null;
+        sortCode: string | null;
+    };
+    payoutPaymentDetails:{
+        BSB: string | null;
+        CLABE: string | null;
+        IBAN: string | null;
+        accountNumber: string | null;
+        address: string | null;
+        amount: number;
+        bankCode: string | null;
+        currencyCode: Currencies;
+        routingNumber: string | null;
+        sortCode: string | null;
+    };
 }

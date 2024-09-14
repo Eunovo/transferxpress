@@ -9,7 +9,8 @@ import EyeOpenIcon from "@/assets/icons/eye.svg";
 import EyeClosedIcon from "@/assets/icons/eye_closed.svg";
 import { CustomPressable } from "@/_components/Button/CustomPressable";
 import { Currencies } from "@/api/rates";
-import { SavingsPlan } from "@/screens/savings";
+import { SavingsPlan } from "@/api/savings";
+import { useUserState } from "@/store/user/useUserState";
 
 interface Props {
     plans: SavingsPlan[]
@@ -20,24 +21,12 @@ plans
     }:Props
 )=>{
     const [showBalance, setShowBalance] = useState(false);
-    const balances = [
-        {
-            currency: "USD",
-            amount: plans.filter(item => item.currencyCode === "USD").reduce((previous, current)=>( previous + Number(current.balance)), 0)
-        },
-        {
-            currency: "NGN",
-            amount: plans.filter(item => item.currencyCode === "NGN").reduce((previous, current)=>( previous + Number(current.balance)), 0)
-        },
-        {
-            currency: "GBP",
-            amount: plans.filter(item => item.currencyCode === "GBP").reduce((previous, current)=>( previous + Number(current.balance)), 0)
-        },
-        {
-            currency: "AUD",
-            amount: plans.filter(item => item.currencyCode === "AUD").reduce((previous, current)=>( previous + Number(current.balance)), 0)
-        }
-    ]
+    const {wallets} = useUserState();
+    const balances = wallets.map(item => ({
+        currency: item.ticker,
+        amount: plans.filter(plan => plan.currencyCode === item.ticker).reduce((previous, current)=>( previous + Number(current.balance)), 0)
+    }))
+
     return(
         <View>
 <FlatList 

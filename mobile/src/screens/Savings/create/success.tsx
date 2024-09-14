@@ -9,11 +9,21 @@ import { ButtonNormal } from "@/_components/Button/NormalButton";
 import { useNavigation } from "@react-navigation/native";
 import { useSavingsPlanState } from "@/store/savingsPlan/useSavingsPlanState";
 import { SavingsNavigationStackType } from "@/navigation/UserStack/SavingsStack";
+import { CustomPressable } from "@/_components/Button/CustomPressable";
+import { useAppDispatch } from "@/store/hooks";
+import { clearSavingsPlanState } from "@/store/savingsPlan/slice";
+import { UserNavigationStack } from "@/navigation/UserStack";
 
 
 export default function PlanSuccess () {
     const navigation = useNavigation<SavingsNavigationStackType>();
-    const {name, fundingCurrency, savingsAmount, planId} = useSavingsPlanState()
+    const userNavigation = useNavigation<UserNavigationStack>();
+    const {name, fundingCurrency, savingsAmount, planId} = useSavingsPlanState();
+    const dispatch = useAppDispatch()
+    const goHome = ()=>{
+      dispatch(clearSavingsPlanState())
+      userNavigation.navigate("main-bottom-tab")
+    }
     return(
 <LayoutNormal>
 <View className="w-full grow pb-10">
@@ -81,9 +91,19 @@ className="text-primary capitalize"
             <NormalText 
             className="text-primary/80"
             >
-             Done
+            Fund plan now
             </NormalText>
         </ButtonNormal>
+        <CustomPressable
+onPress={goHome}
+className="py-3"
+>
+<NormalText 
+className="text-white/80 text-center">
+   Go back to home
+</NormalText>
+
+</CustomPressable>
  </View>
 </View>
 </LayoutNormal>
