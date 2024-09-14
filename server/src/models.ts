@@ -118,7 +118,9 @@ export interface Transfer extends BaseModel {
   payoutCLABE?: string;
   payoutAddress?: string;
   status: TransactionStatus;
-  speedOfSettlementRating?: number;
+  expectedSettledAt?: Date;
+  settledAt?: Date;
+  disputed?: boolean;
   reference?: string;
   fees: TransferFee[]
 }
@@ -134,5 +136,5 @@ export interface PFI extends BaseModel {
   did: string;
   name: string;
   blacklisted?: boolean;
-  rating?: number;
+  rating: number;
 }

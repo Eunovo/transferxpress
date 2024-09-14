@@ -106,7 +106,7 @@ export default function(db: Database) {
         did TEXT NOT NULL,
         name TEXT NOT NULL,
         blacklisted BOOLEAN,
-        rating REAL,
+        rating REAL NOT NULL,
         createdAt TEXT NOT NULL,
         lastUpdatedAt TEXT NOT NULL
       )
@@ -145,7 +145,9 @@ export default function(db: Database) {
         payoutAddress TEXT,
         status TEXT NOT NULL,
         reference TEXT,
-        speedOfSettlementRating REAL,
+        expectedSettledAt TEXT,
+        settledAt TEXT,
+        disputed Boolean,
         createdAt TEXT NOT NULL,
         lastUpdatedAt TEXT NOT NULL,
         FOREIGN KEY (userId) REFERENCES Users(id),

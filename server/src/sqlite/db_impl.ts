@@ -263,24 +263,39 @@ export class UsersDbImpl implements UsersDb {
 
   insertTransactionReport(data: InsertData<TransactionReport>, pfi: Pick<PFI, "id" | "blacklisted" | "rating">): Promise<TransactionReport> {
     return new Promise((resolve, reject) => {
-      this.db.run("BEGIN TRANSACTION");
-      const db = this.db;
-      this.db.run(`
-        INSERT INTO TransactionReports (transactionId, reason, other, createdAt, lastUpdatedAt)
-        VALUES (?, ?, ?, ?, ?)
-      `, [data.transactionId, data.reason, data.other, data.createdAt, data.lastUpdatedAt], function (err) {
-        if (err) {
-          db.run("ROLLBACK");
-          return reject(err);
-        }
-        const reportId = this.lastID;
-        db.run(`UPDATE PFIs SET blacklisted = ?, rating = ? WHERE id = ?`, [pfi.blacklisted, pfi.rating, pfi.id], function (err) {
+      this.db.serialize(() => {
+        this.db.run("BEGIN TRANSACTION");
+        const db = this.db;
+        db.get(`SELECT transferId FROM Transactions WHERE id = ?`, [data.transactionId], (err, row: { transferId: ID }) => {
           if (err) {
             db.run("ROLLBACK");
             return reject(err);
           }
-          db.run("COMMIT");
-          resolve({ ...data, id: reportId });
+          const transferId = row.transferId;
+          db.run(`UPDATE Transfers SET disputed = TRUE WHERE id = ?`, [transferId], function (err) {
+            if (err) {
+              db.run("ROLLBACK");
+              return reject(err);
+            }
+            db.run(`
+              INSERT INTO TransactionReports (transactionId, reason, other, createdAt, lastUpdatedAt)
+              VALUES (?, ?, ?, ?, ?)
+            `, [data.transactionId, data.reason, data.other, data.createdAt, data.lastUpdatedAt], function (err) {
+              if (err) {
+                db.run("ROLLBACK");
+                return reject(err);
+              }
+              const reportId = this.lastID;
+              db.run(`UPDATE PFIs SET blacklisted = ?, rating = ? WHERE id = ?`, [pfi.blacklisted, pfi.rating, pfi.id], function (err) {
+                if (err) {
+                  db.run("ROLLBACK");
+                  return reject(err);
+                }
+                db.run("COMMIT");
+                resolve({ ...data, id: reportId });
+              });
+            });
+          });
         });
       });
     });
@@ -377,9 +392,11 @@ export class UsersDbImpl implements UsersDb {
         payoutAddress,
         status,
         reference,
+        expectedSettledAt,
+        settledAt,
         createdAt,
         lastUpdatedAt)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
         [
           data.userId,
@@ -412,6 +429,8 @@ export class UsersDbImpl implements UsersDb {
           data.payoutAddress,
           data.status,
           data.reference,
+          data.expectedSettledAt,
+          data.settledAt,
           data.createdAt,
           data.lastUpdatedAt
         ],
@@ -438,7 +457,7 @@ export class UsersDbImpl implements UsersDb {
   findTransferByIdAndUserId(id: number, userId: number): Promise<Transfer> {
     return new Promise((resolve, reject) => {
       this.db.get(`
-        SELECT Transfers.*, did, name
+        SELECT Transfers.*, did, name, rating
         FROM Transfers
         LEFT JOIN PFIs ON Transfers.pfiId = PFIs.id
         WHERE Transfers.id = ? AND Transfers.userId = ?
@@ -456,6 +475,8 @@ export class UsersDbImpl implements UsersDb {
             did: row.did,
             // @ts-ignore
             name: row.name,
+            // @ts-ignore
+            rating: row.rating,
             createdAt: null,
             lastUpdatedAt: null
           };
@@ -492,7 +513,7 @@ export class UsersDbImpl implements UsersDb {
         SET payinCurrencyCode = ?, payoutCurrencyCode = ?, pfiId = ?, payinKind = ?, payoutKind = ?, payinAmount = ?, payoutAmount = ?, narration = ?, payinWalletId = ?, payoutWalletId = ?, payinCardId = ?,
         payinAccountNumber = ?, payinRoutingNumber = ?, payinBankCode = ?, payinSortCode = ?, payinBSB = ?, payinIBAN = ?, payinCLABE = ?, payinAddress = ?,
         payoutAccountNumber = ?, payoutRoutingNumber = ?, payoutBankCode = ?, payoutSortCode = ?, payoutBSB = ?, payoutIBAN = ?, payoutCLABE = ?, payoutAddress = ?,
-        status = ?, reference = ?, lastUpdatedAt = ?
+        status = ?, reference = ?, expectedSettledAt = ?, settledAt = ?, lastUpdatedAt = ?
         WHERE id = ?
       `,
           [
@@ -525,6 +546,8 @@ export class UsersDbImpl implements UsersDb {
             data.payoutAddress,
             data.status,
             data.reference,
+            data.expectedSettledAt,
+            data.settledAt,
             data.lastUpdatedAt,
             id
           ],
@@ -568,6 +591,28 @@ export class UsersDbImpl implements UsersDb {
             }
           );
         }
+      });
+    });
+  }
+
+  fetchPFIRatingInfoForTransfer(transferId: ID): Promise<{ total_transfers: number; total_disputed: number; }> {
+    return new Promise((resolve, reject) => {
+      this.db.serialize(() => {
+        let total_transfers = 0;
+        this.db.get(`SELECT pfiId FROM Transfers WHERE id = ?`, [transferId], (err, row: { pfiId: string }) => {
+          if (err) return reject(err);
+          let pfiId = row.pfiId;
+          this.db.get(`SELECT COUNT(*) AS count FROM Transfers WHERE pfiId = ?`, [pfiId], (err, row: { count: number }) => {
+            if (err) return reject(err);
+            total_transfers = row?.count ?? 0;
+          });
+          this.db.get(`SELECT COUNT(*) AS count FROM Transfers WHERE pfiId = ? AND disputed = TRUE`, [pfiId], (err, row: { count: number }) => {
+            if (err) return reject(err);
+            let total_disputed = row?.count ?? 0;
+            resolve({ total_transfers, total_disputed });
+          });
+        });
+
       });
     });
   }

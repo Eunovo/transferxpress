@@ -5,10 +5,10 @@ import sqlite3 from 'sqlite3';
 import axios, { Axios, AxiosError, AxiosResponse } from 'axios';
 import MakeApp from '../src/app.js';
 import Migrate from '../src/sqlite/schema.js';
-import { Users } from '../src/features/users.js';
+import { CacheKeys as UsersCacheKeys, Users } from '../src/features/users.js';
 import { AutoFunderDBImpl, TBDexDBImpl, UsersDbImpl } from '../src/sqlite/db_impl.js';
 import { CacheKeys as TBDCacheKeys, TBDexService } from '../src/features/tbdex.js';
-import { CreateTransferResponse, EmailAvailabilityStatus, MarketData, PayinUpdateResponse, PaymentKind, TransactionStatus, TransferSummary, Wallet } from '../src/types.js';
+import { CreateTransferResponse, PayinUpdateResponse, PaymentKind, ReportReason, TransactionStatus } from '../src/types.js';
 import { Cache, InMemoryCache } from '../src/cache.js';
 import { DIDs, CREDENTIALS, PARSED_DIDs, PFIs, OFFERINGs, PFI_OFFERINGs, TRANSFERs, TRANSACTIONS, CLOSEs } from './data.js';
 import { AutoFunder } from '../src/features/autofund.js';
@@ -43,6 +43,7 @@ test.before(async (t: any) => {
 
 	t.context.db = db;
 	t.context.cache = cache;
+	t.context.tbdex = tbdex;
 	t.context.server = http.createServer(app);
 	t.context.prefixUrl = await listen(t.context.server);
 	t.context.user = await new Promise((resolve, reject) => {
@@ -431,4 +432,29 @@ test.serial("Savings plan rollover", async (t: any) => {
 	t.is(getFinalPlanResponse.data.state, 'ACTIVE');
 });
 
+test.serial("Report transaction", async (t: any) => {
+	const { prefixUrl, auth, cache, tbdex } = t.context;
+	const doReport = (id: number) => axios.post(
+		`${prefixUrl}/transactions/${id}/report`,
+		{ reason: ReportReason.COMPLETED_WITHOUT_SETTLEMENT },
+		{ headers: { Authorization: auth } }
+	);
+	const key = UsersCacheKeys.PFI_METRICS(1);
+	let offenceTally = await (cache as Cache).get<number>(key);
+	t.truthy(!offenceTally);
+	// Report the same tranx twice
+	const transaction = TRANSACTIONS[0];
+	await doReport(transaction.id);
+	await doReport(transaction.id);
+	offenceTally = await (cache as Cache).get<number>(key);
+	t.is(offenceTally, 1); // offence is counted once per transfer
+	t.is(await tbdex.isBlacklistedPFI(PFIs[0].did), false); // Not temporarily blacklisted yet
 
+	cache.set(TBDCacheKeys.WATCH_EXCHANGE("reference"), CLOSEs[0]);
+	await axios.get(`${prefixUrl}/transfers/5/status`, { headers: { Authorization: auth } });
+
+	await doReport(TRANSACTIONS[2].id);
+	offenceTally = await (cache as Cache).get<number>(key);
+	t.is(offenceTally, null); // offence count for PFI is reset
+	t.is(await tbdex.isBlacklistedPFI(PFIs[0].did), true); // PFI is temporarily blacklisted
+});

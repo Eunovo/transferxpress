@@ -19,12 +19,13 @@ export const PFIs = [
     "id": 1,
     "name": "AquaFinance Capital",
     "did": "did:dht:3fkz5ssfxbriwks3iy5nwys3q5kyx64ettp9wfn1yfekfkiguj1y",
-    "rating": 4.5,
+    "rating": 5,
   },
   {
     "id": 2,
     "name": "Flowback Financial",
     "did": "did:dht:zkp5gbsqgzn69b3y5dtt5nnpjtdq6sxyukpzo68npsf79bmtb9zy",
+    "rating": 5
   }
 ]
 
@@ -947,11 +948,13 @@ export const PFI_OFFERINGs = [
 
 export const CLOSEs = [
   {
+    createdAt: new Date().toISOString(),
     data: {
       success: true
     }
   },
   {
+    createdAt: new Date().toISOString(),
     data: {
       success: false
     }
@@ -1025,6 +1028,23 @@ export const TRANSFERs = [
     status: TransactionStatus.PROCESSING,
     reference: "reference"
   },
+  {
+    id: 5,
+    userId: 1,
+    payinCurrencyCode: "BTC",
+    payoutCurrencyCode: "GHS",
+    pfiId: 1,
+    payinKind: PaymentKind.WALLET_ADDRESS,
+    payoutKind: PaymentKind.GHS_BANK_TRANSFER,
+    payinAmount: 0.000033,
+    payoutAmount: 100,
+    narration: "Exchange BTC for GHS",
+    fee: 0,
+    payinWalletId: 1,
+    payoutAccountNumber: "1234567890",
+    status: TransactionStatus.PROCESSING,
+    reference: "reference"
+  }
 ]
 
 
@@ -1045,6 +1065,19 @@ export const TRANSACTIONS: Transaction[] = [
   {
     id: 4,
     transferId: 4,
+    narration: "Exchange BTC for GHS",
+    type: 'DEBIT',
+    walletId: 1,
+    reference: "reference",
+    currencyCode: "BTC",
+    amount: 0.000033,
+    userId: 1,
+    createdAt: new Date(),
+    lastUpdatedAt: new Date()
+  },
+  {
+    id: 5,
+    transferId: 5,
     narration: "Exchange BTC for GHS",
     type: 'DEBIT',
     walletId: 1,

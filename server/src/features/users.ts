@@ -32,9 +32,24 @@ import { Cache } from "../cache.js";
 import { logger } from "../logger.js";
 import { mapWalletToSavingsPlan } from "./mappers.js";
 
-const CacheKeys = {
-  TRANSFER_QUOTE: (transferId: ID) => `transfer:quote:${transferId}`
+export const CacheKeys = {
+  TRANSFER_QUOTE: (transferId: ID) => `transfer:quote:${transferId}`,
+  PFI_METRICS: (pfiId) => `pfi:metrics:${pfiId}`
 }
+
+/**
+ * Number of transfers that must occur before we ban PFI based on rating
+ */
+const TOTAL_TRANSFERS_BLACKLIST_THRESHOLD = 100;
+/**
+ * Number of offences allowed before we temporarily disable a PFI
+ */
+const PFI_OFFENCE_THRESHOLD = 2;
+/**
+ * Lowest rating allowed for PFI before we ban it
+ * NB: `TOTAL_TRANSFERS_BLACKLIST_THRESHOLD` needs to be passed before we permanently ban any PFI
+ */
+const PFI_RATING_THRESHOLD = 2.5;
 
 const usersLogger = logger.child({ module: 'users' });
 
@@ -111,24 +126,59 @@ export class Users {
     return this.db.findTransactionsByUserId(userId);
   }
 
+  incrementPFIOffenceTally(pfiId: ID): Promise<number> {
+    return this.cache.get<number>(CacheKeys.PFI_METRICS(pfiId))
+      .then((value) => {
+        if (value == undefined || value == null) value = 1;
+        else value += 1;
+        this.cache.set<number>(CacheKeys.PFI_METRICS(pfiId), value, (5 * 60 * 60 * 1000));
+        return value;
+      });
+  }
+
+  resetPFIOffenceTally(pfiId: ID) {
+    return this.cache.del(CacheKeys.PFI_METRICS(pfiId));
+  }
+
   reportTransaction(userId: ID, transactionId: ID, data: ReportTransactionRequestBody): Promise<void> {
+    const now = Date.now();
     return this.db.findTransactionById(transactionId)
       .then((transaction) => {
         if (transaction === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
         if (transaction.userId !== userId) throw new ServerError({ code: ErrorCode.FORBIDDEN });
-        return this.db.findTransferByIdAndUserId(transaction.transferId, userId);
-      }).then((transfer) => {
+        return Promise.all([this.db.findTransferByIdAndUserId(transaction.transferId, userId), this.db.fetchPFIRatingInfoForTransfer(transaction.transferId)]);
+      }).then(async ([transfer, ratingInfo]) => {
         if (transfer === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
         let pfi = transfer.pfi;
-        if (data.reason === ReportReason.COMPLETED_WITHOUT_SETTLEMENT || data.reason === ReportReason.AMOUNT_MISMATCH) {
-          // permanently blacklist pfi
-          pfi.blacklisted = true;
-        } else if (data.reason === ReportReason.TRANSACTION_DELAYED) {
-          // temporarily blacklist pfi
-          this.tbdex.blacklistPFI(pfi.did);
-          // adjust pfi overall rating
-          pfi.rating -= 1;
+        let expSettledAt = typeof transfer.expectedSettledAt === 'string' ? new Date(parseFloat(transfer.expectedSettledAt)) : null;
+        let settledAt = typeof transfer.settledAt === 'string' ? new Date(parseFloat(transfer.settledAt)) : null;
+        let offenceTally: number | null = null;
+        let total_successes = ratingInfo.total_transfers - ratingInfo.total_disputed;
+        let rating_decrement_value = (5 * total_successes)/(ratingInfo.total_transfers * (ratingInfo.total_transfers + 1)); // formular to decrease rating
+        let possible_new_rating = isNaN(rating_decrement_value) ? 0 : Math.max(pfi.rating - rating_decrement_value, 0);
+
+        if (!transfer.disputed) {
+          if ((data.reason === ReportReason.COMPLETED_WITHOUT_SETTLEMENT || data.reason === ReportReason.AMOUNT_MISMATCH) && settledAt) {
+            offenceTally = await this.incrementPFIOffenceTally(pfi.id);
+            // adjust pfi overall rating
+            pfi.rating = possible_new_rating;
+          } else if (data.reason === ReportReason.TRANSACTION_DELAYED && expSettledAt && now < expSettledAt.getTime()) {
+            offenceTally = await this.incrementPFIOffenceTally(pfi.id);
+            // adjust pfi overall rating
+            pfi.rating = possible_new_rating;
+          }
+  
+          if (offenceTally >= PFI_OFFENCE_THRESHOLD) {
+            // temporarily blacklist pfi
+            this.tbdex.blacklistPFI(pfi.did);
+            this.resetPFIOffenceTally(pfi.id);
+          }
+          if (pfi.rating <= PFI_RATING_THRESHOLD && ratingInfo.total_transfers > TOTAL_TRANSFERS_BLACKLIST_THRESHOLD) {
+            // permanently blacklist pfi when rating is too low and enough transfers have be made with this PFI
+            pfi.blacklisted = true;
+          }
         }
+
         return this.db.insertTransactionReport({
           ...data,
           transactionId,
@@ -538,11 +588,12 @@ export class Users {
       // Select the Best Quote
       // The best quote is the quote where the user pays the least
       // @ts-ignore
-      const bestQuote: { totalPayIn: number, pfi: PFI, quote: Quote } = quotes.reduce((best: { totalPayIn: number, pfi: PFI, quote: Quote }, { pfi, quote }) => {
-        const totalPayIn = quote.data.payin.amount;
-        if (best.totalPayIn > parseFloat(totalPayIn)) return { totalPayIn: parseFloat(totalPayIn), quote, pfi };
-        return best;
-      }, { totalPayIn: Infinity, quote: null, pfi: null });
+      const bestQuote: { totalPayIn: number, pfi: PFI, quote: Quote, estimatedSettlementTimeInSecs } = quotes.reduce(
+        (best: { totalPayIn: number, pfi: PFI, quote: Quote }, { pfi, quote, estimatedSettlementTimeInSecs }) => {
+          const totalPayIn = quote.data.payin.amount;
+          if (best.totalPayIn > parseFloat(totalPayIn)) return { totalPayIn: parseFloat(totalPayIn), quote, pfi, estimatedSettlementTimeInSecs };
+          return best;
+        }, { totalPayIn: Infinity, quote: null, pfi: null, estimatedSettlementTimeInSecs: 0 });
 
       if (bestQuote.quote === null || bestQuote.pfi === null) throw new ServerError({ code: ErrorCode.UNEXPECTED_ERROR, data: `Could not get quote for ${transferId}` });
 
@@ -628,7 +679,7 @@ export class Users {
     const now = new Date();
     return Promise.all([
       this.db.findTransferByIdAndUserId(transferId, user.id),
-      this.cache.get<{ pfi: PFI, quote: Quote }>(CacheKeys.TRANSFER_QUOTE(transferId))
+      this.cache.get<{ pfi: PFI, quote: Quote, estimatedSettlementTimeInSecs }>(CacheKeys.TRANSFER_QUOTE(transferId))
     ]).then(async ([transfer, quote]) => {
       if (transfer === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
       if (quote === null) throw new ServerError({ code: ErrorCode.OFFER_EXPIRED });
@@ -639,7 +690,7 @@ export class Users {
           return;
         }
         if (msg === null) return;
-        this.handleTransferComplete(transferId, user.id, msg.data.success);
+        this.handleTransferComplete(transferId, user.id, msg.data.success ? new Date(msg.createdAt) : null, msg.data.success);
       });
       const reference = quote.quote.exchangeId;
       const transactions: Omit<TransactionModel, 'id' | 'transferId'>[] = [];
@@ -672,22 +723,25 @@ export class Users {
           });
         }
       }
-
+      const expectedSettledAt = typeof quote.estimatedSettlementTimeInSecs === 'number' && !isNaN(quote.estimatedSettlementTimeInSecs)
+        ? new Date(now.getTime() + (quote.estimatedSettlementTimeInSecs * 1000))
+        : null;
+      softAssert(usersLogger, expectedSettledAt === null, `[confirmTransfer] Expected 'expectedSettledAt' to not be null. Transfer id: ${transferId}`);
       await this.db.updateTransferById(
         transferId,
-        { ...transfer, reference, status: TransactionStatus.PROCESSING, lastUpdatedAt: now },
+        { ...transfer, reference, status: TransactionStatus.PROCESSING, expectedSettledAt, lastUpdatedAt: now },
         transactions
       );
     });
   }
 
-  private handleTransferComplete(transferId: ID, userId: ID, success: boolean = false): Promise<void> {
+  private handleTransferComplete(transferId: ID, userId: ID, settledAt: Date, success: boolean = false): Promise<void> {
     usersLogger.info({ transferId, userId, success }, "[handleTransferComplete]");
     const status = success ? TransactionStatus.SUCCESS : TransactionStatus.FAILED;
     return Promise.all([
       this.db.findTransferByIdAndUserId(transferId, userId),
       this.db.findTransactionsByTransferId(transferId)
-    ]).then(([transfer, existingTranxs]) => {
+    ]).then(async ([transfer, existingTranxs]) => {
       if (transfer.status === TransactionStatus.CANCELLED) return;
       const transactions: Omit<TransactionModel, 'id' | 'transferId'>[] = [];
       if (success && transfer.payoutWalletId) {
@@ -711,7 +765,18 @@ export class Users {
         { transferId, userId, status, amount: `${transfer.payoutCurrencyCode} ${transfer.payoutAmount}` },
         "[handleTransferComplete]"
       );
-      return this.db.updateTransferById(transferId, { ...transfer, status, lastUpdatedAt: new Date() }, transactions).then(() => { });
+      const expectedSettledAt = typeof transfer.expectedSettledAt === 'string' ? new Date(parseFloat(transfer.expectedSettledAt)) : null
+      if (expectedSettledAt && settledAt != null && settledAt.getTime() <= expectedSettledAt.getTime()) {
+        let offenceTally = await this.incrementPFIOffenceTally(transfer.pfiId);
+        if (offenceTally >= PFI_OFFENCE_THRESHOLD) this.tbdex.blacklistPFI(transfer.pfi.did);
+      }
+      await this.db.updateTransferById(
+        transferId,
+        { ...transfer, status, settledAt, lastUpdatedAt: new Date() },
+        transactions
+      );
+
+      return;
     })
       .catch(err => { usersLogger.error(`[handleTransferComplete] ${err.message}`, { transferId, userId, success }) });
   }
@@ -759,7 +824,7 @@ export class Users {
                 return;
               }
               if (msg === null) return;
-              this.handleTransferComplete(transferId, user.id, msg.data.success)
+              this.handleTransferComplete(transferId, user.id, msg.data.success ? new Date(msg.createdAt) : null, msg.data.success)
                 .then(() => this.db.findTransferByIdAndUserId(transferId, user.id))
                 .then((transfer) => resolve({ status: transfer.status }))
                 .catch(err => reject(err));
@@ -809,18 +874,6 @@ export class Users {
           createdAt: now,
           lastUpdatedAt: now
         }).then(() => { });
-      });
-  }
-
-  saveTransferFeedback(userId: ID, transferId: ID, speedOfSettlementRating: number): Promise<void> {
-    return this.db.findTransferByIdAndUserId(transferId, userId)
-      .then((transfer) => {
-        if (transfer === null) throw new ServerError({ code: ErrorCode.NOT_FOUND });
-        const validStates = [TransactionStatus.FAILED, TransactionStatus.SUCCESS];
-        if (!validStates.includes(transfer.status))
-          throw new ServerError({ code: ErrorCode.INVALID_STATE, data: { validStates, currentState: transfer.status } });
-        // TODO rate pfi
-        return;
       });
   }
 

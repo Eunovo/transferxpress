@@ -284,7 +284,6 @@ test.serial("End-to-end test", async (t) => {
                 t.fail(`Expected successful transfer or ErrorCode.WALLET_INSUFFICIENT_BALANCE, but got ${err.response.data.code}`);
             } else {
                 t.log('USD Wallet has insufficient balance for transfer to savings plan');
-                console.log(err);
             }
         }
     } else {

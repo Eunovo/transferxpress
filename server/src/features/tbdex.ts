@@ -31,7 +31,7 @@ export const CacheKeys = {
 
 const tbdexLogger = logger.child({ module: 'tbdex' });
 
-type QuoteResult = { pfi: PFI, quote: Quote };
+type QuoteResult = { pfi: PFI, quote: Quote, estimatedSettlementTimeInSecs: number };
 
 export class TBDexError extends Error { }
 
@@ -218,7 +218,7 @@ export class TBDexService {
                   const quote = exchange.find(msg => msg instanceof Quote);
                   if (quote) {
                     clearInterval(interval);
-                    resolve({ pfi, quote });
+                    resolve({ pfi, quote, estimatedSettlementTimeInSecs: payoutMethod.estimatedSettlementTime });
                   }
                 }).catch(err => {
                   tbdexLogger.warn({ exchangeId: rfq.exchangeId, transferId: transfer.id, userDid: userBearerDid.uri, errors: err.details?.errors }, `[getQuotes] ${err.message}`);
