@@ -461,10 +461,14 @@ test.serial("Report transaction correctly blacklists a PFI", async (t: any) => {
 
 test.serial("Repeated slow transfers temporarily blacklists a PFI", async (t: any) => {
 	const { prefixUrl, auth, cache, tbdex } = t.context;
+	cache.set(TBDCacheKeys.OFFERINGS, [PFI_OFFERINGs[1]]);
 
 	t.is(await tbdex.isBlacklistedPFI(PFIs[1].did), false); // Not temporarily blacklisted yet
+	t.deepEqual(await tbdex.fetchOfferings(), [PFI_OFFERINGs[1]]); // Because not temporarily blacklisted yet
+
 	cache.set(TBDCacheKeys.WATCH_EXCHANGE("reference"), CLOSEs[0]);
 	await axios.get(`${prefixUrl}/transfers/6/status`, { headers: { Authorization: auth } });
 	await axios.get(`${prefixUrl}/transfers/7/status`, { headers: { Authorization: auth } });
 	t.is(await tbdex.isBlacklistedPFI(PFIs[1].did), true);
+	t.deepEqual(await tbdex.fetchOfferings(), []); // Available offering is banned
 });
