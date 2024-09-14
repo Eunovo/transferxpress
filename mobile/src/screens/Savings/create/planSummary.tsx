@@ -7,11 +7,13 @@ import { ButtonNormal } from "@/_components/Button/NormalButton";
 import { flagsAndSymbol } from "@/utils/constants";
 import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
 import { BackButton } from "@/_components/Button/BackButton";
-import { useUserState } from "@/store/user/useUserState";
-import { useTransferState } from "@/store/transfer/useTransferState";
 import { SavingsNavigationStackType } from "@/navigation/UserStack/SavingsStack";
 import { formatDate } from "@/utils/formatDate";
 import { useSavingsPlanState } from "@/store/savingsPlan/useSavingsPlanState";
+import { useMutation } from "@tanstack/react-query";
+import { ACTIVATE_PLAN, CREATE_SAVINGS_PLAN } from "@/api/savings";
+import { useUserState } from "@/store/user/useUserState";
+import { Spinner } from "@/_components/loader_utils/Spinner";
 
 interface Props {
     navigation: SavingsNavigationStackType
@@ -22,9 +24,16 @@ export default function PlanSummary (
 navigation
     }:Props
 ){
-    const {activeWallet} = useUserState();
+    const {wallets} = useUserState()
     const {savingsAmount, fundingCurrency, name, lockPeriod} = useSavingsPlanState()
     const fundingCurrencySymbol = flagsAndSymbol[fundingCurrency].symbol;
+    const createPlanMMutation = useMutation({
+        mutationFn: CREATE_SAVINGS_PLAN
+    });
+    const activatePlanMutation = useMutation({
+        mutationFn: ACTIVATE_PLAN
+    });
+    const isPending = createPlanMMutation.isPending || activatePlanMutation.isPending;
     return(
         <LayoutNormal>
             <View className="w-full grow pb-10">
@@ -174,14 +183,42 @@ Date and Frequency
                         className="pt-[64px] mt-auto w-full mx-auto justify-start"
                       >
  <ButtonNormal
- onPress={()=>navigation.navigate("create-plan-success")}
+ onPress={async()=>{
+try {
+   const createPlanResponse = await createPlanMMutation.mutateAsync({
+        name,
+        currencyCode: fundingCurrency,
+        durationInMonths: Number(lockPeriod.replace("Months", ""))
+    });
+    const planId = createPlanResponse.data;
+    const fundingCurrencyWalletId = wallets.find(item => item.ticker === fundingCurrency)?.id;
+if(fundingCurrencyWalletId){
+    await activatePlanMutation.mutateAsync({
+        planId,
+        body: {
+            amount: savingsAmount,
+            walletId: fundingCurrencyWalletId
+        }
+    })
+    navigation.navigate("create-plan-success")
+}
+} catch (error) {
+    
+}
+ }}
        className="bg-secondary" 
         >
-            <NormalText 
-            className="text-primary/80"
-            >
-                Start plan
-            </NormalText>
+            {
+    !isPending ? (
+        <NormalText weight={500} className="text-primary/80">
+        Start plan
+    </NormalText>
+    ) : (
+        <Spinner
+        circumfrence={80} strokeWidth={3}
+        />
+    )
+  }
         </ButtonNormal>
  </View>
             </View>
