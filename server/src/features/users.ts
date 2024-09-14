@@ -798,7 +798,11 @@ export class Users {
         "[handleTransferComplete]"
       );
       const expectedSettledAt = typeof transfer.expectedSettledAt === 'string' ? new Date(parseFloat(transfer.expectedSettledAt)) : null
-      if (expectedSettledAt && settledAt != null && settledAt.getTime() <= expectedSettledAt.getTime()) {
+      if (expectedSettledAt && settledAt != null && settledAt.getTime() > expectedSettledAt.getTime()) {
+        usersLogger.info(
+          { transferId, expectedSettledAt: expectedSettledAt.toISOString(), settledAt: settledAt.toISOString(), differenceInMs: settledAt.getTime() - expectedSettledAt.getTime() },
+          "[handleTransferComplete] Transfer delayed"
+        );
         let offenceTally = await this.incrementPFIOffenceTally(transfer.pfiId);
         if (offenceTally >= PFI_OFFENCE_THRESHOLD) {
           this.tbdex.blacklistPFI(transfer.pfi.did);
