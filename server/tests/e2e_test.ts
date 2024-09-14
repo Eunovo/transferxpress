@@ -63,6 +63,7 @@ test.serial("End-to-end test", async (t) => {
 
     // Define supported currency pairs
     const currencyPairs = [
+        { from: 'USDC', to: 'USDC' },
         { from: 'GHS', to: 'USDC' },
         { from: 'NGN', to: 'KES' },
         { from: 'KES', to: 'USD' },
