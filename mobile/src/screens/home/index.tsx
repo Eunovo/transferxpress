@@ -29,6 +29,7 @@ import { GET_TRANSACTIONS } from '@/api/transactions';
 
 export default function Home() {
   const dispatch = useAppDispatch();
+  const {shouldRefreshUser} = useUserState()
   const navigation = useNavigation<UserNavigationStack>()
   const userProfileQuery = useQuery({
     queryKey: ['getUserProfile'],
@@ -88,6 +89,15 @@ export default function Home() {
     walletQuery.isSuccess,
     walletQuery.isRefetching,
   ]);
+  useEffect(
+    ()=>{
+if(shouldRefreshUser){
+  userProfileQuery.refetch()
+  walletQuery.refetch()
+  transactionsQuery.refetch()
+}
+    }, [shouldRefreshUser]
+  )
   const {rates: exchangeRates} = useFetchRates();
   const {activeWallet, profile, wallets} = useUserState();
   const [showWalletModal, setShowWalletModal] = useState(false);

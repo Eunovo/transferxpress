@@ -83,6 +83,7 @@ navigation
         queryKey: ["getTransferStatus"],
         queryFn: ()=>GET_TRANSFER_STATUS(transferId!),
         enabled: confirQuoteMutation.isSuccess,
+         staleTime: 0,        
         refetchInterval
        });
        const transferStatus = transferStatusQuery.data?.data.status;
@@ -110,6 +111,7 @@ navigation
        );
     
        const isLoading = confirQuoteMutation.isPending || transferStatusQuery.isFetching;
+       const isDisabled =  confirQuoteMutation.isPending || transferStatusQuery.isFetching;
     return(
         <LayoutNormal>
             <View className="w-full grow pb-10">
@@ -235,6 +237,7 @@ height={moderateVerticalScale(16, 0.1)}
                     className="pt-[64px] mt-auto w-full mx-auto justify-start"
                   >
 <ButtonNormal 
+disabled={isDisabled}
 onPress={async()=>{
     try {
         if(transferId){

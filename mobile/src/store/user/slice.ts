@@ -13,7 +13,11 @@ type UserState = {
         country: string;
     } | null;
     wallets: Array<Wallet>;
-    activeWallet: Wallet | null
+    activeWallet: Wallet | null;
+      /**
+   * trigger a refetch of user ddetails
+   */
+  shouldRefreshUser: boolean;
 }
 
 const initialState:UserState = {
@@ -31,6 +35,7 @@ wallets: [
     },
 ],
 activeWallet: null,
+shouldRefreshUser: false
 };
 
 

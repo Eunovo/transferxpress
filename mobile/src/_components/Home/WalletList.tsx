@@ -59,7 +59,7 @@ const [currentIndex, setCurrentIndex] = useState(0);
     <Animated.FlatList
 data={wallets}
 renderItem={
-    ({item, index})=>(
+    ({item})=>(
         <View 
         style={{
             width: SCREEN_WIDTH - scale(32),

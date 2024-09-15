@@ -13,6 +13,7 @@ import { clearTransferState } from "@/store/transfer/slice";
 import { useTransferState } from "@/store/transfer/useTransferState";
 import { flagsAndSymbol } from "@/utils/constants";
 import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
+import { setUserState } from "@/store/user/slice";
 
 
 export default function DepositSuccess () {
@@ -25,6 +26,9 @@ export default function DepositSuccess () {
       const receivingCurrencySymbol = flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol].symbol;
     const goBackToHome = ()=>{
         dispatch(clearTransferState());
+        dispatch(setUserState({
+            shouldRefreshUser: true
+        }))
         navigation.navigate("main-bottom-tab")
     }
     return(

@@ -133,7 +133,9 @@ className="items-center justify-center bg-background border border-secondary rou
             </CustomPressable>
           ))}
         </ScrollView>
-   <View className="mt-6">
+   <View
+        style={{ maxWidth: moderateScale(400, 0.3) }}
+   className="mt-6">
    <ButtonNormal
    onPress={()=>{
     navigation.navigate("deposit-stack")

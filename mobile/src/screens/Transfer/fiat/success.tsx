@@ -13,6 +13,7 @@ import { UserNavigationStack } from "@/navigation/UserStack";
 import { useAppDispatch } from "@/store/hooks";
 import { clearTransferState } from "@/store/transfer/slice";
 import { useTransferState } from "@/store/transfer/useTransferState";
+import { setUserState } from "@/store/user/slice";
 
 
 export default function TransferSuccess () {
@@ -21,6 +22,9 @@ export default function TransferSuccess () {
     const {accountNumber, accountName, currency, transferFee, amount} = useTransferState();
     const goBackToHome = ()=>{
         dispatch(clearTransferState());
+        dispatch(setUserState({
+            shouldRefreshUser: true
+        }))
         navigation.navigate("main-bottom-tab")
     };
     const totalAmountSent = parseFloat(amount);

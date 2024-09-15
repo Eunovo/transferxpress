@@ -19,7 +19,6 @@ interface Props {
 const REFETCH_TIMEOUT_TIME = 30 * 1000;
 export default function TransferPinConfirmation({navigation}: Props) {
   const [pin, setPin] = useState<string[]>([]);
-  const isDisabled = pin.length < 4;
   const {transferId} = useTransferState()
   const confirQuoteMutation = useMutation({
     mutationFn: CONFIRM_QUOTE
@@ -29,9 +28,11 @@ export default function TransferPinConfirmation({navigation}: Props) {
     queryKey: ["getTransferStatus"],
     queryFn: ()=>GET_TRANSFER_STATUS(transferId!),
     enabled: confirQuoteMutation.isSuccess,
+    staleTime: 0,
     refetchInterval
    });
    const transferStatus = transferStatusQuery.data?.data.status;
+   const isDisabled = pin.length < 4 || confirQuoteMutation.isPending || transferStatusQuery.isFetching;
    useEffect(
     ()=>{
 if(transferStatusQuery.isSuccess && transferStatus === "SUCCESS" && !isDisabled){
