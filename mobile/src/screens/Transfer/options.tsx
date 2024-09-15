@@ -23,24 +23,24 @@ export default function TransferOptions () {
                 navigation.navigate("transfer-stack")
             }
         },
-        {
-            title: "Transfer as BTC",
-            subTitle:"Send BTC to a wallet address",
-            action: ()=>{
-                (navigation.navigate as any)("transfer-stack", {
-                    screen:"transfer-btc-address"
-                })
-            }
-        },
-        {
-            title: "Transfer as USDC",
-            subTitle:"Send USDC to external wallet address",
-            action: ()=>{
-                (navigation.navigate as any)("transfer-stack", {
-                    screen:"transfer-usdc-address"
-                })
-            }
-        }
+        // { TODO add when we crypto transfers
+        //     title: "Transfer as BTC",
+        //     subTitle:"Send BTC to a wallet address",
+        //     action: ()=>{
+        //         (navigation.navigate as any)("transfer-stack", {
+        //             screen:"transfer-btc-address"
+        //         })
+        //     }
+        // },
+        // {
+        //     title: "Transfer as USDC",
+        //     subTitle:"Send USDC to external wallet address",
+        //     action: ()=>{
+        //         (navigation.navigate as any)("transfer-stack", {
+        //             screen:"transfer-usdc-address"
+        //         })
+        //     }
+        // }
     ];
     const beneficiaries = [
         {
@@ -73,6 +73,13 @@ className="text-white/60 text-center"
 </NormalText>
 </View>
 </View>
+<NormalText
+size={12}
+weight={500}
+className="text-white/80 mb-3"
+>
+    Transfer options
+</NormalText>
 <View style={{flex:1, gap: 16}} className="w-full">
 {
     options.map(item =>(

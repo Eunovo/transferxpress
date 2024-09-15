@@ -21,6 +21,7 @@ navigation
 ){
     const {amount, accountName, accountNumber, secondaryUniqueIdentifier, currency, narration, exchangeRate, transferFee} = useTransferState();
     const receiverCurrencySymbol = flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol].symbol;
+    const senderCurrencySymbol = flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol].symbol;
     const secondaryUniqueIdentifierTitle = {
         USD: "Routing number",
         EUR: "International Bank Account Number (IBAN)",
@@ -29,7 +30,20 @@ navigation
         AUD:"Bank state branch code (BSB)"
        }[currency.reciever];
        const totalAmountSent = parseFloat(amount) + parseFloat(`${transferFee}`);
-       const transferExchangeRate =  exchangeRate &&  Number(exchangeRate) < 1 ? `${flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol]?.symbol} ${formatToCurrencyString(1 / Number(exchangeRate), 2)} = ${flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol]?.symbol} 1` : `${flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol]?.symbol} 1 = ${flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol]?.symbol} ${formatToCurrencyString(exchangeRate , 2)}`;
+       const amountToReceive = (Number(amount) * Number(exchangeRate)).toFixed(2)
+       const transferExchangeRate =    exchangeRate && Number(exchangeRate) < 1
+       ? `${
+           flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol]?.symbol
+         } ${formatToCurrencyString(1 / Number(exchangeRate), 2)} = ${
+           flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol]
+             ?.symbol
+         } 1`
+       : `${
+           flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol]?.symbol
+         } 1 = ${
+           flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol]
+             ?.symbol
+         } ${formatToCurrencyString(exchangeRate, 2)}`;
     return(
         <LayoutNormal>
             <View className="w-full grow pb-10">
@@ -76,7 +90,7 @@ className="text-primary"
           weight={500}
             className="text-white"
             >
- {receiverCurrencySymbol} {formatToCurrencyString(transferFee, 2)}
+ {senderCurrencySymbol} {formatToCurrencyString(transferFee, 2)}
             </NormalText>
             </View>
             <View
@@ -94,7 +108,7 @@ className="text-primary"
             weight={500}
             className="text-white"
             >
-{receiverCurrencySymbol} {formatToCurrencyString(totalAmountSent, 2)}
+{senderCurrencySymbol} {formatToCurrencyString(totalAmountSent, 2)}
             </NormalText>
             </View>
             <View
@@ -112,7 +126,7 @@ className="text-primary"
         weight={500}
             className="text-white"
             >
-{receiverCurrencySymbol} {formatToCurrencyString(amount, 2)}
+{receiverCurrencySymbol} {formatToCurrencyString(amountToReceive, 2)}
             </NormalText>
             </View>
             <View

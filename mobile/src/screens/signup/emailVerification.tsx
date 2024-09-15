@@ -86,7 +86,7 @@ touched={touched.email}
             </View>
             <View
                         style={{ gap: 16, maxWidth: moderateScale(400, 0.3) }}
-                        className="pt-[64px] mt-auto w-full mx-auto justify-start"
+                        className="pt-[64px] my-auto w-full mx-auto justify-start"
                       >
     <ButtonNormal 
     disabled={isDisabled}

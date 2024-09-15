@@ -33,6 +33,7 @@ plans
 data={balances}
 contentContainerStyle={{
     gap: 16,
+    flexGrow: 1
 }}
 renderItem={({item})=>(
     <View

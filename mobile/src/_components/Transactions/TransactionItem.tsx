@@ -7,10 +7,13 @@ import { formatDate } from '@/utils/formatDate';
 import clsx from 'clsx';
 import TransactionArrowIcon from "@/assets/icons/transaction_arrow.svg"
 import {type Transaction } from '@/api/transactions';
+import { SCREEN_WIDTH } from '@/utils/constants';
 
 
 
-
+export type TransactionItem = Transaction & {
+  type: "swap" | "deposit" | "transfer" | "plan-fund" | "fee"
+}
 interface Props {
   totalTransactions: number;
   item: Transaction;
@@ -26,13 +29,26 @@ export const TransactionRenderItem = ({
 }: Props) => {
     const isDebit = item.type === "DEBIT";
     const date = new Date(parseFloat(item.createdAt)).toDateString();
+    const transactionType = {
+      swap: item.narration.includes("SWAP"),
+      deposit: item.narration.includes("DEPOSIT"),
+      fee: Boolean(item.narration.match(/fee/i)),
+      "plan-fund": item.narration.includes("FUNDING"),
+      transfer: !item.narration.includes("SWAP") && !item.narration.includes("DEPOSIT") && !Boolean(item.narration.match(/fee/i)) && !item.narration.includes("FUNDING"),
+    };
+    const type = Object.entries(transactionType).find( ([key, value]) => Boolean(value) )?.[0];
   return (
     <CustomPressable
     onPress={()=>viewDetails?.(item)}
     >
-      <View className={
+      <View 
+           style={{
+            width: SCREEN_WIDTH - scale(32),
+            maxWidth:SCREEN_WIDTH - scale(32)
+        }}
+      className={
         clsx(
-            "w-full flex-row justify-between p-3 rounded-xl mb-4 bg-dark border border-secondary ",
+            "flex-row justify-between p-3 rounded-xl mb-4 bg-dark border border-secondary overflow-hidden",
              index === totalTransactions - 1 && "!mb-0"
         )
       }>
@@ -40,7 +56,7 @@ export const TransactionRenderItem = ({
           style={{
             gap: 12,
           }}
-          className="flex-row items-center">
+          className="flex-row items-center shrink w-[50%]">
           <View 
           style={{
             width: moderateScale(30, 0.1),
@@ -61,14 +77,14 @@ className={
 />
           </View>
           <View
-          className='shrink w-[50%]'
+          className='w-[80%]'
           >
             <NormalText
               size={14}
               weight={500}
               numberOfLines={1}
               ellipsizeMode="tail"
-              className="text-primary mb-1 capitalize shrink-0">
+              className="w-full text-primary mb-1 capitalize shrink-0">
            {item.narration}
             </NormalText>
             <NormalText size={12} className="text-white/80">
@@ -77,13 +93,16 @@ className={
           </View>
         </View>
         <View
-        className='shrink-0'
+        className='ml-4 shrink-0 w-[50%] items-end'
         >
-          <NormalText size={14} weight={500} className="text-white/80 mb-1">
+          <NormalText size={14} weight={500} 
+               numberOfLines={1}
+              ellipsizeMode="tail"
+          className="text-white/80 mb-1">
           {isDebit ? "-" : "+"}${formatToCurrencyString(item.amount, 2)}
           </NormalText>
-          <NormalText size={12} className="text-white/80">
-            Transfer
+          <NormalText size={11} weight={600} className="text-white/80 capitalize">
+            {type?.replace("-", " ")}
           </NormalText>
         </View>
       </View>

@@ -46,12 +46,8 @@ const {activeWallet, wallets} = useUserState()
       deviceHeight={SCREEN_HEIGHT}
       onBackdropPress={closeModal}
       statusBarTranslucent
-      // swipeDirection={"down"}
-      // onSwipeComplete={closeModal}
     >
-     <View
-     className="border-2 grow"
-     >
+   
      <View
         style={{ flex: 1,
           maxHeight: "90%"
@@ -76,7 +72,7 @@ className="items-center justify-center bg-background border border-secondary rou
    </View>
         <ScrollView
         contentContainerStyle={{
-          flex: 1
+          flexGrow: 1
         }}
         bounces={false}
         >
@@ -154,7 +150,6 @@ className="items-center justify-center bg-background border border-secondary rou
         </ButtonNormal>
    </View>
       </View>
-     </View>
     </RNModal>
   );
 };

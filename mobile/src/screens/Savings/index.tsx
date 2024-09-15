@@ -80,7 +80,7 @@ plans={savingsPlans}
 }
 <View className="mt-10 flex-1">
 {
-    Boolean(savingsPlans.length) ? (
+    Boolean(savingsPlans.length) && (
         <View
         style={{
             gap: 16
@@ -147,7 +147,11 @@ plans={savingsPlans}
                 ))
             }
         </View>
-    ) : (
+    )
+}
+   {
+   
+   (!Boolean(savingsPlans.length) && !savingsPlanQuery.isPending) && (
         <View
         style={{ gap: 16, maxWidth: moderateScale(400, 0.3) }}
      className="items-center my-auto"

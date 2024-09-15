@@ -1,4 +1,4 @@
-import { View, Image } from "react-native";
+import { View, Image, ScrollView } from "react-native";
 import RNModal from "react-native-modal";
 import { SCREEN_HEIGHT, flagsAndSymbol } from "@/utils/constants";
 import CloseIcon from "@/assets/icons/x_mark.svg";
@@ -69,7 +69,12 @@ className="items-center justify-center bg-background border border-secondary rou
 </CustomPressable>
    </View>
         <View className="mt-6">
-          {currencies?.map((item) => (
+       <ScrollView
+       contentContainerStyle={{
+        flexGrow: 1
+       }}
+       >
+       {currencies?.map((item) => (
             <CustomPressable
               key={item.ticker}
               onPress={() => handleSelectCurrency(item.ticker)}
@@ -95,6 +100,7 @@ className="items-center justify-center bg-background border border-secondary rou
 
             </CustomPressable>
           ))}
+       </ScrollView>
         </View>
       </View>
     </RNModal>

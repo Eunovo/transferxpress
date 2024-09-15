@@ -23,6 +23,7 @@ import { Currencies } from '@/api/rates';
 import { useNavigation } from '@react-navigation/native';
 import { UserNavigationStack } from '@/navigation/UserStack';
 import SwapIcon from "@/assets/icons/swap.svg"
+import { GET_TRANSACTIONS } from '@/api/transactions';
 
 
 
@@ -38,8 +39,13 @@ export default function Home() {
     queryFn: () => GET_USER_WALLETS(),
     enabled: userProfileQuery.isSuccess,
   });
-  const isLoading  = walletQuery.isLoading || userProfileQuery.isLoading;
-  const isRefetching = walletQuery.isRefetching || userProfileQuery.isRefetching;
+  const transactionsQuery = useQuery({
+    queryKey: ["getUserTransactions"],
+    queryFn: ()=>GET_TRANSACTIONS()
+  });
+  const transactions = transactionsQuery.data?.data.slice(0, 4) || [];
+  const isLoading  = walletQuery.isLoading || userProfileQuery.isLoading || transactionsQuery.isLoading;
+  const isRefetching = walletQuery.isRefetching || userProfileQuery.isRefetching || transactionsQuery.isRefetching;
   useEffect(() => {
     if (userProfileQuery.isSuccess) {
       dispatch(
@@ -53,11 +59,11 @@ export default function Home() {
         .sort((item1, item2) => {
             const itemOneAmout = item1.balance;
             const itemTwoAmount = item2.balance;
-            if (item1.currencyCode === "USD" || itemOneAmout > itemTwoAmount) {
+            if (item1.currencyCode === "USD" || itemOneAmout > itemTwoAmount  ) {
               return -1; // Move item1 before item2
             } else if (
               item2.currencyCode === "USD" ||
-              itemTwoAmount > itemOneAmout
+              itemTwoAmount > itemOneAmout 
             ) {
               return 1; // Move item2 before item1
             } else {
@@ -95,6 +101,7 @@ export default function Home() {
         onRefresh={() => {
          userProfileQuery.refetch()
          walletQuery.refetch()
+         transactionsQuery.refetch()
         }}
         colors={["#ECB365"]}
         tintColor={"#ECB365"}
@@ -138,14 +145,9 @@ export default function Home() {
             </NormalText>
           </CustomPressable>
         </View>
-        {
-            (!exchangeRates || isLoading) && (
-                <MarketRateSkeleton />
-            )
-        }
    {
 !isLoading && exchangeRates && activeWallet && activeWallet?.ticker in exchangeRates && (
-    <View className="w-full mt-6 mb-10">
+    <View className="w-full mt-6">
     <NormalText size={13} className="text-white/80 mb-3">
       Market rates
     </NormalText>
@@ -196,7 +198,9 @@ export default function Home() {
   </View>
 )
    }
-        <RecentTransactions />
+        <RecentTransactions 
+        transactions={transactions}
+        />
         {showWalletModal && (
           <SelectWalletModal
             showModal={showWalletModal}

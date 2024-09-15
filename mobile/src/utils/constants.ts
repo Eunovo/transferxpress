@@ -46,11 +46,11 @@ export const flagsAndSymbol = {
     symbol: mexicoSymbol,
   },
   BTC:{
-    icon: require("@/assets/images/mexico_flag.png"),
+    icon: require("@/assets/images/bitcoin_logo.png"),
     symbol: "BTC",
   },
   USDC:{
-    icon: require("@/assets/images/mexico_flag.png"),
+    icon: require("@/assets/images/usdc_logo.png"),
     symbol: dollarSymbol,
   }
 };

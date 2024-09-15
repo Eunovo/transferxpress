@@ -5,24 +5,26 @@ import { moderateScale } from "react-native-size-matters"
 import { NormalText } from "../Text/NormalText"
 import { TransactionRenderItem,} from "../Transactions/TransactionItem"
 import { useNavigation } from "@react-navigation/native"
-import { GET_TRANSACTIONS } from "@/api/transactions"
+import { GET_TRANSACTIONS, Transaction } from "@/api/transactions"
 import { useQuery } from "@tanstack/react-query"
 import { UserNavigationStack } from "@/navigation/UserStack"
 
-export const RecentTransactions = ()=>{
+interface Props {
+  transactions: Transaction[];
+}
+export const RecentTransactions = (
+  {
+transactions
+  }:Props
+)=>{
     const navigation = useNavigation<UserNavigationStack>();
-    const transactionsQuery = useQuery({
-        queryKey: ["getUserTransactions"],
-        queryFn: ()=>GET_TRANSACTIONS()
-      });
-      const transactions = transactionsQuery.data?.data.slice(0, 4) || [];
     return(
-        <View className="w-full">
+        <View className="w-full mt-10">
         <View
                   className="w-full flex-row justify-between items-center mb-6"
                   >
                       <HeaderText
-                      size={20}
+                      size={17}
                       weight={600}
                       className="text-primary"
                       >

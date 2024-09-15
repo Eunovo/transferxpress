@@ -28,17 +28,13 @@ export const TransferAmount = ({goToNextStage}: Props) => {
   const ratesQuery = useFetchRates();
   const {wallets} = useUserState();
   const {
-    amount: recieverAmount,
+    amount: senderAmount,
     currency,
     exchangeRate: exchangeRateFromTransferState,
   } = useTransferState();
   const [sender, setSender] = useState({
     currency: currency.sender,
-    amount: recieverAmount
-      ? (
-          Number(recieverAmount) / Number(exchangeRateFromTransferState)
-        ).toFixed(2)
-      : '',
+    amount: senderAmount,
   });
 
   const editSender = (field: 'amount' | 'currency', value: string) => {
@@ -51,7 +47,11 @@ export const TransferAmount = ({goToNextStage}: Props) => {
   };
   const [receiver, setReceiver] = useState({
     currency: currency.reciever,
-    amount: recieverAmount,
+    amount: senderAmount
+    ? (
+        Number(senderAmount) / Number(exchangeRateFromTransferState)
+      ).toFixed(2)
+    : '',
   });
   const editReceiver = (field: 'amount' | 'currency', value: string) => {
     setReceiver(prev => {
@@ -71,9 +71,29 @@ export const TransferAmount = ({goToNextStage}: Props) => {
   const supportedSendingCurrencies = ratesQuery.rates ? Object.keys(ratesQuery.rates) : undefined;
   const supportedReceivingCurrencies = supportedCurrencyPair ?  Object.keys(supportedCurrencyPair) : undefined;
   const exchangeRate =  supportedCurrencyPair && receiver.currency ?  supportedCurrencyPair[receiver.currency as Currencies]?.exchangeRate  : null;
+  useEffect(
+    ()=>{
+  if(sender.amount === ""  || receiver.amount === "") {
+setReceiver({
+  currency: currency.reciever,
+  amount: senderAmount
+})
+if(exchangeRateFromTransferState){
+  setSender({
+    currency: currency.sender,
+    amount: (
+      Number(senderAmount) / Number(exchangeRateFromTransferState)
+    ).toFixed(2)
+  })
+}
+  }
+    }, []
+  )
   useEffect(() => {
+  if(exchangeRate){
     editSender('amount', '');
     editReceiver("amount", "");
+  }
     if(!exchangeRate && !supportedReceivingCurrencies){
       displayFlashbar({
           type: "danger",
@@ -223,7 +243,7 @@ if(supportedReceivingCurrencies?.length){
                       reciever: receiver.currency,
                       sender: sender.currency,
                     },
-                    amount: receiver.amount,
+                    amount: sender.amount,
                     exchangeRate: exchangeRate ? exchangeRate.toString() : '',
                     transferId: initiateTransferResponse.data.id,
                     payoutMethod,

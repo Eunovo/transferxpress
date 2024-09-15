@@ -9,6 +9,7 @@ export const GET_TRANSACTIONS = async()=>{
 export const GET_TRANSFER_DETAILS = async(transferId:number)=>{
 return await transferxpressApi.get<GetTransferDetailsDataResponse>("/transfers/" + transferId)
 }
+
 type GetTransactionsDataResponse = Array<Transaction>;
 export type Transaction =   {
     id: number;

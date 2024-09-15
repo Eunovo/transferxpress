@@ -125,7 +125,7 @@ export default function PlanSummary({navigation}: Props) {
                   await createPlanMMutation.mutateAsync({
                     name,
                     currencyCode: fundingCurrency,
-                    durationInMonths: Number(lockPeriod.replace('Months', '')),
+                    durationInMonths: Number(lockPeriod.substring(0, 2).replace(/\s/g, ""))
                   });
                 const planId = createPlanResponse.data.id;
                 const fundingCurrencyWalletId = wallets.find(

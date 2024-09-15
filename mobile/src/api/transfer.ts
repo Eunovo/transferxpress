@@ -61,7 +61,6 @@ export const CONFIRM_QUOTE = async(transferId:number)=>{
 export const GET_TRANSFER_STATUS = async(transferId:number)=>{
     return await transferxpressApi.get<GetTransferStatusDataResponse>("/transfers/" + transferId + "/status")
 }
-
 export type PaymentKind = "WALLET_ADDRESS" | "NGN_BANK_TRANSFER" | "USD_BANK_TRANSFER" | "KES_BANK_TRANSFER" | "EUR_BANK_TRANSFER" | "GBP_BANK_TRANSFER" | "MXN_BANK_TRANSFER" | "AUD_BANK_TRANSFER" | "GHS_BANK_TRANSFER";
 export type PaymentMethod = {
     kind: PaymentKind,

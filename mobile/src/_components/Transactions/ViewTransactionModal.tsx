@@ -34,6 +34,13 @@ details
     });
     const transferDetails = transferDetailsQuery.data?.data;
     const sendingCurrencySymbol = flagsAndSymbol[details.currencyCode].symbol;
+    const paymentDestination = transferDetails?.payoutKind.includes("WALLET") && !details.narration.includes("FUNDING") ? `${details.currencyCode} Wallet` : transferDetails?.payoutKind.includes("WALLET") && details.narration.includes("FUNDING") ? `${details.currencyCode} Savings Wallet` : transferDetails?.payoutPaymentDetails.accountNumber;
+   const transferStatus = {
+"SUCCESS":"Successful",
+"FAILED":"Failed",
+"PROCESSING": "Processing",
+"CANCELLED":"Cancelled"
+   }
     return(
         <RNModal
         style={{
@@ -102,7 +109,7 @@ height={moderateScale(14)}
 <NormalText
 size={13}
 className="text-white/80">
-{getTime(date)} . {formatDate(date)}
+{getTime(details.createdAt)} . {formatDate(date)}
    </NormalText>
 </View>
 <View className="w-full bg-dark p-3 border border-secondary rounded-xl mb-6">
@@ -121,7 +128,7 @@ weight={600}
                 size={14}
                 className="text-white"
                 >
-   {transferDetails?.payoutPaymentDetails.accountNumber}
+   {paymentDestination}
 </NormalText>
     </View>
 
@@ -140,7 +147,7 @@ weight={600}
                 size={14}
                 className="text-white"
                 >
-Successful
+{transferStatus[transferDetails?.status as keyof typeof transferStatus]}
 </NormalText>
     </View>
 </View>

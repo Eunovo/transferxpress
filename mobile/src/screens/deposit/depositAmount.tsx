@@ -1,5 +1,6 @@
 import {BackButton} from '@/_components/Button/BackButton';
 import {ButtonNormal} from '@/_components/Button/NormalButton';
+import { displayFlashbar } from '@/_components/Flashbar/displayFlashbar';
 import {LayoutNormal} from '@/_components/layouts/LayoutNormal';
 import {ScreenLoader} from '@/_components/loader_utils/ScreenLoader';
 import {HeaderText} from '@/_components/Text/HeaderText';
@@ -88,7 +89,14 @@ export const DepositAmount = ({navigation}: Props) => {
   }, [supportedCurrencies?.length]);
   useEffect(() => {
     editSender('amount', '');
+    if(!exchangeRate){
+      displayFlashbar({
+          type: "danger",
+          message: "Currency pair is unavailable"
+      })
+    }
   }, [exchangeRate, sender.currency, activeWallet?.ticker]);
+  
   const transferExchangeRate =
     exchangeRate && Number(exchangeRate) < 1
       ? `${

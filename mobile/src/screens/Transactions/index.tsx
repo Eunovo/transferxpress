@@ -77,13 +77,13 @@ className="w-full items-end"
   </CustomPressable>
 </View>
    <View
-   style={{
-    marginBottom: moderateScale(80, 0.1),
-   }}
-   className="mt-4 pb-10 w-full grow rounded-xl"
+   className="mt-4 w-full grow rounded-xl"
    >
      {Boolean(transactions.length) && (
               <FlatList
+              contentContainerStyle={{
+                flexGrow: 1
+              }}
                 renderItem={({ item, index }) => (
                   <TransactionRenderItem
                     item={item}

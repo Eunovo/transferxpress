@@ -65,9 +65,10 @@ export const TransferDetails = () => {
                     narration: values.narration
                 }
                });
+               const transferFee = transferQuoteDataResponse.data.payin.fees?.reduce((previous, current) => (previous + parseFloat(current.amount)), 0 );
             dispatch(setTransferState({
                 ...values,
-                // transferFee: transferQuoteDataResponse.data.payin.fee TODO
+                 transferFee: transferFee?.toString() || ""
             }));
             navigation.navigate('transfer-fiat-summary');
           } catch (error) {}

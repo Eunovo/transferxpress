@@ -23,8 +23,8 @@ export default function TransferSuccess () {
         dispatch(clearTransferState());
         navigation.navigate("main-bottom-tab")
     };
-    const totalAmountSent = parseFloat(amount) + parseFloat(`${transferFee}`);
-    const currencySymbol = flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol].symbol;
+    const totalAmountSent = parseFloat(amount);
+    const currencySymbol = flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol].symbol;
     return(
 <LayoutNormal>
 <View className="w-full grow pb-10">
