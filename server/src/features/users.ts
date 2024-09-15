@@ -390,6 +390,10 @@ export class Users {
             });
           });
 
+          if (transfer.payinCurrencyCode === transfer.payoutCurrencyCode) {
+            SUPPORTED_CURRENCIES.filter(v => v.currencyCode === transfer.payoutCurrencyCode).forEach((v) => payoutMethods.set(v.kind, { kind: v.kind, fields: [] }));
+          }
+
           return wallets.then(wallets => {
             const selectedWallet = wallets.find((wallet) => wallet.id == data.walletId);
             if (data.kind == PaymentKind.WALLET_ADDRESS && !selectedWallet)
