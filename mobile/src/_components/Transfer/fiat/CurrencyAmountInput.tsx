@@ -70,7 +70,6 @@ style={{
         fontSize: moderateScale(18, 0.1),
         fontWeight: HeaderTextStyles.fontSemiBold.fontWeight,
         fontFamily: HeaderTextStyles.fontSemiBold.fontFamily,
-      
     }}
     placeholder="0.00"
     placeholderTextColor={"rgba(255, 255, 255, 0.6)"}

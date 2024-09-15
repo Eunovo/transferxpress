@@ -15,11 +15,25 @@ import { Spinner } from "@/_components/loader_utils/Spinner";
 import { useAppDispatch } from "@/store/hooks";
 import { setAppState } from "@/store/app/slice";
 import { setToken } from "@/api/base";
-
+import * as yup from "yup"
+import { getPasswordValidationRules } from "@/utils/constants";
 
 interface Props {
     navigation:AuthNavigationStack
-}
+};
+const validationSchema = yup.object({
+    email: yup
+      .string()
+      .email("Please enter a valid email")
+      .test("test-email", "Please enter a valid email", function (value) {
+        const regex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
+        if (value) {
+          return regex.test(value);
+        }
+      })
+      .required("Please enter your email address"),
+    password: yup.string().min(8).required("Password is required"),
+  });
 export default function Login (
     {
 navigation
@@ -54,6 +68,7 @@ initialValues={{
     email:"",
     password:""
 }}
+validationSchema={validationSchema}
 onSubmit={ async(values)=>{
 try {
    const res = await mutateAsync(values) 
@@ -68,7 +83,9 @@ try {
 >
 {
     ({values, errors, touched, handleBlur, handleChange, submitForm, dirty})=>{
-        const isDisabled = !dirty || isPending;
+        const {isPasswordValid} = getPasswordValidationRules(values.password);
+        const isDisabled = !dirty || isPending || !isPasswordValid;
+
         return(
             <View className="w-full mt-10">
 <View className="w-full mb-4">

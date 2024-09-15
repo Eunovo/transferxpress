@@ -15,12 +15,25 @@ import { useMutation } from "@tanstack/react-query";
 import { REGISTER_USER } from "@/api/auth";
 import { Spinner } from "@/_components/loader_utils/Spinner";
 import { BackButton } from "@/_components/Button/BackButton";
+import * as yup from "yup"
 
 
 interface Props {
   navigation: AuthNavigationStack;
   route: RouteProp<AuthStackParam, "create-password">
-}
+};
+const validationSchema = yup.object({
+  password: yup.string().min(8).required("Password is required"),
+  confirmPassword: yup
+    .string()
+    .test(
+      "passwords match",
+      "Passwords do not match. Try again.",
+      function (value) {
+        return this.parent.password === value;
+      }
+    ),
+});
 export default function SignupCreatePassword  (
   {
 navigation,
@@ -58,6 +71,7 @@ className="text-white/80">
 password:"",
 confirmPassword:""
    }}
+   validationSchema={validationSchema}
    onSubmit={async(values)=>{
 try {
   const screenParams = route.params;
@@ -76,9 +90,9 @@ phoneNumber: screenParams.phoneNumber
    }}
    >
    {
-    ({values, errors, touched, handleChange, handleBlur, submitForm, dirty})=>{
+    ({values, errors, touched, handleChange, handleBlur, submitForm, dirty, isValid})=>{
         const {isPasswordValid, rules} = getPasswordValidationRules(values.password);
-const isDisabled = !dirty && !isPasswordValid;
+const isDisabled = !dirty || !isPasswordValid || !isValid;
         return(
             <View className="w-full mt-10">
             <View className="w-full mb-4">

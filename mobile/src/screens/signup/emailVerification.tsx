@@ -12,10 +12,24 @@ import { VERIFY_EMAIL } from "@/api/auth";
 import { BackButton } from "@/_components/Button/BackButton";
 import { Spinner } from "@/_components/loader_utils/Spinner";
 import { displayFlashbar } from "@/_components/Flashbar/displayFlashbar";
+import * as yup from "yup"
+
 
 interface Props {
     navigation:AuthNavigationStack;
-}
+};
+const validationSchema = yup.object({
+    email: yup
+      .string()
+      .email("Please enter a valid email")
+      .test("test-email", "Please enter a valid email", function (value) {
+        const regex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
+        if (value) {
+          return regex.test(value);
+        }
+      })
+      .required("Please enter your email address"),
+    });
 export default function SignupEmailVerification (
     {
 navigation
@@ -50,6 +64,7 @@ className="text-white/80 max-w-[90%]">
    initialValues={{
 email:""
    }}
+   validationSchema={validationSchema}
    onSubmit={async(values)=>{
     try {
       const res =  await mutateAsync(values);
@@ -69,8 +84,8 @@ email:""
    }}
    >
    {
-    ({values, handleBlur, handleChange, errors, touched, submitForm, dirty})=>{
-        const isDisabled = !dirty || isPending;
+    ({values, handleBlur, handleChange, errors, touched, submitForm, dirty, isValid})=>{
+        const isDisabled = !dirty || isPending || !isValid;
         return(
             <View className="w-full grow  mt-10">
            <View className="w-full mb-4">
