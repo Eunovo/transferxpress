@@ -245,7 +245,7 @@ export class UsersDbImpl implements UsersDb {
 
   findTransactionsByUserId(userId: number): Promise<Transaction[]> {
     return new Promise((resolve, reject) => {
-      this.db.all(`SELECT * FROM Transactions WHERE userId = ?`, [userId], (err, rows) => {
+      this.db.all(`SELECT * FROM Transactions WHERE userId = ? ORDER BY createdAt DESC`, [userId], (err, rows) => {
         if (err) return reject(err);
         resolve(rows as Transaction[]);
       });

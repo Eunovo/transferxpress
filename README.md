@@ -1,31 +1,29 @@
-# transferxpress
+# TransferXpress
 Send money anywhere in the world.
 
 ## Profitability
 TransferXpress generates revenue through multiple channels:
 
-1. International Transfer Fees:
-   - We charge competitive fees for international money transfers.
+1. Transfer Fees:
+   - We charge competitive fees for money transfers.
    - Fees vary based on the transfer amount, currencies involved, and destination.
+   - See [processing fee in code](https://github.com/Eunovo/transferxpress/blob/091d0a1496fe5211cf43a91b465be7c70048912c/server/src/features/users.ts#L645-L651).
 
-2. Currency Exchange Margins:
-   - We apply a small margin on currency exchange rates.
-   - This allows us to offer competitive rates while generating revenue on conversions.
-
-3. Savings Feature:
+2. Savings Feature:
    - Users can lock up funds in our savings plans.
    - We invest these funds and generate returns.
    - A portion of the investment returns contributes to our revenue.
 
-4. Early Withdrawal Penalties:
+3. Early Withdrawal Penalties:
    - Savings plans have a set duration (e.g., 6 months).
    - Users incur a penalty fee for withdrawing funds before maturity.
    - These penalty fees contribute to our revenue stream.
+   - See [penalty fee in code](https://github.com/Eunovo/transferxpress/blob/091d0a1496fe5211cf43a91b465be7c70048912c/server/src/features/users.ts#L653-L665).
 
-5. Float Income:
-   - We earn interest on funds held in our system during transfer processing times.
+4. Avoiding FX losses:
+   - We process all currency swap orders instantly to avoid losses caused by fufilling currency swap orders at a higher-than-agreed FX rate.
 
-By diversifying our revenue streams, we maintain profitability while offering competitive rates and valuable services to our customers.
+By diversifying our revenue streams, and avoiding FX losses, we maintain profitability while offering competitive rates and valuable services to our customers.
 
 
 ## Optionality
@@ -66,27 +64,30 @@ By implementing this dynamic PFI selection process, we ensure that each transfer
 
 
 ## Customer Management
-1. Decentralized Identifiers (DIDs):
-   - Each user is assigned a unique DID upon registration.
-   - DIDs are used to identify users across the platform without revealing their real identities.
-   - DIDs are stored securely in our database, ensuring user privacy and security.
+Upon registration, we:
 
-2. Verifiable Credentials:
-   - Users can request and store verifiable credentials, such as identity documents, within their DID.
-   - These credentials are issued by trusted authorities and can be verified by our platform.
-   - Verifiable credentials enable users to prove their identity without revealing sensitive information.
+- Create and store a unique DID for each user.
+- Request a KCC Verifiable Credential for each user, using their registration details and their unique DID.
+- See [in code](https://github.com/Eunovo/transferxpress/blob/091d0a1496fe5211cf43a91b465be7c70048912c/server/src/features/users.ts#L85-L90).
 
-3. Credential Management:
-   - Users can manage their verifiable credentials through our platform.
-   - Credentials are stored securely and can be shared with other parties upon user consent.
-   - Our platform ensures the integrity and authenticity of credentials through cryptographic techniques.
+Only after we have stored the DID and KCC Verifiable Credential is the registration process complete.
 
-4. Identity Verification:
-   - Our platform verifies user identities using their DIDs and verifiable credentials.
-   - This verification process is secure, private, and decentralized, ensuring user trust and confidence.
-   - Identity verification is essential for various platform services, such as account creation, transactions, and access control.
-
-By integrating decentralized identifiers and verifiable credentials, our application provides a secure, private, and decentralized identity management system for our customers. This approach enhances user trust, security, and control over their personal data.
-
+During transfers, we simply retrieve the user's DID and KCC Verifiable Credential from our Database and provide it to the PFI. This approach ensures ease-of-use and faster transfers for the user. 
 
 ## Customer Satisfaction
+Each PFI is assigned a **rating**, which we use to track their historical performance. We employ the following methods to evaluate PFI performance on transfers and adjust their ratings if necessary:
+
+1. Order Settlement Time Monitoring:
+   - Each Order is expected to complete under the time specified in the Offerring under the `estimatedSettlementTime` field.
+   - If an Order fails to complete in time, we record this in our short-term cache.
+   - If enough Orders are delayed in a short period of time as indicated by our short-term cache, we temporarily disable this PFI to preserve customer experience. 
+   - See [handleTransferComplete in code](https://github.com/Eunovo/transferxpress/blob/091d0a1496fe5211cf43a91b465be7c70048912c/server/src/features/users.ts#L800-L811).
+
+2. Transaction Reporting System:
+   - We provide features to allow customers report issues with transfers.
+   - We adjust the PFI rating based on the issue reported.
+   - If enough transfers are reported in short period of time, we will temporarily disable the PFI to preserve customer experience.
+   - If the PFI's rating falls low enough, we employ a more permanent ban on the PFI and require that a member of our team evaluate the PFI and manually restore it's status if necessary.
+   - See [reportTransaction in code](https://github.com/Eunovo/transferxpress/blob/091d0a1496fe5211cf43a91b465be7c70048912c/server/src/features/users.ts#L145-L191)
+
+By implementing this automatic PFI performance evaluation, we ensure that our customers always use the best PFIs for their transfers.
