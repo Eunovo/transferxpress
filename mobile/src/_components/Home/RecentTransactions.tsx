@@ -54,7 +54,7 @@ transactions
                 index={index}
                 totalTransactions={transactions.length}
                 viewDetails={(item) => {
-                 navigation.navigate("transactions", {
+                 navigation.navigate("view-transaction", {
                     transaction: item
                  })
                 }}

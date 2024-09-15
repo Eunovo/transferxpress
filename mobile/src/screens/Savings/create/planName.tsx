@@ -31,7 +31,7 @@ navigation
                 navigation.goBack()
             }}
           />
-          <HeaderText weight={700} size={20} className="text-primary">
+          <HeaderText weight={700} size={18} className="text-primary">
            Create a plan
           </HeaderText>
           <NormalText size={13} className="text-white/80 mb-10 max-w-[80%]">

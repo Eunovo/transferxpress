@@ -10,6 +10,17 @@ export const GET_TRANSFER_DETAILS = async(transferId:number)=>{
 return await transferxpressApi.get<GetTransferDetailsDataResponse>("/transfers/" + transferId)
 }
 
+export const REPORT_TRANSACTION = async(data:{
+    transferId:number;
+    body: {
+        reason: string
+        other: string
+    }
+})=>{
+    return await transferxpressApi.post("/transactions/" + data.transferId + "/report", data.body)
+}
+
+
 type GetTransactionsDataResponse = Array<Transaction>;
 export type Transaction =   {
     id: number;

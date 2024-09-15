@@ -120,7 +120,7 @@ navigation
 />
             <HeaderText
    weight={700}
-   size={20}
+   size={18}
    className="text-primary"
    >
 Deposit money

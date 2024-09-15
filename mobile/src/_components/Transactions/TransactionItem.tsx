@@ -42,13 +42,9 @@ export const TransactionRenderItem = ({
     onPress={()=>viewDetails?.(item)}
     >
       <View 
-           style={{
-            width: SCREEN_WIDTH - scale(32),
-            maxWidth:SCREEN_WIDTH - scale(32)
-        }}
       className={
         clsx(
-            "flex-row justify-between p-3 rounded-xl mb-4 bg-dark border border-secondary overflow-hidden",
+            "w-full flex-row justify-between p-3 rounded-xl mb-4 bg-dark border border-secondary overflow-hidden",
              index === totalTransactions - 1 && "!mb-0"
         )
       }>

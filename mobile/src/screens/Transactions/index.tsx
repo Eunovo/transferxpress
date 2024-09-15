@@ -5,9 +5,6 @@ import { FlatList, RefreshControl, View } from "react-native";
 import { BackButton } from "@/_components/Button/BackButton";
 import { NormalText } from "@/_components/Text/NormalText";
 import { TransactionRenderItem } from "@/_components/Transactions/TransactionItem";
-import { useEffect, useState } from "react";
-import { ViewTransactionModal } from "@/_components/Transactions/ViewTransactionModal";
-import type { RouteProp } from "@react-navigation/native";
 import FilterIcon from "@/assets/icons/transaction_filter.svg"
 import { useQuery } from "@tanstack/react-query";
 import { GET_TRANSACTIONS, type Transaction } from "@/api/transactions";
@@ -18,12 +15,10 @@ import { type UserNavigationStack, UserStackParam } from "@/navigation/UserStack
 
 interface Props {
     navigation: UserNavigationStack;
-    route: RouteProp<UserStackParam, "transactions">
 }
 export default function Transactions (
     {
-navigation,
-route
+navigation
     }:Props
 ) {
 const transactionsQuery = useQuery({
@@ -31,13 +26,6 @@ const transactionsQuery = useQuery({
   queryFn: ()=>GET_TRANSACTIONS()
 });
 const transactions = transactionsQuery.data?.data || [];
-    const [active, setActive] = useState<Transaction>();
-    useEffect(() => {
-        if (route.params?.transaction && transactions.length) {
-          setActive(route.params.transaction);
-          navigation.setParams({ transaction: undefined });
-        }
-      }, [transactions.length, route.params]);
       const isLoading = transactionsQuery.isFetching
     return(
         <LayoutNormal>
@@ -49,7 +37,7 @@ const transactions = transactionsQuery.data?.data || [];
            />
             <HeaderText
    weight={700}
-   size={20}
+   size={18}
    className="text-primary mb-10"
    >
 Transaction History
@@ -90,7 +78,7 @@ className="w-full items-end"
                     index={index}
                     totalTransactions={transactions.length}
                     viewDetails={(item) => {
-                      setActive(item);
+                      navigation.navigate("view-transaction", {transaction: item})
                     }}
                   />
                 )}
@@ -113,15 +101,6 @@ className="w-full items-end"
             )}
    </View>
             </View>
-            {
-                active && (
-                    <ViewTransactionModal 
-                     showModal={Boolean(active)}
-                     closeModal={()=>setActive(undefined)}
-                     details={active}
-                    />
-                )
-            }
     {isLoading && <ScreenLoader opacity={0.6} />}
         </LayoutNormal>
     )

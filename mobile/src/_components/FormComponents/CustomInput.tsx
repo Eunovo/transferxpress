@@ -103,7 +103,6 @@ export const CustomTextInput = ({
           }
           style={{
             borderRadius: moderateScale(12, 0.1),
-            // backgroundColor: "#04293A"
           }}
           className={clsx(
             "w-full h-full bg-dark p-1 pl-3 z-[12] text-white",

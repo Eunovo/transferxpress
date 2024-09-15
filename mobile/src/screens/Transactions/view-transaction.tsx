@@ -1,32 +1,34 @@
-import { flagsAndSymbol, SCREEN_HEIGHT } from "@/utils/constants"
-import { View } from "react-native"
-import RNModal from "react-native-modal";
-import { HeaderText } from "../Text/HeaderText";
-import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
-import { NormalText } from "../Text/NormalText";
-import CalendarIcon from "@/assets/icons/calendar.svg"
-import { moderateScale } from "react-native-size-matters";
-import { CustomPressable } from "../Button/CustomPressable";
-import XmarkIcon from "@/assets/icons/x_mark.svg";
-import { GET_TRANSFER_DETAILS, Transaction } from "@/api/transactions";
+import { BackButton } from "@/_components/Button/BackButton";
+import { CustomPressable } from "@/_components/Button/CustomPressable";
+import { LayoutNormal } from "@/_components/layouts/LayoutNormal";
+import { HeaderText } from "@/_components/Text/HeaderText";
+import { NormalText } from "@/_components/Text/NormalText";
+import { GET_TRANSFER_DETAILS } from "@/api/transactions";
+import { UserNavigationStack, UserStackParam } from "@/navigation/UserStack";
+import { flagsAndSymbol } from "@/utils/constants";
 import { formatDate } from "@/utils/formatDate";
-import { useQuery } from "@tanstack/react-query";
-import { Spinner } from "../loader_utils/Spinner";
+import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
 import { getTime } from "@/utils/getTime";
-
+import { RouteProp } from "@react-navigation/native";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { View } from "react-native";
+import { moderateScale } from "react-native-size-matters";
+import CalendarIcon from "@/assets/icons/calendar.svg"
+import { ScreenLoader } from "@/_components/loader_utils/ScreenLoader";
+import { ReportTransactionModal } from "@/_components/Transactions/ReportTransactionModal";
 
 interface Props {
-    showModal: boolean;
-    closeModal: () => void;
-    details: Transaction;
+    navigation: UserNavigationStack;
+    route: RouteProp<UserStackParam, "view-transaction">
 }
-export const ViewTransactionModal = (
+export default function ViewTransaction (
     {
-showModal,
-closeModal,
-details
+navigation,
+route
     }:Props
-)=>{
+) {
+    const details = route.params.transaction;
     const date = new Date(parseFloat(details.createdAt)).toDateString();
     const transferDetailsQuery = useQuery({
         queryKey: ["getTransferDetails"],
@@ -40,57 +42,24 @@ details
 "FAILED":"Failed",
 "PROCESSING": "Processing",
 "CANCELLED":"Cancelled"
-   }
-    return(
-        <RNModal
-        style={{
-          justifyContent: "flex-end",
-          margin: 0,
-        }}
-        isVisible={showModal}
-        animationInTiming={500}
-        animationOutTiming={500}
-        backdropTransitionInTiming={800}
-        backdropTransitionOutTiming={800}
-        backdropOpacity={0.5}
-        backdropColor="#101010"
-        deviceHeight={SCREEN_HEIGHT}
-        onBackdropPress={() => closeModal()}
-        swipeDirection={"down"}
-        onSwipeComplete={closeModal}
-        statusBarTranslucent
-      >
-        <View
-          style={{ flex: 1 }}
-          className="bg-background rounded-t-xl px-6 py-8 max-h-[90%]"
-        >
-                  <View className="items-center flex-row justify-between mb-10">
-      <HeaderText size={18} weight={600} className="text-primary my-4">
-             Transaction details
-              </HeaderText>
-      <CustomPressable
-                onPress={closeModal}
-                style={{
-                    width: moderateScale(40, 0.1),
-                    height: moderateScale(40, 0.1)
-                }}
-                className="ml-auto bg-dark border border-secondary rounded-full items-center justify-center"
-              >
-                <XmarkIcon width={24} height={24} fill="#ECB365" />
-              </CustomPressable>
-      </View>
-      {
-        transferDetailsQuery.isPending ? (
-            <View className="grow items-center justify-center">
-            <Spinner
-              circumfrence={80}
-              strokeWidth={3}
-              strokeColor="#ECB365"
-            />
-          </View>
-        ) : (
-            <>
+   };
+   const [showReportModal, setShowReportModal] = useState(false)
+return (
+    <LayoutNormal>
+        <View className="w-full grow pb-10">
+        <BackButton
+           onPress={()=>{
+            navigation.goBack()
+           }}
+           />
             <HeaderText
+   weight={700}
+   size={18}
+   className="text-primary mb-10"
+   >
+Transaction Details
+   </HeaderText>
+   <HeaderText
 size={20}
 className="text-primary text-center mb-2"
 >
@@ -206,11 +175,29 @@ weight={600}
 </NormalText>
     </View>
 </View>
-            </>
-        )
-      }
-
-            </View>
-            </RNModal>
-    )
+<CustomPressable
+         onPress={()=>setShowReportModal(true)}
+            style={{
+              gap: 8,
+            }}
+            className="shrink flex-row items-center justify-center px-3 py-3 bg-secondary rounded-xl mt-10">
+            <NormalText size={15} weight={500} className="text-primary/80">
+            Report transaction
+            </NormalText>
+          </CustomPressable>
+        </View>
+        {
+              showReportModal && (
+                <ReportTransactionModal
+                details={details}
+                showModal={showReportModal}
+                closeModal={()=>setShowReportModal(false)}
+                />
+              )
+            }
+        {
+            transferDetailsQuery.isPending && <ScreenLoader opacity={0.6} />
+        }
+    </LayoutNormal>
+)
 }

@@ -99,7 +99,7 @@ export const WithdrawalAmount = ({navigation, route}: Props) => {
             userStackNavigation.navigate('main-bottom-tab');
           }}
         />
-        <HeaderText weight={700} size={20} className="text-primary">
+        <HeaderText weight={700} size={18} className="text-primary">
           Withdraw money
         </HeaderText>
         <NormalText size={13} className="text-white/80 mb-10">
