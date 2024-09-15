@@ -7,13 +7,10 @@ import { formatDate } from '@/utils/formatDate';
 import clsx from 'clsx';
 import TransactionArrowIcon from "@/assets/icons/transaction_arrow.svg"
 import {type Transaction } from '@/api/transactions';
-import { SCREEN_WIDTH } from '@/utils/constants';
+import { flagsAndSymbol, SCREEN_WIDTH } from '@/utils/constants';
+import { Currencies } from '@/api/rates';
 
 
-
-export type TransactionItem = Transaction & {
-  type: "swap" | "deposit" | "transfer" | "plan-fund" | "fee"
-}
 interface Props {
   totalTransactions: number;
   item: Transaction;
@@ -95,7 +92,7 @@ className={
                numberOfLines={1}
               ellipsizeMode="tail"
           className="text-white/80 mb-1">
-          {isDebit ? "-" : "+"}${formatToCurrencyString(item.amount, 2)}
+          {isDebit ? "-" : "+"} {flagsAndSymbol[item.currencyCode as Currencies].symbol} {formatToCurrencyString(item.amount, 2)}
           </NormalText>
           <NormalText size={11} weight={600} className="text-white/80 capitalize">
             {type?.replace("-", " ")}
