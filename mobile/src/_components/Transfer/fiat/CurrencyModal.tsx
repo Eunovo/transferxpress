@@ -50,7 +50,7 @@ const currencies: Currency[] = Object.keys(flagsAndSymbol).filter(item => suppor
     >
       <View
         style={{ flex: 1 }}
-        className="w-full pt-6 px-6 max-h-[60%] bg-dark rounded-t-xl"
+        className="w-full pt-6 px-6 max-h-[70%] bg-dark rounded-t-xl"
       >
 
    <View className="w-full flex-row items-center justify-between mb-2">
@@ -68,11 +68,12 @@ className="items-center justify-center bg-background border border-secondary rou
 <CloseIcon width={24} height={24} fill={"#ECB365"} />
 </CustomPressable>
    </View>
-        <View className="mt-6">
+        <View className="mt-6 pb-10">
        <ScrollView
        contentContainerStyle={{
         flexGrow: 1
        }}
+       bounces={false}
        >
        {currencies?.map((item) => (
             <CustomPressable

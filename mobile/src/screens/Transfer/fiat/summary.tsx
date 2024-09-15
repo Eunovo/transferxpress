@@ -5,11 +5,11 @@ import { HeaderText } from "@/_components/Text/HeaderText";
 import { NormalText } from "@/_components/Text/NormalText";
 import { ButtonNormal } from "@/_components/Button/NormalButton";
 import { useTransferState } from "@/store/transfer/useTransferState";
-import { flagsAndSymbol } from "@/utils/constants";
+import { flagsAndSymbol, secondaryUniqueIdentifierTitlesAndKeys } from "@/utils/constants";
 import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
 import { TransferNavigationStackType } from "@/navigation/UserStack/TransferStack";
 import { BackButton } from "@/_components/Button/BackButton";
-
+import MOCK_BANKS from "@/utils/banks.json"
 
 interface Props {
     navigation: TransferNavigationStackType
@@ -22,13 +22,6 @@ navigation
     const {amount, accountName, accountNumber, secondaryUniqueIdentifier, currency, narration, exchangeRate, transferFee} = useTransferState();
     const receiverCurrencySymbol = flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol].symbol;
     const senderCurrencySymbol = flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol].symbol;
-    const secondaryUniqueIdentifierTitle = {
-        USD: "Routing number",
-        EUR: "International Bank Account Number (IBAN)",
-        GBP: "Sort code",
-        MXN:"CLABE number",
-        AUD:"Bank state branch code (BSB)"
-       }[currency.reciever];
        const totalAmountSent = parseFloat(amount) + parseFloat(`${transferFee}`);
        const amountToReceive = currency.reciever === currency.sender ? amount : (Number(amount) * Number(exchangeRate)).toFixed(2)
        const transferExchangeRate =    exchangeRate && Number(exchangeRate) < 1
@@ -202,7 +195,7 @@ className="text-primary"
               ellipsizeMode="tail"
                 className="text-white/80 max-w-[50%]"
                 >
-     {secondaryUniqueIdentifierTitle}
+     {secondaryUniqueIdentifierTitlesAndKeys[currency.reciever as keyof typeof secondaryUniqueIdentifierTitlesAndKeys].title}
                 </NormalText>
 
             <NormalText
@@ -210,7 +203,7 @@ className="text-primary"
             className="text-white/80"
             
             >
-{secondaryUniqueIdentifier}
+{ currency.sender === "NGN" ? MOCK_BANKS.find(item => item.bankCode === secondaryUniqueIdentifier)?.bankName :  secondaryUniqueIdentifier}
             </NormalText>
             </View>
             <View
