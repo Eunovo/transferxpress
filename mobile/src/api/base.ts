@@ -6,7 +6,7 @@ import { displayFlashbar } from "@/_components/Flashbar/displayFlashbar";
 
 export const transferxpressApi = axios.create({
   baseURL: AppConfiguration.apiUrl,
-  timeout: 30000,
+  timeout: 60000,
   headers: {
     common: {
       Accept: "*/*",

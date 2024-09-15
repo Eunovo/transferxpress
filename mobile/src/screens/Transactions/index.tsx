@@ -65,7 +65,7 @@ className="w-full items-end"
   </CustomPressable>
 </View>
    <View
-   className="mt-4 w-full grow rounded-xl"
+   className="mt-4 w-full flex-1 rounded-xl"
    >
      {Boolean(transactions.length) && (
               <FlatList

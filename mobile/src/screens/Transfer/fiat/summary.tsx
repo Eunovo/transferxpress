@@ -186,26 +186,30 @@ className="text-primary"
 {accountNumber}
             </NormalText>
             </View>
-            <View
-            className="flex-row justify-between items-center"
-            >
+        {
+            secondaryUniqueIdentifier && (
+                <View
+                className="flex-row justify-between items-center"
+                >
+                    <NormalText
+                    size={14}
+                         numberOfLines={2}
+                  ellipsizeMode="tail"
+                    className="text-white/80 max-w-[50%]"
+                    >
+         {secondaryUniqueIdentifierTitlesAndKeys[currency.reciever as keyof typeof secondaryUniqueIdentifierTitlesAndKeys]?.title}
+                    </NormalText>
+    
                 <NormalText
                 size={14}
-                     numberOfLines={2}
-              ellipsizeMode="tail"
-                className="text-white/80 max-w-[50%]"
+                className="text-white/80"
+                
                 >
-     {secondaryUniqueIdentifierTitlesAndKeys[currency.reciever as keyof typeof secondaryUniqueIdentifierTitlesAndKeys].title}
+    { currency.sender === "NGN" ? MOCK_BANKS.find(item => item.bankCode === secondaryUniqueIdentifier)?.bankName :  secondaryUniqueIdentifier}
                 </NormalText>
-
-            <NormalText
-            size={14}
-            className="text-white/80"
-            
-            >
-{ currency.sender === "NGN" ? MOCK_BANKS.find(item => item.bankCode === secondaryUniqueIdentifier)?.bankName :  secondaryUniqueIdentifier}
-            </NormalText>
-            </View>
+                </View>
+            )
+        }
             <View
             className="flex-row justify-between"
             >
