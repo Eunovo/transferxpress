@@ -32,7 +32,8 @@ route
     const date = new Date(parseFloat(details.createdAt)).toDateString();
     const transferDetailsQuery = useQuery({
         queryKey: ["getTransferDetails"],
-        queryFn: ()=>GET_TRANSFER_DETAILS(details.transferId)
+        queryFn: ()=>GET_TRANSFER_DETAILS(details.transferId),
+        refetchOnMount: "always"
     });
     const transferDetails = transferDetailsQuery.data?.data;
     const sendingCurrencySymbol = flagsAndSymbol[details.currencyCode].symbol;

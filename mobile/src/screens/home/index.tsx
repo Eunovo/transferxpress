@@ -92,9 +92,12 @@ export default function Home() {
   useEffect(
     ()=>{
 if(shouldRefreshUser){
-  userProfileQuery.refetch()
-  walletQuery.refetch()
-  transactionsQuery.refetch()
+  userProfileQuery.refetch();
+  walletQuery.refetch();
+  transactionsQuery.refetch();
+  dispatch(setUserState({
+    shouldRefreshUser: false
+  }))
 }
     }, [shouldRefreshUser]
   )

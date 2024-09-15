@@ -26,19 +26,19 @@ const REFETCH_TIMEOUT_TIME = 30 * 1000;
 export default function FundingPinConfirmation({navigation, route}: Props) {
   const [pin, setPin] = useState<string[]>([]);
   const {transferId} = useTransferState()
-  const confirQuoteMutation = useMutation({
+  const confirmQuoteMutation = useMutation({
     mutationFn: CONFIRM_QUOTE
    });
    const [refetchInterval, setRefetchIntervall] = useState(10000)
    const transferStatusQuery = useQuery({
     queryKey: ["getTransferStatus"],
     queryFn: ()=>GET_TRANSFER_STATUS(transferId!),
-    enabled: confirQuoteMutation.isSuccess,
+    enabled: confirmQuoteMutation.isSuccess,
     staleTime: 0,
     refetchInterval
    });
    const transferStatus = transferStatusQuery.data?.data.status;
-   const isDisabled = pin.length < 4 || confirQuoteMutation.isPending || transferStatusQuery.isFetching;
+   const isDisabled = pin.length < 4 || confirmQuoteMutation.isPending || transferStatusQuery.isFetching;
    useEffect(
     ()=>{
 if(transferStatusQuery.isSuccess && transferStatus === "SUCCESS" && !isDisabled){
@@ -62,7 +62,7 @@ clearTimeout(refetchTimeout)
     }, [transferStatusQuery.isSuccess]
    );
 
-   const isLoading = confirQuoteMutation.isPending || transferStatusQuery.isFetching;
+   const isLoading = confirmQuoteMutation.isPending || transferStatusQuery.isFetching;
   
   return (
     <LayoutNormal>
@@ -89,7 +89,7 @@ clearTimeout(refetchTimeout)
          onPress={async()=>{
           if(transferId){
               try {
-                  await confirQuoteMutation.mutateAsync(transferId)
+                  await confirmQuoteMutation.mutateAsync(transferId)
               } catch (error) {
                   
               }

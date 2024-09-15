@@ -89,7 +89,7 @@ export const DepositAmount = ({navigation}: Props) => {
   }, [supportedCurrencies?.length]);
   useEffect(() => {
     editSender('amount', '');
-    if(!exchangeRate){
+    if(!exchangeRate && !supportedCurrencies && !ratesQuery.isPending){
       displayFlashbar({
           type: "danger",
           message: "Currency pair is unavailable"

@@ -75,14 +75,14 @@ navigation
     const accountNumber = FIELDS[activeWallet?.ticker as keyof typeof FIELDS]["Account Number"];
     const secondaryUniqueIdentifier = FIELDS[activeWallet?.ticker as keyof typeof FIELDS]?.secondaryUniqueIdentifier;
     const secondaryUniqueIdentifierTitle = secondaryUniqueIdentifierTitles[activeWallet?.ticker as keyof typeof secondaryUniqueIdentifierTitles];
-    const confirQuoteMutation = useMutation({
+    const confirmQuoteMutation = useMutation({
         mutationFn: CONFIRM_QUOTE
        });
        const [refetchInterval, setRefetchIntervall] = useState(10000)
        const transferStatusQuery = useQuery({
         queryKey: ["getTransferStatus"],
         queryFn: ()=>GET_TRANSFER_STATUS(transferId!),
-        enabled: confirQuoteMutation.isSuccess,
+        enabled: confirmQuoteMutation.isSuccess,
          staleTime: 0,        
         refetchInterval
        });
@@ -110,8 +110,8 @@ navigation
         }, [transferStatusQuery.isSuccess]
        );
     
-       const isLoading = confirQuoteMutation.isPending || transferStatusQuery.isFetching;
-       const isDisabled =  confirQuoteMutation.isPending || transferStatusQuery.isFetching;
+       const isLoading = confirmQuoteMutation.isPending || transferStatusQuery.isFetching;
+       const isDisabled =  confirmQuoteMutation.isPending || transferStatusQuery.isFetching;
     return(
         <LayoutNormal>
             <View className="w-full grow pb-10">
@@ -241,7 +241,7 @@ disabled={isDisabled}
 onPress={async()=>{
     try {
         if(transferId){
-            await confirQuoteMutation.mutateAsync(transferId);
+            await confirmQuoteMutation.mutateAsync(transferId);
             navigation.navigate("deposit-success")
         }
     } catch (error) {
