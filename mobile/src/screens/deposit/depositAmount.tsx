@@ -232,7 +232,6 @@ export const DepositAmount = ({navigation}: Props) => {
                     initiateTransferResponse.data.payinMethods.find(item =>
                       item.kind.includes('BANK_TRANSFER'),
                     );
-                  console.log(payinMethod, "payin method");
                   const payinData = DEPOSIT_MOCK_FIELDS[sender.currency as Currencies];
                   const secondaryUniqueIdentifierTitle = secondaryUniqueIdentifierTitlesAndKeys[sender.currency as keyof typeof secondaryUniqueIdentifierTitlesAndKeys].key || "";
                   const submitPayinResponse =

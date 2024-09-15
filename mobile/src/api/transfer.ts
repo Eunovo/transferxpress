@@ -23,8 +23,6 @@ export const SUBMIT_PAYIN_INFORMATION  = async(data:{
     },
     transferId: number
 })=>{
-    console.log(data.body, "body");
-    
     return await transferxpressApi.post<Array<PaymentMethod>>("/transfers/" + data.transferId + "/payin", data.body)
 }
 
@@ -43,7 +41,6 @@ export const SUBMIT_PAYOUT_INFORMATION = async(data:{
     },
     transferId: number
 })=>{
-    console.log(data.body, "body");
     return await transferxpressApi.post("/transfers/" + data.transferId + "/payout", data.body)
 }
 

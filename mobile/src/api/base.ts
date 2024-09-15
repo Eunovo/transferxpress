@@ -24,12 +24,12 @@ export const setToken = (token?: string) => {
 
 transferxpressApi.interceptors.response.use(
   function (response: AxiosResponse) {
-    console.log(response.data);
+    // console.log(response.data);
     
     return response;
   },
   function (error: AxiosError<string>) {
-    console.log(error.response?.data);
+    // console.log(error.response?.data);
     
     if (error.response?.status === 401) {
       store.dispatch(setAppState({

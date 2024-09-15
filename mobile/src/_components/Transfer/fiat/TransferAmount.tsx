@@ -68,48 +68,21 @@ export const TransferAmount = ({goToNextStage}: Props) => {
     mutationFn: SUBMIT_PAYIN_INFORMATION,
   });
   const supportedCurrencyPair = sender.currency && ratesQuery.rates ? ratesQuery.rates[sender.currency as Currencies] : undefined;
-  const supportedSendingCurrencies = ratesQuery.rates ? Object.keys(ratesQuery.rates).filter(item => item !== "BTC" && item !== "USDC") : undefined;
-  const supportedReceivingCurrencies = supportedCurrencyPair ?  Object.keys(supportedCurrencyPair).filter(item => item !== "BTC" && item !== "USDC") : undefined;
+  const supportedCurrencies =  wallets.filter(item => item.ticker !== "BTC" && item.ticker !== "USDC").map(item => item.ticker);
   const exchangeRate =  supportedCurrencyPair && receiver.currency ?  supportedCurrencyPair[receiver.currency as Currencies]?.exchangeRate  : null;
-  useEffect(
-    ()=>{
-  if(sender.amount === ""  || receiver.amount === "") {
-setReceiver({
-  currency: currency.reciever,
-  amount: senderAmount
-})
-if(exchangeRateFromTransferState){
-  setSender({
-    currency: currency.sender,
-    amount: (
-      Number(senderAmount) / Number(exchangeRateFromTransferState)
-    ).toFixed(2)
-  })
-}
-  }
-    }, []
-  )
+
   useEffect(() => {
-  if(exchangeRate){
+  if(exchangeRate && !ratesQuery.isPending){
     editSender('amount', '');
     editReceiver("amount", "");
   }
-    if(!exchangeRate && !supportedReceivingCurrencies){
+    if(!exchangeRate && !ratesQuery.isPending && sender.currency !== receiver.currency){
       displayFlashbar({
           type: "danger",
-          message: "Currency pair is unavailable"
+          message: "Sorry currency pair not supported"
       })
     }
-  }, [exchangeRate]);
-  useEffect(
-      ()=>{
-if(supportedReceivingCurrencies?.length){
-        if(supportedReceivingCurrencies){
-      editReceiver("currency", supportedReceivingCurrencies[0])
-    }
-}
-      }, [supportedReceivingCurrencies?.length, sender.currency]
-  )
+  }, [exchangeRate, ratesQuery.isPending, sender.currency, receiver.currency]);
   const transferExchangeRate =
     exchangeRate && Number(exchangeRate) < 1
       ? `${
@@ -128,7 +101,7 @@ if(supportedReceivingCurrencies?.length){
       
       :  'N/A';
   const isButtonDisabled =
-    !sender.amount || !receiver.amount || transferExchangeRate === 'N/A';
+    !sender.amount || !receiver.amount;
   const isLoading =
     ratesQuery.isPending ||
     initiateTransferutation.isPending ||
@@ -145,7 +118,7 @@ if(supportedReceivingCurrencies?.length){
           <CurrencyAmountInput
             title="Send"
             active={sender}
-            supportedCurrencies={supportedSendingCurrencies}
+            supportedCurrencies={supportedCurrencies}
             setAmount={value => {
               editSender('amount', value);
               if (value) {
@@ -160,12 +133,13 @@ if(supportedReceivingCurrencies?.length){
             setCurrency={value => editSender('currency', value)}
             showBalance
           />
+
 {
-  supportedReceivingCurrencies && (
+  sender.currency !== receiver.currency && (
     <CurrencyAmountInput
     title="Recipient to receive"
     active={receiver}
-    supportedCurrencies={supportedReceivingCurrencies}
+    supportedCurrencies={supportedCurrencies}
     setAmount={value => {
       editReceiver('amount', value);
       if (value) {
@@ -181,23 +155,28 @@ if(supportedReceivingCurrencies?.length){
   />
   )
 }
+
         </View>
 
-        <View
-          style={{
-            gap: 12,
-          }}
-          className="w-full p-4 mt-10 border border-secondary rounded-xl">
-          <View className="flex-row justify-between">
-            <NormalText size={14} className="text-white/80">
-              Exchange rate
-            </NormalText>
+   {
+    sender.currency !== receiver.currency && (
+      <View
+      style={{
+        gap: 12,
+      }}
+      className="w-full p-4 mt-10 border border-secondary rounded-xl">
+      <View className="flex-row justify-between">
+        <NormalText size={14} className="text-white/80">
+          Exchange rate
+        </NormalText>
 
-            <NormalText size={14} weight={600} className="text-white">
-              {transferExchangeRate}
-            </NormalText>
-          </View>
-        </View>
+        <NormalText size={14} weight={600} className="text-white">
+          {transferExchangeRate}
+        </NormalText>
+      </View>
+    </View>
+    )
+   }
         <View
           style={{gap: 16, maxWidth: moderateScale(400, 0.3)}}
           className="pt-[64px] mt-auto w-full mx-auto justify-start">
@@ -237,19 +216,27 @@ if(supportedReceivingCurrencies?.length){
                 const payoutMethod = submitPayinInfoResponse.data.find(item =>
                   item.kind.includes('BANK_TRANSFER'),
                 );
-                dispatch(
-                  setTransferState({
-                    currency: {
-                      reciever: receiver.currency,
-                      sender: sender.currency,
-                    },
-                    amount: sender.amount,
-                    exchangeRate: exchangeRate ? exchangeRate.toString() : '',
-                    transferId: initiateTransferResponse.data.id,
-                    payoutMethod,
-                  }),
-                );
-                goToNextStage();
+           if(payoutMethod){
+            dispatch(
+              setTransferState({
+                currency: {
+                  reciever: receiver.currency,
+                  sender: sender.currency,
+                },
+                amount: sender.amount,
+                exchangeRate: exchangeRate ? exchangeRate.toString() : '',
+                transferId: initiateTransferResponse.data.id,
+                payoutMethod,
+              }),
+            );
+            goToNextStage();
+           }
+           else{
+            displayFlashbar({
+              type:"danger",
+              message: "Sorry transfer method not available"
+            })
+           }
               }
             } catch (error) {}
             }}

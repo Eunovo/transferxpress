@@ -30,7 +30,7 @@ navigation
         AUD:"Bank state branch code (BSB)"
        }[currency.reciever];
        const totalAmountSent = parseFloat(amount) + parseFloat(`${transferFee}`);
-       const amountToReceive = (Number(amount) * Number(exchangeRate)).toFixed(2)
+       const amountToReceive = currency.reciever === currency.sender ? amount : (Number(amount) * Number(exchangeRate)).toFixed(2)
        const transferExchangeRate =    exchangeRate && Number(exchangeRate) < 1
        ? `${
            flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol]?.symbol
@@ -129,24 +129,28 @@ className="text-primary"
 {receiverCurrencySymbol} {formatToCurrencyString(amountToReceive, 2)}
             </NormalText>
             </View>
-            <View
-            className="flex-row justify-between"
-            >
-                <NormalText
-                size={14}
-                className="text-white/80"
-                >
-                   Exchange rate
-                </NormalText>
-
+   {
+    currency.sender !== currency.reciever && (
+        <View
+        className="flex-row justify-between"
+        >
             <NormalText
             size={14}
-         weight={500}
-            className="text-white"
+            className="text-white/80"
             >
-{transferExchangeRate}
+               Exchange rate
             </NormalText>
-            </View>
+
+        <NormalText
+        size={14}
+     weight={500}
+        className="text-white"
+        >
+{transferExchangeRate}
+        </NormalText>
+        </View>
+    )
+   }
             <View  className="w-full border-t border-white/20 my-4"/>
 <HeaderText
 className="text-primary"

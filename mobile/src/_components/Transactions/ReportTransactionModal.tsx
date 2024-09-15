@@ -137,8 +137,6 @@ initialValues={{
 onSubmit={async(values)=>{
 try {
     const failureReason = reasons.find(item => item.value === values.reason)?.id || "";
-    console.log(failureReason, "REER");
-    
     await reportTransactionMutation.mutateAsync({
         transferId: details.transferId,
         body: {

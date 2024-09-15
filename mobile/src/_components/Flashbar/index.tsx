@@ -29,8 +29,9 @@ import { CustomPressable } from "../Button/CustomPressable";
         {Boolean(message.type) &&
           flashbarConfig[message.type as keyof typeof flashbarConfig].icon}
         <NormalText
+        numberOfLines={2}
           className={clsx(
-            "text-white ml-2",
+            "text-white ml-2 shrink",
             message.type === "info" && "!text-white"
           )}
         >
