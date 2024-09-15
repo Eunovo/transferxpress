@@ -38,14 +38,14 @@ export default function SwapPinConfirmation({navigation}: Props) {
    const isDisabled = pin.length < 4 || confirmQuoteMutation.isPending || transferStatusQuery.isFetching;
    useEffect(
     ()=>{
-if(transferStatusQuery.isSuccess && transferStatus === "SUCCESS" && !isDisabled){
+if(transferStatusQuery.isSuccess && transferStatus === "SUCCESS" && confirmQuoteMutation.isSuccess){
 navigation.navigate("swap-success")
 }
-    }, [transferStatusQuery.isSuccess, transferStatusQuery.isRefetching]
+    }, [transferStatusQuery.isSuccess, transferStatusQuery.isRefetching, confirmQuoteMutation.isSuccess]
    )
    useEffect(
     ()=>{
-if(transferStatusQuery.isSuccess){
+if(transferStatusQuery.isSuccess && confirmQuoteMutation.isSuccess){
 const refetchTimeout = setTimeout(
 ()=>{
 setRefetchIntervall(0)
@@ -56,7 +56,7 @@ return ()=>{
 clearTimeout(refetchTimeout)
 }
 }
-    }, [transferStatusQuery.isSuccess]
+    }, [transferStatusQuery.isSuccess, confirmQuoteMutation.isSuccess]
    );
 
    const isLoading = confirmQuoteMutation.isPending || transferStatusQuery.isFetching;

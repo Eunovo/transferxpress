@@ -6,7 +6,7 @@ import { HeaderText } from "@/_components/Text/HeaderText";
 import { NormalText } from "@/_components/Text/NormalText";
 import CopyIcon from "@/assets/icons/copy.svg"
 import { ButtonNormal } from "@/_components/Button/NormalButton";
-import { flagsAndSymbol } from "@/utils/constants";
+import { DEPOSIT_MOCK_FIELDS, flagsAndSymbol, secondaryUniqueIdentifierTitlesAndKeys } from "@/utils/constants";
 import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
 import { BackButton } from "@/_components/Button/BackButton";
 import { DepositNavigationStackType } from "@/navigation/UserStack/DepositStack";
@@ -22,48 +22,6 @@ interface Props {
     navigation: DepositNavigationStackType
 };
 const REFETCH_TIMEOUT_TIME = 30 * 1000;
-const  FIELDS = {
-    USD: {
-       "Account Number":"0123456789",
-        secondaryUniqueIdentifier:"123456780"
-    },
-    EUR: {
-        "Account Number":"0324567891",
-        secondaryUniqueIdentifier:"1234567890"
-    },
-    GBP: {
-        "Account Number":"22233344550",
-        secondaryUniqueIdentifier:"4235456"
-    },
-    MXN: {
-        "Account Number":"7699403330",
-        secondaryUniqueIdentifier:"7980456"
-    },
-    AUD: {
-        "Account Number":"5678903032",
-        secondaryUniqueIdentifier:"234467"
-    },
-    KES:{
-        "Account Number":"55553355903",
-        secondaryUniqueIdentifier: ""
-
-    },
-    NGN: {
-        "Account Number":"1000567890", 
-        secondaryUniqueIdentifier: ""
-    },
-    GHS:{
-        "Account Number":"555777322221",
-        secondaryUniqueIdentifier:""
-    }
-};
-const secondaryUniqueIdentifierTitles = {
-    USD: 'Routing number',
-    EUR: 'International Bank Account Number (IBAN)',
-    GBP: 'Sort code',
-    MXN: 'CLABE number',
-    AUD: 'Bank state branch code (BSB)',
-  };
 export default function DepositPayout (
     {
 navigation
@@ -72,9 +30,9 @@ navigation
     const {amount, currency, transferId} = useTransferState();
     const {profile, activeWallet} = useUserState();
     const accountName = profile ? `${profile.firstname} ${profile.lastname} - ${activeWallet?.ticker}` : "";
-    const accountNumber = FIELDS[activeWallet?.ticker as keyof typeof FIELDS]["Account Number"];
-    const secondaryUniqueIdentifier = FIELDS[activeWallet?.ticker as keyof typeof FIELDS]?.secondaryUniqueIdentifier;
-    const secondaryUniqueIdentifierTitle = secondaryUniqueIdentifierTitles[activeWallet?.ticker as keyof typeof secondaryUniqueIdentifierTitles];
+    const accountNumber = DEPOSIT_MOCK_FIELDS[activeWallet?.ticker as keyof typeof DEPOSIT_MOCK_FIELDS]["Account Number"];
+    const secondaryUniqueIdentifier = currency.sender !== "NGN" ? DEPOSIT_MOCK_FIELDS[activeWallet?.ticker as keyof typeof DEPOSIT_MOCK_FIELDS]?.secondaryUniqueIdentifier : "Zenith Bank";
+    const secondaryUniqueIdentifierTitle = secondaryUniqueIdentifierTitlesAndKeys[activeWallet?.ticker as keyof typeof secondaryUniqueIdentifierTitlesAndKeys];
     const confirmQuoteMutation = useMutation({
         mutationFn: CONFIRM_QUOTE
        });
@@ -89,14 +47,14 @@ navigation
        const transferStatus = transferStatusQuery.data?.data.status;
        useEffect(
         ()=>{
-    if(transferStatusQuery.isSuccess && transferStatus === "SUCCESS" ){
+    if(transferStatusQuery.isSuccess && transferStatus === "SUCCESS" && confirmQuoteMutation.isSuccess){
     navigation.navigate("deposit-success")
     }
-        }, [transferStatusQuery.isSuccess, transferStatusQuery.isRefetching]
+        }, [transferStatusQuery.isSuccess, transferStatusQuery.isRefetching, confirmQuoteMutation.isSuccess]
        )
        useEffect(
         ()=>{
-    if(transferStatusQuery.isSuccess){
+    if(transferStatusQuery.isSuccess && confirmQuoteMutation.isSuccess){
     const refetchTimeout = setTimeout(
     ()=>{
     setRefetchIntervall(0)
@@ -107,7 +65,7 @@ navigation
     clearTimeout(refetchTimeout)
     }
     }
-        }, [transferStatusQuery.isSuccess]
+        }, [transferStatusQuery.isSuccess, confirmQuoteMutation.isSuccess]
        );
     
        const isLoading = confirmQuoteMutation.isPending || transferStatusQuery.isFetching;
@@ -201,7 +159,7 @@ className="w-full flex-row items-center justify-between"
 <NormalText
 className="text-white/80 max-w-[50%]"
 >
-   {secondaryUniqueIdentifierTitle}
+   {secondaryUniqueIdentifierTitle.title}
 </NormalText>
 <View 
 style={{

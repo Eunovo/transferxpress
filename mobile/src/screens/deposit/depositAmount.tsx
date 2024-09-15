@@ -79,7 +79,7 @@ export const DepositAmount = ({navigation}: Props) => {
     sender.currency
       ? supportedCurrenciesAndPairs.find(item =>
           item.includes(sender.currency),
-        )?.[1][activeWallet.ticker as 'NGN'].exchangeRate
+        )?.[1][activeWallet.ticker as Currencies].exchangeRate
       : null;
 
   useEffect(() => {
@@ -89,13 +89,10 @@ export const DepositAmount = ({navigation}: Props) => {
   }, [supportedCurrencies?.length]);
   useEffect(() => {
     editSender('amount', '');
-    if(!exchangeRate && !supportedCurrencies && !ratesQuery.isPending){
-      displayFlashbar({
-          type: "danger",
-          message: "Currency pair is unavailable"
-      })
+    if(!exchangeRate && !ratesQuery.isPending){
+      editSender("currency", `${activeWallet?.ticker}`)
     }
-  }, [exchangeRate, sender.currency, activeWallet?.ticker]);
+  }, [exchangeRate, sender.currency]);
   
   const transferExchangeRate =
     exchangeRate && Number(exchangeRate) < 1
@@ -112,9 +109,9 @@ export const DepositAmount = ({navigation}: Props) => {
           flagsAndSymbol[activeWallet?.ticker as keyof typeof flagsAndSymbol]
             ?.symbol
         } ${formatToCurrencyString(exchangeRate, 2)}`
-      : 'N/A';
+      : "N/A";
   const isButtonDisabled =
-    !sender.amount || !amountToReceive || transferExchangeRate === 'N/A';
+    !sender.amount || !amountToReceive;
   const submitPayinInformationMutation = useMutation({
     mutationFn: SUBMIT_PAYIN_INFORMATION,
   });
@@ -149,26 +146,28 @@ export const DepositAmount = ({navigation}: Props) => {
             gap: 24,
           }}
           className="w-full">
-          {supportedCurrencies && sender.currency && (
+          {(activeWallet && sender.currency) && (
             <CurrencyAmountInput
               title="Send"
               active={sender}
-              supportedCurrencies={supportedCurrencies}
+              supportedCurrencies={supportedCurrencies ? [...supportedCurrencies, activeWallet.ticker] : [activeWallet.ticker]}
               setAmount={value => {
                 editSender('amount', value);
-                if (value) {
+                if (value && exchangeRate) {
                   const recieveAmount = exchangeRate
                     ? (Number(value) * exchangeRate).toFixed(2)
                     : 0;
                   setAmountToReceive(`${recieveAmount}`);
                 } else {
-                  setAmountToReceive('');
+                  setAmountToReceive(value);
                 }
               }}
               setCurrency={value => editSender('currency', value)}
             />
           )}
-          <CurrencyAmountInput
+        {
+          sender.currency !== activeWallet?.ticker && (
+            <CurrencyAmountInput
             isReadOnly={{
               amount: false,
               currency: true
@@ -180,35 +179,41 @@ export const DepositAmount = ({navigation}: Props) => {
             }}
             setAmount={value => {
               setAmountToReceive(value);
-              if (value) {
+              if (value && exchangeRate) {
                 const sendAmount = exchangeRate
                   ? (Number(value) / exchangeRate).toFixed(2)
                   : 0;
                 editSender('amount', `${sendAmount}`);
               } else {
-                editSender('amount', '');
+                editSender('amount', value);
               }
             }}
             setCurrency={() => {}}
             showBalance
           />
+          )
+        }
         </View>
+{
+  transferExchangeRate !== 'N/A' && (
+    <View
+    style={{
+      gap: 12,
+    }}
+    className="w-full p-4 mt-10 border border-secondary rounded-xl">
+    <View className="flex-row justify-between">
+      <NormalText size={14} className="text-white/80">
+        Exchange rate
+      </NormalText>
 
-        <View
-          style={{
-            gap: 12,
-          }}
-          className="w-full p-4 mt-10 border border-secondary rounded-xl">
-          <View className="flex-row justify-between">
-            <NormalText size={14} className="text-white/80">
-              Exchange rate
-            </NormalText>
+      <NormalText size={14} weight={600} className="text-white">
+        {transferExchangeRate}
+      </NormalText>
+    </View>
+  </View>
+  )
+}
 
-            <NormalText size={14} weight={600} className="text-white">
-              {transferExchangeRate}
-            </NormalText>
-          </View>
-        </View>
         <View
           style={{gap: 16, maxWidth: moderateScale(400, 0.3)}}
           className="pt-[64px] mt-auto w-full mx-auto justify-start">
@@ -252,7 +257,7 @@ export const DepositAmount = ({navigation}: Props) => {
                   const createQuoteResponse =
                     await createQuoteMutation.mutateAsync({
                       body: {
-                        amount: `${Number(sender.amount) * Number(exchangeRate)}`,
+                        amount: activeWallet.ticker === sender.currency ? sender.amount : `${Number(sender.amount) * Number(exchangeRate)}`,
                         narration: `DEPOSIT-${activeWallet.ticker}-WALLET-${transferId}`,
                       },
                       transferId,

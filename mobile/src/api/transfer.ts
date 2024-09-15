@@ -18,6 +18,7 @@ export const SUBMIT_PAYIN_INFORMATION  = async(data:{
         IBAN?:string;
         CLABE?:string;
         address?:string;
+        bankCode?:string
 
     },
     transferId: number
@@ -38,6 +39,7 @@ export const SUBMIT_PAYOUT_INFORMATION = async(data:{
         IBAN?:string;
         CLABE?:string;
         address?:string;
+        bankCode?:string
     },
     transferId: number
 })=>{

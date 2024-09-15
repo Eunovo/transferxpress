@@ -24,9 +24,9 @@ navigation
     const sendingCurrencySymbol = flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol].symbol;
     const receivingCurrencySymbol = flagsAndSymbol[activeWallet?.ticker as keyof typeof flagsAndSymbol].symbol;
        const totalAmountSent = parseFloat(amount) + parseFloat(`${transferFee}`);
-       const amountToReceive = (Number(amount) * Number(exchangeRate)).toFixed(
+       const amountToReceive = currency.sender !== activeWallet?.ticker ? (Number(amount) * Number(exchangeRate)).toFixed(
         2,
-      );
+      ) : amount;
        const transferExchangeRate =    exchangeRate && Number(exchangeRate) < 1
        ? `${
            flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol]?.symbol
@@ -123,6 +123,8 @@ className="text-primary"
             </NormalText>
             </View>
     
+      {
+        activeWallet?.ticker !== currency.sender && (
             <View
             className="flex-row justify-between"
             >
@@ -141,6 +143,8 @@ className="text-primary"
 {transferExchangeRate}
             </NormalText>
             </View>
+        )
+      }
            
      
         </View>

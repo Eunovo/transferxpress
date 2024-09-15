@@ -131,7 +131,7 @@ export const  DEPOSIT_MOCK_FIELDS = {
   },
   NGN: {
       "Account Number":"1000567890", 
-      secondaryUniqueIdentifier: ""
+      secondaryUniqueIdentifier: "00014"
   },
   GHS:{
       "Account Number":"555777322221",
@@ -159,4 +159,8 @@ export const secondaryUniqueIdentifierTitlesAndKeys = {
     title: 'Bank state branch code (BSB)',
     key: "BSB"
   },
+  NGN: {
+    title: "Bank",
+    key: "bankCode"
+  }
 };

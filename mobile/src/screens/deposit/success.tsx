@@ -14,13 +14,15 @@ import { useTransferState } from "@/store/transfer/useTransferState";
 import { flagsAndSymbol } from "@/utils/constants";
 import { formatToCurrencyString } from "@/utils/formatToCurrencyString";
 import { setUserState } from "@/store/user/slice";
+import { useUserState } from "@/store/user/useUserState";
 
 
 export default function DepositSuccess () {
     const navigation = useNavigation<UserNavigationStack>();
     const dispatch = useAppDispatch();
     const {currency, amount, exchangeRate} = useTransferState();
-    const amountToReceive = (Number(amount) * Number(exchangeRate)).toFixed(
+    const {activeWallet} = useUserState()
+    const amountToReceive = currency.sender === activeWallet?.ticker ? amount : (Number(amount) * Number(exchangeRate)).toFixed(
         2,
       );
       const receivingCurrencySymbol = flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol].symbol;
