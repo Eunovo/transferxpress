@@ -27,7 +27,7 @@ route
     const sendingCurrencySymbol = flagsAndSymbol[currency.sender as keyof typeof flagsAndSymbol].symbol;
     const receivingCurrencySymbol = flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol].symbol;
        const totalAmountSent = parseFloat(amount) + parseFloat(`${transferFee}`);
-       const amountToReceive = isFromPlanCreation ? amount : (Number(amount) * Number(exchangeRate)).toFixed(
+       const amountToReceive = (isFromPlanCreation || currency.sender === currency.reciever) ? amount : (Number(amount) * Number(exchangeRate)).toFixed(
         2,
       );
        const transferExchangeRate =  exchangeRate && Number(exchangeRate) < 1
@@ -126,6 +126,8 @@ Transaction Information
         </NormalText>
         </View>
 
+{
+    currency.sender !== currency.reciever && (
         <View
         className="flex-row justify-between"
         >
@@ -144,6 +146,8 @@ Transaction Information
 {transferExchangeRate}
         </NormalText>
         </View>
+    )
+}
        
  
     </View>

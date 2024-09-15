@@ -92,7 +92,7 @@ export const DepositAmount = ({navigation}: Props) => {
     if(!exchangeRate && !ratesQuery.isPending){
       editSender("currency", `${activeWallet?.ticker}`)
     }
-  }, [exchangeRate, sender.currency]);
+  }, [exchangeRate, sender.currency, ratesQuery.isPending]);
   
   const transferExchangeRate =
     exchangeRate && Number(exchangeRate) < 1
@@ -143,7 +143,7 @@ export const DepositAmount = ({navigation}: Props) => {
         </NormalText>
         <View
           style={{
-            gap: 24,
+            gap: 24
           }}
           className="w-full">
           {(activeWallet && sender.currency) && (

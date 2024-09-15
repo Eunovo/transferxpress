@@ -93,7 +93,10 @@ export const FundingAmount = ({navigation, route}: Props) => {
     if(route.params.amount && typeof exchangeRate === "number"){
       editSender("amount", (Number(route.params.amount) / exchangeRate).toFixed(2) )
     }
-  }, [exchangeRate, sender.currency, route.params.planCurrency, route.params.amount]);
+    if(!exchangeRate && !ratesQuery.isPending){
+      editSender("currency", `${route.params.planCurrency}`)
+    }
+  }, [exchangeRate, sender.currency, route.params.planCurrency, route.params.amount, ratesQuery.isPending]);
   const transferExchangeRate =
     exchangeRate && Number(exchangeRate) < 1
       ? `${
@@ -111,7 +114,7 @@ export const FundingAmount = ({navigation, route}: Props) => {
         } ${formatToCurrencyString(exchangeRate, 2)}`
       : 'N/A';
   const isButtonDisabled =
-    !sender.amount || !amountToReceive || transferExchangeRate === 'N/A';
+    !sender.amount || !amountToReceive;
   const submitPayinInformationMutation = useMutation({
     mutationFn: SUBMIT_PAYIN_INFORMATION,
   });
@@ -146,7 +149,7 @@ export const FundingAmount = ({navigation, route}: Props) => {
             gap: 24,
           }}
           className="w-full">
-          {supportedCurrencies && sender.currency && (
+          {sender.currency && (
             <CurrencyAmountInput
               title="Send"
               active={sender}
@@ -154,7 +157,7 @@ export const FundingAmount = ({navigation, route}: Props) => {
                 amount: route.params.amount ? true : false,
                 currency: false
               }}
-              supportedCurrencies={supportedCurrencies}
+              supportedCurrencies={supportedCurrencies ? [...supportedCurrencies, route.params.planCurrency] : [route.params.planCurrency]}
               setAmount={value => {
                 editSender('amount', value);
                 if (value) {
@@ -170,7 +173,9 @@ export const FundingAmount = ({navigation, route}: Props) => {
               showBalance
             />
           )}
-          <CurrencyAmountInput
+          {
+            route.params.planCurrency !== sender.currency && (
+              <CurrencyAmountInput
             isReadOnly={{
               amount: route.params?.amount ? true : false,
               currency: true
@@ -193,23 +198,29 @@ export const FundingAmount = ({navigation, route}: Props) => {
             }}
             setCurrency={() => {}}
           />
+            )
+          }
         </View>
 
-        <View
-          style={{
-            gap: 12,
-          }}
-          className="w-full p-4 mt-10 border border-secondary rounded-xl">
-          <View className="flex-row justify-between">
-            <NormalText size={14} className="text-white/80">
-              Exchange rate
-            </NormalText>
+{
+  transferExchangeRate !== "N/A" && (
+    <View
+    style={{
+      gap: 12,
+    }}
+    className="w-full p-4 mt-10 border border-secondary rounded-xl">
+    <View className="flex-row justify-between">
+      <NormalText size={14} className="text-white/80">
+        Exchange rate
+      </NormalText>
 
-            <NormalText size={14} weight={600} className="text-white">
-              {transferExchangeRate}
-            </NormalText>
-          </View>
-        </View>
+      <NormalText size={14} weight={600} className="text-white">
+        {transferExchangeRate}
+      </NormalText>
+    </View>
+  </View>
+  )
+}
         <View
           style={{gap: 16, maxWidth: moderateScale(400, 0.3)}}
           className="pt-[64px] mt-auto w-full mx-auto justify-start">
@@ -256,7 +267,7 @@ export const FundingAmount = ({navigation, route}: Props) => {
                   const createQuoteResponse =
                     await createQuoteMutation.mutateAsync({
                       body: {
-                        amount: `${Number(sender.amount) * Number(exchangeRate)}`,
+                        amount: route.params.planCurrency === sender.currency ? sender.amount : `${Number(sender.amount) * Number(exchangeRate)}`,
                         narration: `FUNDING-${route.params.planCurrency}-SAVINGS-PLAN-${transferId}`,
                       },
                       transferId,

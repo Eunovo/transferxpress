@@ -25,7 +25,19 @@ plans
     const balances = wallets.map(item => ({
         currency: item.ticker,
         amount: plans.filter(plan => plan.currencyCode === item.ticker).reduce((previous, current)=>( previous + Number(current.balance)), 0)
-    }))
+    }))   .sort((item1, item2) => {
+        const itemOneAmout = item1.amount;
+        const itemTwoAmount = item2.amount;
+        if (itemOneAmout > itemTwoAmount  ) {
+          return -1; // Move item1 before item2
+        } else if (
+          itemTwoAmount > itemOneAmout 
+        ) {
+          return 1; // Move item2 before item1
+        } else {
+          return 0;
+        }
+      })
 
     return(
         <View>

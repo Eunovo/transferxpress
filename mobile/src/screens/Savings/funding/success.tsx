@@ -28,7 +28,7 @@ route
     const navigation = useNavigation<UserNavigationStack>();
     const dispatch = useAppDispatch();
     const {currency, amount, exchangeRate} = useTransferState();
-    const amountToReceive = isFromPlanCreation ? amount : (Number(amount) * Number(exchangeRate)).toFixed(
+    const amountToReceive = (isFromPlanCreation || currency.sender === currency.reciever) ? amount : (Number(amount) * Number(exchangeRate)).toFixed(
         2,
       );
       const receivingCurrencySymbol = flagsAndSymbol[currency.reciever as keyof typeof flagsAndSymbol].symbol;
